@@ -13,10 +13,14 @@ Web SaaS for micro-businesses and freelancers: create invoices in 15–30 second
 ## Quick start
 
 1. `npm install` then `npm run dev`.
-2. Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` when you add Supabase (Phase 1).
-3. Run Supabase migrations when you reach Phase 2 (see `docs/TECHNICAL_PLAN.md`).
+2. Copy `.env.example` to `.env.local` and set:
+   - `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (from Supabase project → Settings → API).
+   - Optionally `NEXT_PUBLIC_APP_URL` for magic link redirect (e.g. `http://localhost:3000` in dev).
+3. In Supabase Dashboard: **Authentication → URL Configuration** → add your app URL to **Redirect URLs** (e.g. `http://localhost:3000/auth/callback` for dev, or `https://yourdomain.com/auth/callback` for production). Without this, magic link sign-in will redirect back to login.
+4. **Authentication → Providers → Email** → enable; turn **Confirm email** off if you want magic link without confirmation.
+5. Run the profiles migration: `supabase db push` or run `supabase/migrations/20250217000001_create_profiles.sql` in the SQL editor.
 
-**Phase 0 (Foundation) is done:** Next.js 15+, Tailwind, shadcn/ui, react-hook-form + zod, Supabase client/server stubs, theme provider (dark by default), responsive layout. UI is in English and mobile-first.
+**Phase 0–1 done:** Foundation + Magic link auth, onboarding, profiles table, protected routes (middleware). UI in English, mobile-first.
 
 ---
 
