@@ -72,27 +72,27 @@
 
 ### 1.1 Supabase Auth
 
-- [ ] Enable Email (Magic Link) in Supabase Dashboard.
-- [ ] Auth callback route: `app/auth/callback/route.ts` — exchange code for session, redirect to `/onboarding` or `/dashboard`.
-- [ ] Login page: single field “Email”, “Send magic link”, copy: “We’ll email a secure link.”
-- [ ] Logout: clear session, redirect to `/`.
+- [x] Enable Email (Magic Link) in Supabase Dashboard (README).
+- [x] Auth callback route: `app/auth/callback/route.ts` — exchange code for session, redirect to `/onboarding` or `/dashboard`.
+- [x] Login page: single field “Email”, “Send magic link”, copy: “We’ll email a secure link.”
+- [x] Logout: clear session, redirect to `/`.
 
 ### 1.2 Profiles table (from Phase 2 schema, create here if doing schema incrementally)
 
-- [ ] Table `profiles`: `id` (uuid, PK, = `auth.users.id`), `business_name`, `default_currency`, `country`, `timezone`, `show_vat_fields`, `created_at`, `updated_at`.
-- [ ] Trigger or Edge Function: on `auth.users` insert, insert row in `profiles` with defaults (or handle in app on first load).
+- [x] Table `profiles`: `id` (uuid, PK, = `auth.users.id`), `business_name`, `default_currency`, `country`, `timezone`, `show_vat_fields`, `created_at`, `updated_at`.
+- [x] Trigger: on `auth.users` insert, insert row in `profiles` with defaults (`supabase/migrations/20250217000001_create_profiles.sql`).
 
 ### 1.3 Onboarding
 
-- [ ] Route: `/onboarding` (protected; if profile incomplete, redirect here after login).
-- [ ] Form: Business name (required), Default currency, Country/Timezone, Toggle “Show VAT fields” (default off).
-- [ ] On submit: upsert `profiles` for `auth.uid()`, then redirect to `/dashboard`.
-- [ ] All labels and hints in English.
+- [x] Route: `/onboarding` (protected; if profile incomplete, redirect here after login).
+- [x] Form: Business name (required), Default currency, Country/Timezone, Toggle “Show VAT fields” (default off).
+- [x] On submit: upsert `profiles` for `auth.uid()`, then redirect to `/dashboard`.
+- [x] All labels and hints in English.
 
 ### 1.4 Auth middleware
 
-- [ ] Middleware: protect `/dashboard`, `/invoices`, `/clients`, `/settings`, `/onboarding`; redirect unauthenticated to `/` or `/login`.
-- [ ] Redirect already-onboarded users from `/onboarding` to `/dashboard`.
+- [x] Middleware: protect `/dashboard`, `/invoices`, `/clients`, `/settings`, `/onboarding`; redirect unauthenticated to `/login`.
+- [x] Redirect already-onboarded users from `/onboarding` to `/dashboard` (in onboarding page server-side).
 
 **Deliverables:** Magic link works; onboarding completes; profile exists for every user; middleware protects private routes; English only.
 
@@ -393,5 +393,6 @@
 
 ## Changelog
 
+- [2025-02-17] Phase 1 implemented: Magic link auth, auth callback, login/logout, profiles table + migration + trigger, onboarding form, middleware protecting routes.
 - [2025-02-17] Phase 0 implemented: Next.js 16, Tailwind v4, shadcn/ui, react-hook-form + zod, Supabase client/server, theme provider, responsive layout.
 - [2025-02-17] Created technical plan; phases 0–10; English and mobile-first noted.

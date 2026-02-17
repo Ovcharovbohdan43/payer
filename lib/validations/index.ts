@@ -30,3 +30,11 @@ export const currencySchema = z
   .string()
   .length(3, "Currency must be a 3-letter code")
   .toUpperCase();
+
+export const onboardingSchema = z.object({
+  business_name: z.string().min(1, "Business name is required").max(200),
+  default_currency: z.string().length(3).toUpperCase(),
+  country: z.string().max(100).optional(),
+  timezone: z.string().max(50).optional(),
+  show_vat_fields: z.boolean(),
+});
