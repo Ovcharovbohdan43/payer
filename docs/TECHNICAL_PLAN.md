@@ -32,35 +32,35 @@
 
 ### 0.1 Next.js project
 
-- [ ] Create Next.js 15+ app (App Router), TypeScript, ESLint.
-- [ ] Configure `next.config` (images, env), base path if needed.
-- [ ] Add Tailwind CSS, configure `tailwind.config` (theme vars for dark/light).
-- [ ] Add Geist (or Inter) font, optimize loading.
+- [x] Create Next.js 15+ app (App Router), TypeScript, ESLint.
+- [x] Configure `next.config` (images, env), base path if needed.
+- [x] Add Tailwind CSS, configure (Tailwind v4 + `globals.css` theme vars for dark/light).
+- [x] Add Geist font, optimize loading (`display: swap`).
 
 ### 0.2 shadcn/ui
 
-- [ ] Init shadcn/ui, use a neutral theme compatible with “glass” panels and gradients.
-- [ ] Install and tune: Button, Input, Label, Card, Badge, Select, Dialog, DropdownMenu, Skeleton, Toast/Sonner.
-- [ ] Ensure all text is in English (labels, placeholders, buttons).
+- [x] Init shadcn/ui, use a neutral theme compatible with “glass” panels and gradients.
+- [x] Install and tune: Button, Input, Label, Card, Badge, Select, Dialog, DropdownMenu, Skeleton, Toast/Sonner.
+- [x] Ensure all text is in English (labels, placeholders, buttons).
 
 ### 0.3 Forms & state
 
-- [ ] Add `react-hook-form`, `zod`, `@hookform/resolvers`.
-- [ ] Add TanStack Query (optional for MVP; prefer Server Actions + minimal client state).
-- [ ] Create shared `lib/validations` with zod schemas (reused server-side later).
+- [x] Add `react-hook-form`, `zod`, `@hookform/resolvers`.
+- [x] TanStack Query deferred for MVP; use Server Actions + minimal client state.
+- [x] Create shared `lib/validations` with zod schemas (reused server-side later).
 
 ### 0.4 Supabase client (no auth yet)
 
-- [ ] Add `@supabase/supabase-js`.
-- [ ] Create `lib/supabase/client.ts` (browser, anon key only).
-- [ ] Create `lib/supabase/server.ts` (cookies, for use in Server Components/Actions).
-- [ ] Add `.env.example` with `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (no service role in client).
+- [x] Add `@supabase/supabase-js` and `@supabase/ssr`.
+- [x] Create `lib/supabase/client.ts` (browser, anon key only).
+- [x] Create `lib/supabase/server.ts` (cookies, for use in Server Components/Actions).
+- [x] Add `.env.example` with `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (no service role in client).
 
 ### 0.5 Layout & responsiveness
 
-- [ ] Root layout: theme provider (dark default, light toggle), font, meta viewport.
-- [ ] Responsive breakpoints: mobile-first; key pages work on 320px–1920px.
-- [ ] Document in README: “Fully in English, mobile-first, responsive.”
+- [x] Root layout: theme provider (dark default, light toggle), font, meta viewport.
+- [x] Responsive breakpoints: mobile-first; key pages work on 320px–1920px.
+- [x] Document in README: “Fully in English, mobile-first, responsive.”
 
 **Deliverables:** App runs locally; Tailwind + shadcn work; Supabase client/server helpers; no leaked secrets; English UI.
 
@@ -393,4 +393,5 @@
 
 ## Changelog
 
+- [2025-02-17] Phase 0 implemented: Next.js 16, Tailwind v4, shadcn/ui, react-hook-form + zod, Supabase client/server, theme provider, responsive layout.
 - [2025-02-17] Created technical plan; phases 0–10; English and mobile-first noted.
