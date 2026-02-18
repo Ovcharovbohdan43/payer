@@ -104,35 +104,35 @@
 
 ### 2.1 Tables
 
-- [ ] **profiles** — (see Phase 1).
-- [ ] **clients** — `id`, `user_id` (FK profiles), `name`, `email`, `phone`, `created_at`.
-- [ ] **invoices** — `id`, `user_id`, `client_id` (nullable), `client_name`, `client_email`, `number` (unique per user), `status` (draft/sent/viewed/paid/overdue/void), `amount_cents`, `currency`, `description`, `notes`, `due_date`, `public_id` (unique, ULID or UUID), `stripe_checkout_session_id`, `stripe_payment_intent_id`, `created_at`, `sent_at`, `viewed_at`, `paid_at`, `voided_at`.
-- [ ] **payments** — `id`, `invoice_id` (FK), `amount_cents`, `currency`, `stripe_event_id` (unique), `paid_at`, `created_at`.
-- [ ] **audit_logs** — `id`, `user_id`, `entity_type`, `entity_id`, `action`, `meta` (jsonb), `created_at`.
+- [x] **profiles** — (see Phase 1).
+- [x] **clients** — migration 20250218000001 (FK profiles), `name`, `email`, `phone`, `created_at`.
+- [x] **invoices** — migration 20250218000001 (nullable), `client_name`, `client_email`, `number` (unique per user), `status` (draft/sent/viewed/paid/overdue/void), `amount_cents`, `currency`, `description`, `notes`, `due_date`, `public_id` (unique, ULID or UUID), `stripe_checkout_session_id`, `stripe_payment_intent_id`, `created_at`, `sent_at`, `viewed_at`, `paid_at`, `voided_at`.
+- [x] **payments** — migration 20250218000001 (FK), `amount_cents`, `currency`, `stripe_event_id` (unique), `paid_at`, `created_at`.
+- [x] **audit_logs** — migration 20250218000001, `entity_type`, `entity_id`, `action`, `meta` (jsonb), `created_at`.
 
 ### 2.2 Indexes
 
-- [ ] `invoices(user_id, status)`, `invoices(public_id)`, `invoices(stripe_checkout_session_id)`.
-- [ ] `clients(user_id)`, `payments(invoice_id)`, `audit_logs(user_id, created_at)`.
+- [x] `invoices(user_id, status)`, `invoices(public_id)`, `invoices(stripe_checkout_session_id)`.
+- [x] `clients(user_id)`, `payments(invoice_id)`, `audit_logs(user_id, created_at)`.
 
 ### 2.3 RLS policies
 
-- [ ] **profiles:** SELECT/UPDATE where `id = auth.uid()`.
-- [ ] **clients:** SELECT/INSERT/UPDATE/DELETE where `user_id = auth.uid()`.
-- [ ] **invoices:** SELECT/INSERT/UPDATE/DELETE where `user_id = auth.uid()`.
-- [ ] **payments:** SELECT only where invoice exists and `invoice.user_id = auth.uid()`; INSERT/UPDATE only via backend (e.g. service role in API route).
-- [ ] **audit_logs:** INSERT allowed for `auth.uid()` (or via service role); SELECT where `user_id = auth.uid()`.
+- [x] **profiles:** SELECT/UPDATE where `id = auth.uid()` (Phase 1).
+- [x] **clients:** SELECT/INSERT/UPDATE/DELETE where `user_id = auth.uid()`.
+- [x] **invoices:** SELECT/INSERT/UPDATE/DELETE where `user_id = auth.uid()`.
+- [x] **payments:** SELECT only where invoice owned by user; no INSERT for anon/authenticated (service role only).
+- [x] **audit_logs:** INSERT/SELECT where `user_id = auth.uid()`.
 
 ### 2.4 Public invoice data (no RLS on public read)
 
-- [ ] Do **not** expose `invoices` table by public_id to client. Use either:
+- [x] RPC get_public_invoice(public_id); do **not** expose `invoices` table by public_id to client. Use either:
   - **Option A:** Postgres function `get_public_invoice(public_id text)` returning only safe fields (business_name from profile, invoice number, amount, description, etc.) with SECURITY DEFINER and checks, called from API route with anon; or
   - **Option B:** API route (e.g. `GET /api/invoices/public/[publicId]`) that uses service role to fetch by `public_id`, then returns only safe fields (no `user_id`, no internal `id`).
 - [ ] Document: “Public invoice access only by public_id; no internal IDs or PII leakage.”
 
 ### 2.5 Invoice number generation
 
-- [ ] Function or app logic: `INV-YYYY-NNNNNN` (e.g. INV-2025-000001) unique per user per year.
+- [x] Function `next_invoice_number(user_id uuid)` returns INV-YYYY-NNNNNN unique per user per year.
 
 **Deliverables:** Migrations apply; RLS enabled on all tables; public invoice data access only by public_id with minimal fields; numbering defined; English comments in SQL.
 
@@ -144,18 +144,18 @@
 
 ### 3.1 Clients API / Server Actions
 
-- [ ] List clients: Server Action or route with `user_id = auth.uid()`, ordered by name.
-- [ ] Create client: name (required), email, phone; validate with zod; insert with `user_id`.
-- [ ] Update/delete client; ensure RLS (user_id) is used.
+- [x] List clients: Server Action `listClients()`, ordered by name.
+- [x] Create client: name (required), email, phone; validate with zod; insert with `user_id`.
+- [x] Update/delete client via `updateClientAction`, `deleteClientAction`; RLS enforced.
 
 ### 3.2 Clients UI (optional dedicated page)
 
-- [ ] Page `/clients`: list with search; add client (inline or modal); edit/delete. All English.
+- [x] Page `/clients`: list with search; add client (inline form); edit (dialog), delete. All English.
 
 ### 3.3 Client autocomplete component
 
-- [ ] Reusable component: input + dropdown of existing clients (name/email); “Add new” inline to create and select. Used on Create Invoice form.
-- [ ] Mobile-friendly: large tap targets, no tiny dropdowns.
+- [x] Reusable ClientAutocomplete: input + dropdown of existing clients (name/email); “Add new” inline to create and select. Used on Create Invoice form.
+- [x] Mobile-friendly: adequate tap targets, no tiny dropdowns.
 
 **Deliverables:** Clients CRUD; autocomplete on Create Invoice; English labels; responsive.
 
@@ -167,25 +167,25 @@
 
 ### 4.1 Create invoice (speed form)
 
-- [ ] Page `/invoices/new`: Client (autocomplete + add new), Service/description (one line), Amount + currency (from profile default), optional “More”: due date, notes, VAT (if profile.show_vat_fields).
-- [ ] Buttons: “Create & copy link”, “Create & send email” (if client email present).
-- [ ] On create: generate `public_id` (ULID or UUIDv4), set `number` (INV-YYYY-NNNNNN), status `draft`; then either copy link to clipboard or trigger send-email (Phase 7).
-- [ ] Form validation: zod client + server (e.g. Server Action).
+- [x] Page `/invoices/new`: Client (autocomplete + add new), Service/description (one line), Amount + currency (from profile default), optional “More”: due date, notes, VAT (if profile.show_vat_fields).
+- [x] Buttons: “Create & copy link”, “Create & send email” (if client email present).
+- [x] On create: generate `public_id` (UUIDv4), set `number` (INV-YYYY-NNNNNN), status `draft` or `sent` when markSent; then copy link to clipboard and redirect to detail (send-email in Phase 7).
+- [x] Form validation: zod client + server (Server Action).
 
 ### 4.2 Invoice list (minimal for Phase 4)
 
-- [ ] Fetch invoices for user (RLS); show in a simple table/cards: number, client, amount, status, created. Used later in Dashboard.
+- [x] Fetch invoices for user (RLS); show in a simple table: number, client, amount, status, link to detail; search and status filter.
 
 ### 4.3 Invoice detail (owner view)
 
-- [ ] Page `/invoices/[id]`: only by internal `id`, with auth and RLS. Header: status badge, amount, client. Timeline: Created → Sent → Viewed → Paid (or Overdue). Buttons: Copy link, Download PDF (Phase 8), Send reminder (Phase 7), Void invoice.
-- [ ] Void: set status to `void`, `voided_at`; audit log.
-- [ ] Payment section: show `stripe_payment_intent_id` (or link), `paid_at` when paid.
+- [x] Page `/invoices/[id]`: only by internal `id`, with auth and RLS. Header: status badge, amount, client, description/notes. Timeline: Created → Sent → Viewed → Paid (or Overdue). Client component: Copy link, Download PDF (Phase 8 placeholder), Send reminder (Phase 7 placeholder), Void invoice, Mark as paid (manual).
+- [x] Void: set status to `void`, `voided_at`; audit log.
+- [x] Payment section: show `paid_at` when paid.
 
 ### 4.4 Mark as sent / viewed
 
-- [ ] When “Copy link” or “Send email” is used, set `sent_at` (if not set) and status to `sent`.
-- [ ] “Viewed”: set when public invoice page is loaded (first time only); set `viewed_at`, status to `viewed` if still `sent` (Phase 5).
+- [x] When “Create & copy link” or “Create & send email” is used, set `sent_at` and status to `sent` (markSent). When user clicks “Copy link” on detail for a draft, call `markInvoiceSentAction` to set `sent_at` and status to `sent`.
+- [x] “Viewed”: set when public invoice page is loaded (first time only); set `viewed_at`, status to `viewed` if still `sent` (Phase 5).
 
 ### 4.5 Overdue
 
@@ -201,29 +201,29 @@
 
 ### 5.1 Public invoice endpoint
 
-- [ ] `GET /api/invoices/public/[publicId]` or Server Component that loads via server-only function: fetch by `public_id` (service role or RPC), return only: business_name, invoice number, amount, currency, description, due_date, status (e.g. paid/sent/viewed). No `user_id`, no internal `id`.
-- [ ] If not found or void: 404 or “Invoice not available”.
+- [x] Server Component loads via RPC `get_public_invoice(public_id)`; returns business_name, invoice number, amount, currency, description, due_date, status. No `user_id`, no internal `id`.
+- [x] If not found or void: 404.
 
 ### 5.2 Public page UI
 
-- [ ] Route: `/i/[publicId]` (or `/invoice/[publicId]`). Clean layout: business name, invoice number, amount, description, “Pay” button, “Download PDF” link. Footer: “Powered by Payer” (can hide on Pro later).
-- [ ] On first load (and status not paid/void): call API to record `viewed_at` once (e.g. PATCH or RPC that sets viewed_at if null).
+- [x] Route: `/i/[publicId]`. Clean layout: business name, invoice number, amount, description, “Pay” button. Footer: “Powered by Payer”.
+- [x] On first load when status = sent: RPC `record_public_invoice_viewed(public_id)` sets `viewed_at` and status to `viewed` (migration 20250218100001).
 - [ ] Rate limit this route (Phase 9); no auth required.
 
 ### 5.3 Stripe Checkout
 
-- [ ] Create Checkout Session (Server Action or API route): amount, currency, success/cancel URLs, `client_reference_id` = `invoice.id` or store `public_id` in metadata; link session to invoice (`stripe_checkout_session_id`).
-- [ ] “Pay” on public page redirects to Stripe Checkout.
-- [ ] After payment, redirect to success URL (e.g. public page with “Paid” state or thank-you).
+- [x] `POST /api/checkout`: body `{ publicId }`; service role fetches invoice by `public_id`, creates Stripe Checkout Session (amount, currency), stores `stripe_checkout_session_id` on invoice, returns `{ url }`. Success URL: `/i/[publicId]`, cancel: same.
+- [x] “Pay” on public page (client `PayButton`) calls API and redirects to Stripe Checkout.
+- [x] After payment, redirect to success URL (public page shows “Paid” after webhook).
 
 ### 5.4 Stripe webhook
 
-- [ ] Route: `POST /api/webhooks/stripe`. Verify signature (Stripe webhook secret). On `checkout.session.completed`: find invoice by `stripe_checkout_session_id`; if already paid, skip (idempotent); else set `paid_at`, status `paid`, insert `payments` with `stripe_event_id` (unique). Use service role for DB writes.
-- [ ] Idempotency: `payments.stripe_event_id` unique; duplicate events no-op.
+- [x] Route: `POST /api/webhooks/stripe`. Verify signature with `STRIPE_WEBHOOK_SECRET`. On `checkout.session.completed`: find invoice by `stripe_checkout_session_id`; if already paid, skip; else set `paid_at`, status `paid`, insert `payments` with `stripe_event_id` (unique). Service role via `createAdminClient()`.
+- [x] Idempotency: duplicate events no-op (unique `stripe_event_id`).
 
 ### 5.5 Manual “Mark as paid”
 
-- [ ] On invoice detail: “Mark as paid” (manual) sets `paid_at`, status `paid`, optional payment row without `stripe_event_id` (or with a placeholder). Audit log.
+- [x] On invoice detail: “Mark as paid” (manual) sets `paid_at`, status `paid`, optional payment row; audit log (Phase 4).
 
 **Deliverables:** Public page by public_id only; no IDOR; Stripe Checkout + webhook; viewed once; idempotent webhook; English UI.
 
@@ -235,20 +235,20 @@
 
 ### 6.1 Dashboard layout
 
-- [ ] Page `/dashboard`: top cards — Unpaid (sum), Paid this month, Overdue. Data from Supabase (aggregations or computed from list). Skeleton while loading.
+- [x] Page `/dashboard`: top cards — Unpaid (sum in default_currency), Paid this month, Overdue (count). Data from listInvoices + `computeDashboardStats` in `lib/dashboard/stats.ts`. Cards link to `/invoices?status=unpaid|paid|overdue`.
 
 ### 6.2 Invoice list
 
-- [ ] Default sort: unpaid first, then by date. Filters: status, date range. Search by client name/email.
+- [x] Default sort: unpaid first, then by created_at desc. Filters: status (all, unpaid, paid, overdue, and individual statuses). Search by number/client.
 - [ ] Row actions: Copy link, Mark as paid, Send reminder (Phase 7). Mobile: dropdown or swipe actions.
 
 ### 6.3 Create invoice entry point
 
-- [ ] “Create invoice” button; on mobile: FAB “+ Invoice” (max 2 taps to form).
+- [x] “Create invoice” button in header; on mobile: FAB “+ Invoice” (`NewInvoiceFab`, visible on dashboard and invoices list, hidden sm and up).
 
 ### 6.4 Responsive
 
-- [ ] Cards and table/cards layout adapt; list usable on 320px width; FAB visible on mobile.
+- [x] Cards grid (3 cols on sm); list usable on small width; FAB visible on mobile (fixed bottom-right).
 
 **Deliverables:** Dashboard with metrics; filterable list; quick actions; FAB; English; responsive.
 
@@ -393,6 +393,8 @@
 
 ## Changelog
 
+- [2025-02-18] Phase 3 implemented: Clients CRUD (list, create, update, delete), /clients page with search and edit dialog, ClientAutocomplete component.
+- [2025-02-18] Phase 2 implemented: clients, invoices, payments, audit_logs tables; RLS and indexes; get_public_invoice(public_id) RPC; next_invoice_number(user_id) for INV-YYYY-NNNNNN; docs/DATABASE.md.
 - [2025-02-17] Phase 1 implemented: Magic link auth, auth callback, login/logout, profiles table + migration + trigger, onboarding form, middleware protecting routes.
 - [2025-02-17] Phase 0 implemented: Next.js 16, Tailwind v4, shadcn/ui, react-hook-form + zod, Supabase client/server, theme provider, responsive layout.
 - [2025-02-17] Created technical plan; phases 0–10; English and mobile-first noted.

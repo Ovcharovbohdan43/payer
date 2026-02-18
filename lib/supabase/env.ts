@@ -31,3 +31,14 @@ function getSupabaseAnonKey(): string {
 export function getSupabaseEnv() {
   return { url: getSupabaseUrl(), anonKey: getSupabaseAnonKey() };
 }
+
+/** Service role key for server-only operations (checkout, webhooks). Throws if not set. */
+export function getSupabaseServiceRoleKey(): string {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim().replace(/^["']|["']$/g, "");
+  if (!key) {
+    throw new Error(
+      "Missing SUPABASE_SERVICE_ROLE_KEY. Required for Stripe checkout and webhooks. Add to .env.local from Supabase Dashboard → Settings → API → service_role (secret)."
+    );
+  }
+  return key;
+}
