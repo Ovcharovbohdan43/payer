@@ -47,8 +47,10 @@ export function InvoiceDetailClient({ invoiceId, publicUrl, status, canVoid, can
         >
           {copyDone ? "Copied!" : "Copy link"}
         </Button>
-        <Button variant="outline" size="sm" disabled title="Coming in Phase 8">
-          Download PDF
+        <Button variant="outline" size="sm" asChild>
+          <a href={`/api/invoices/${invoiceId}/pdf`} target="_blank" rel="noopener noreferrer" download>
+            Download PDF
+          </a>
         </Button>
         <Button variant="outline" size="sm" disabled title="Coming in Phase 7">
           Send reminder

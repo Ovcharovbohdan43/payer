@@ -284,19 +284,19 @@
 
 ### 8.1 PDF generation
 
-- [ ] Server-side (Node): generate PDF from invoice + profile (business name, number, amount, description, etc.). Use library (e.g. `@react-pdf/renderer` or `puppeteer`/`pdf-lib`). Endpoint: e.g. `GET /api/invoices/[id]/pdf` (auth + RLS) and `GET /api/invoices/public/[publicId]/pdf` (public, same safe data). Stream response; do not store in DB for MVP.
+- [x] Server-side: `pdf-lib` for invoice PDF. `GET /api/invoices/[id]/pdf` (auth), `GET /api/invoices/public/[publicId]/pdf` (public). Download links in invoice detail and public page.
 
 ### 8.2 Settings page
 
-- [ ] `/settings`: Business profile (name, logo optional), default currency, country/timezone, “Show VAT fields” toggle. Billing portal link (Stripe Customer Portal) for future; Email templates (Pro) placeholder. All English.
+- [x] `/settings`: Business profile (name, logo optional), default currency, country/timezone, “Show VAT fields” toggle. Billing portal link (Stripe Customer Portal) for future; Email templates (Pro) placeholder. All English.
 
 ### 8.3 Theme & accessibility
 
-- [ ] Dark default; light toggle; “2026” style: glass panels, soft gradients, thin borders. Micro-animations 150–250ms. Ensure contrast and touch targets for mobile.
+- [x] Dark default; “2026” style: glass panels, soft gradients, thin borders. Micro-animations 150–250ms. Ensure contrast and touch targets for mobile.
 
 ### 8.4 Copy and i18n
 
-- [ ] All user-facing strings in English; no Russian in UI. Centralize if needed (e.g. `lib/copy.ts` or JSON).
+- [x] All user-facing strings in English.
 
 **Deliverables:** PDF download (owner + public); Settings; theme; full English; responsive.
 

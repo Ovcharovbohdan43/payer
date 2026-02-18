@@ -2,7 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { formatAmount } from "@/lib/invoices/utils";
 import { notFound } from "next/navigation";
 import { PayButton } from "./pay-button";
-import { DownloadPdfPlaceholder } from "./download-pdf-placeholder";
+import { DownloadPdfLink } from "./download-pdf-placeholder";
+import { CheckCircle2 } from "lucide-react";
 
 export type PublicInvoice = {
   business_name: string;
@@ -32,10 +33,13 @@ async function recordViewed(publicId: string): Promise<void> {
 
 export default async function PublicInvoicePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ publicId: string }>;
+  searchParams: Promise<{ paid?: string }>;
 }) {
   const { publicId } = await params;
+  const { paid: paidParam } = await searchParams;
   let invoice = await getPublicInvoice(publicId);
   if (!invoice) notFound();
 
@@ -47,33 +51,61 @@ export default async function PublicInvoicePage({
   }
 
   const isPaid = invoice.status === "paid";
+  const showSuccessScreen = paidParam === "1" || isPaid;
 
   return (
     <main className="min-h-screen bg-[#0B0F14]">
       <div className="mx-auto max-w-md px-4 py-12">
         <div className="rounded-[20px] border border-white/5 bg-[#121821] p-8 backdrop-blur">
-          <p className="text-sm font-medium text-muted-foreground">
-            {invoice.business_name}
-          </p>
-          <h1 className="mt-2 text-3xl font-bold tabular-nums">
-            {formatAmount(invoice.amount_cents, invoice.currency)}
-          </h1>
-          {invoice.description && (
-            <p className="mt-3 text-sm text-muted-foreground">
-              {invoice.description}
-            </p>
-          )}
-          {invoice.due_date && (
-            <p className="mt-1 text-sm text-muted-foreground">
-              Due: {new Date(invoice.due_date).toLocaleDateString("en-US")}
-            </p>
-          )}
+          {showSuccessScreen ? (
+            <>
+              <div className="flex flex-col items-center text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
+                  <CheckCircle2 className="h-10 w-10" strokeWidth={2} />
+                </div>
+                <h1 className="mt-6 text-2xl font-bold text-white">
+                  Payment successful
+                </h1>
+                <p className="mt-2 text-muted-foreground">
+                  Thank you for your payment. Your invoice has been paid.
+                </p>
+                <div className="mt-6 rounded-xl bg-white/5 px-4 py-3">
+                  <p className="text-sm text-muted-foreground">
+                    {invoice.business_name}
+                  </p>
+                  <p className="mt-1 text-xl font-semibold tabular-nums">
+                    {formatAmount(invoice.amount_cents, invoice.currency)}
+                  </p>
+                </div>
+                <div className="mt-8 w-full">
+                  <DownloadPdfLink publicId={publicId} fullWidth />
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-sm font-medium text-muted-foreground">
+                {invoice.business_name}
+              </p>
+              <h1 className="mt-2 text-3xl font-bold tabular-nums">
+                {formatAmount(invoice.amount_cents, invoice.currency)}
+              </h1>
+              {invoice.description && (
+                <p className="mt-3 text-sm text-muted-foreground">
+                  {invoice.description}
+                </p>
+              )}
+              {invoice.due_date && (
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Due: {new Date(invoice.due_date).toLocaleDateString("en-US")}
+                </p>
+              )}
 
-          {!isPaid && (
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <PayButton publicId={publicId} />
-              <DownloadPdfPlaceholder />
-            </div>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <PayButton publicId={publicId} />
+                <DownloadPdfLink publicId={publicId} />
+              </div>
+            </>
           )}
 
           <p className="mt-8 text-center text-xs text-muted-foreground">

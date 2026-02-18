@@ -4,6 +4,19 @@ All notable changes to the Payer project.
 
 ## [Unreleased]
 
+### [2025-02-18] – Payment success screen
+
+- **Public invoice:** After successful Stripe payment, user is redirected to `/i/[publicId]?paid=1` and sees a dedicated "Payment successful" screen with checkmark, thank-you message, invoice summary, and Download PDF. Shows success optimistically when `?paid=1` (even before webhook updates DB) or when `status=paid`.
+
+### [2025-02-18] – Stripe CLI setup
+
+- **Stripe CLI:** Downloaded v1.35.1 (Windows x86_64) to `tools/stripe.exe`. Run `npm run stripe:login` to authenticate; `npm run stripe:listen` for webhook forwarding. Add printed `whsec_...` to `.env.local` as `STRIPE_WEBHOOK_SECRET`.
+
+### [2025-02-18] – Phase 8: PDF, Settings & Polish
+
+- **PDF:** `pdf-lib` for invoice PDF. `GET /api/invoices/[id]/pdf` (owner), `GET /api/invoices/public/[publicId]/pdf` (public). Download PDF in invoice detail and public page.
+- **Settings:** Full page: business name, currency, country, timezone, VAT toggle. Billing placeholder. `updateProfileAction`, `SettingsForm`.
+
 ### [2025-02-18] – Dashboard & UX redesign (Design Spec 2026)
 
 - **Layout:** AppShell with sidebar (Dashboard, Invoices, Clients, Settings), header with business name and sign out. Routes moved under `(app)` route group.
