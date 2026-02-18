@@ -6,7 +6,7 @@ import { DownloadPdfLink } from "./download-pdf-placeholder";
 import { InvoiceQrCode } from "@/components/invoice-qr-code";
 import { CheckCircle2 } from "lucide-react";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
 
 export type PublicInvoiceLineItem = {
   description: string;

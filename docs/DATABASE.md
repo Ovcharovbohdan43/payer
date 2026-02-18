@@ -7,6 +7,10 @@ Run in order (Supabase SQL Editor or `supabase db push`):
 1. `supabase/migrations/20250217000001_create_profiles.sql` — profiles + trigger
 2. `supabase/migrations/20250218000001_create_clients_invoices_payments_audit.sql` — clients, invoices, payments, audit_logs, RLS, indexes, `get_public_invoice`, `next_invoice_number`
 3. `supabase/migrations/20250218100001_record_public_invoice_viewed.sql` — RPC `record_public_invoice_viewed(public_id)` to set `viewed_at` and status `viewed` on first public page load (callable by anon)
+4. `supabase/migrations/20250219000001_add_invoice_vat.sql` — vat_included, get_public_invoice update
+5. `supabase/migrations/20250220000001_add_invoice_line_items.sql` — invoice_line_items, line_items in get_public_invoice
+6. `supabase/migrations/20250221000001_stripe_connect_and_payouts.sql` — stripe_connect_account_id, payouts table
+7. `supabase/migrations/20250222000001_add_last_reminder_at.sql` — last_reminder_at for reminder rate limiting
 
 ## Public invoice access
 

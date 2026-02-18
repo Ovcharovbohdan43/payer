@@ -9,6 +9,7 @@ import { listClients } from "@/app/clients/actions";
 import { createInvoiceAction, type CreateResult } from "../actions";
 import { useActionState, useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
 
 const VAT_RATE = 0.2; // 20%
@@ -101,6 +102,21 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
     if (state.invoiceId && state.publicUrl) {
       if (state.intent === "copy") {
         navigator.clipboard.writeText(state.publicUrl).catch(() => {});
+      }
+      if (
+        state.intent === "email" &&
+        "emailSent" in state &&
+        state.emailSent === false
+      ) {
+        toast.warning(
+          "Invoice created, but email could not be sent. Check RESEND_API_KEY."
+        );
+      } else if (
+        state.intent === "email" &&
+        "emailSent" in state &&
+        state.emailSent === true
+      ) {
+        toast.success("Invoice created and sent by email");
       }
       router.push(`/invoices/${state.invoiceId}`);
     }

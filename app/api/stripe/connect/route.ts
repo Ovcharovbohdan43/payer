@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
 
 /** Default country for Connect accounts. Use GB for UK Stripe, US for US Stripe. */
 function getConnectCountry(_profileBusinessName?: string | null): string {
