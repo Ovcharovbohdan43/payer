@@ -1,6 +1,12 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import type { ActivityItem } from "@/lib/dashboard/activity";
-import { Check, Send, Eye, AlertCircle, Settings, Banknote } from "lucide-react";
+import { Check, Send, Eye, AlertCircle, Settings, Banknote, ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+const INITIAL_COUNT = 6;
 
 const ICONS: Record<ActivityItem["type"], React.ReactNode> = {
   paid: <Check className="size-4 text-emerald-400" />,
@@ -16,13 +22,17 @@ type Props = {
 };
 
 export function ActivityFeed({ items }: Props) {
+  const [shown, setShown] = useState(INITIAL_COUNT);
+  const visible = items.slice(0, shown);
+  const hasMore = items.length > shown;
+
   if (items.length === 0) return null;
 
   return (
     <section className="min-w-0 overflow-hidden rounded-[14px] border border-white/5 bg-[#121821]/80 p-3 backdrop-blur sm:rounded-[20px] sm:p-6">
       <h2 className="mb-3 text-sm font-semibold sm:mb-4 sm:text-base">Recent activity</h2>
       <ul className="space-y-3">
-        {items.map((item) => (
+        {visible.map((item) => (
           <li key={`${item.invoiceId ?? "sys"}-${item.type}-${item.sortAt}`}>
             {item.href ? (
               <Link
@@ -48,6 +58,17 @@ export function ActivityFeed({ items }: Props) {
           </li>
         ))}
       </ul>
+      {hasMore && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="mt-3 w-full text-muted-foreground hover:text-foreground"
+          onClick={() => setShown((n) => n + 10)}
+        >
+          <ChevronDown className="mr-1 size-4" />
+          Load more
+        </Button>
+      )}
     </section>
   );
 }

@@ -4,6 +4,11 @@ All notable changes to the Payer project.
 
 ## [Unreleased]
 
+### [2025-02-22] – Activity feed Load more, Supabase rate limits docs
+
+- **Activity feed:** Shows first 6 items; "Load more" button reveals the rest (no infinite stretch).
+- **Docs:** `docs/SUPABASE_RATE_LIMITS.md` — how to increase/disable magic link rate limits in Supabase Dashboard.
+
 ### [2025-02-22] – Phase 7: Email & Reminders
 
 - **Resend:** `resend` package; `lib/email/send.ts` and `lib/email/templates.ts` for HTML email templates. Env: `RESEND_API_KEY`, optional `EMAIL_FROM` (default `Payer <onboarding@resend.dev>`).
