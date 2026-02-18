@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { onboardingSchema } from "@/lib/validations";
+import { onboardingSchema, passwordSchema } from "@/lib/validations";
 import { revalidatePath } from "next/cache";
 
 export async function updateProfileAction(formData: FormData) {
@@ -62,4 +62,28 @@ export async function updateProfileAction(formData: FormData) {
   revalidatePath("/invoices");
   revalidatePath("/invoices/new");
   return {};
+}
+
+export async function setPasswordAction(formData: FormData) {
+  const password = formData.get("password");
+  const confirm = formData.get("confirm");
+  const parsed = passwordSchema.safeParse(password);
+  if (!parsed.success) {
+    return { error: parsed.error.flatten().formErrors[0] ?? "Invalid password" };
+  }
+  if (password !== confirm) {
+    return { error: "Passwords do not match" };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in" };
+
+  const { error } = await supabase.auth.updateUser({ password: parsed.data });
+
+  if (error) return { error: error.message };
+  revalidatePath("/settings");
+  return { success: true };
 }

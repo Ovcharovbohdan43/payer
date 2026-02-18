@@ -23,9 +23,14 @@ export default function HomePage() {
           >
             Payer
           </Link>
-          <Button asChild variant="outline" size="sm" className="min-h-10 touch-manipulation rounded-xl sm:min-h-9">
-            <Link href="/login">Log in</Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="ghost" size="sm" className="min-h-10 touch-manipulation rounded-xl text-muted-foreground hover:text-foreground">
+              <Link href="/register">Sign up</Link>
+            </Button>
+            <Button asChild variant="outline" size="sm" className="min-h-10 touch-manipulation rounded-xl sm:min-h-9">
+              <Link href="/login">Log in</Link>
+            </Button>
+          </div>
         </div>
       </header>
 
