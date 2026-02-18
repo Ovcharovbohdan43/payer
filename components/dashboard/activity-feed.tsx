@@ -17,8 +17,8 @@ export function ActivityFeed({ items }: Props) {
   if (items.length === 0) return null;
 
   return (
-    <section className="rounded-[20px] border border-white/5 bg-[#121821]/80 p-6 backdrop-blur">
-      <h2 className="mb-4 text-base font-semibold">Recent activity</h2>
+    <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
+      <h2 className="mb-3 text-sm font-semibold sm:mb-4 sm:text-base">Recent activity</h2>
       <ul className="space-y-3">
         {items.map((item) => (
           <li key={`${item.invoiceId}-${item.type}-${item.sortAt}`}>

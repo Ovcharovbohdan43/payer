@@ -64,13 +64,13 @@ export function InvoiceList({
           placeholder="Search by number or client…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 rounded-md border border-input bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="min-h-10 flex-1 rounded-lg border border-white/10 bg-[#121821]/50 px-3 py-2.5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3B82F6]/50"
           aria-label="Search invoices"
         />
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="h-10 min-h-10 rounded-lg border border-white/10 bg-[#121821]/50 px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3B82F6]/50"
         >
           <option value="all">All statuses</option>
           <option value="unpaid">Unpaid</option>
@@ -99,18 +99,18 @@ export function InvoiceList({
           )}
         </div>
       ) : (
-        <ul className="divide-y divide-border rounded-lg border border-border bg-card/50">
+        <ul className="divide-y divide-white/5 overflow-hidden rounded-[16px] border border-white/5 bg-[#121821]/80 sm:rounded-[20px]">
           {filtered.map((inv) => (
             <li key={inv.id}>
               <Link
                 href={`/invoices/${inv.id}`}
-                className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-muted/50 sm:flex-nowrap"
+                className="flex flex-col gap-1 px-4 py-3 transition-colors hover:bg-white/5 sm:flex-row sm:flex-nowrap sm:items-center sm:justify-between sm:gap-3"
               >
                 <div className="min-w-0 flex-1">
                   <p className="font-medium">{inv.number}</p>
                   <p className="text-sm text-muted-foreground truncate">{inv.client_name}</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between gap-2 sm:justify-end sm:gap-3">
                   <span className="text-sm font-medium tabular-nums">
                     {formatAmount(inv.amount_cents, inv.currency)}
                   </span>
