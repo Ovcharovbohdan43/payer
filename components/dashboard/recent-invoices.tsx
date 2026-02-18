@@ -25,12 +25,12 @@ type Props = {
 };
 
 export function RecentInvoices({ invoices, baseUrl }: Props) {
-  const recent = invoices.slice(0, 5);
+  const recent = invoices.slice(0, 3);
 
   if (recent.length === 0) return null;
 
   return (
-    <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
+    <section className="min-w-0 overflow-hidden rounded-[14px] border border-white/5 bg-[#121821]/80 p-3 backdrop-blur sm:rounded-[20px] sm:p-6">
       <h2 className="mb-3 text-sm font-semibold sm:mb-4 sm:text-base">Recent invoices</h2>
       <ul className="space-y-2">
         {recent.map((inv) => (
@@ -72,7 +72,7 @@ function RecentInvoiceRow({ invoice, baseUrl }: { invoice: InvoiceRow; baseUrl: 
   };
 
   return (
-    <li className="group flex items-center justify-between gap-2 rounded-xl border border-white/5 bg-white/[0.02] p-3 transition-all hover:bg-white/5 sm:gap-3">
+    <li className="group flex min-w-0 items-center justify-between gap-2 rounded-lg border border-white/5 bg-white/[0.02] p-2.5 transition-all hover:bg-white/5 sm:rounded-xl sm:p-3 sm:gap-3">
       <Link href={`/invoices/${invoice.id}`} className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap sm:gap-3">
           <span className="font-medium truncate">{invoice.client_name}</span>

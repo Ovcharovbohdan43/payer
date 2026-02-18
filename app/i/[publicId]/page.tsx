@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { formatAmount } from "@/lib/invoices/utils";
 import { notFound } from "next/navigation";
 import { PayButton } from "./pay-button";
+import { DownloadPdfPlaceholder } from "./download-pdf-placeholder";
 
 export type PublicInvoice = {
   business_name: string;
@@ -71,13 +72,7 @@ export default async function PublicInvoicePage({
           {!isPaid && (
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <PayButton publicId={publicId} />
-              <a
-                href="#"
-                className="inline-flex h-12 items-center justify-center rounded-xl border border-white/10 px-6 text-sm font-medium text-muted-foreground hover:bg-white/5 hover:text-foreground"
-                onClick={(e) => e.preventDefault()}
-              >
-                Download PDF
-              </a>
+              <DownloadPdfPlaceholder />
             </div>
           )}
 

@@ -35,28 +35,28 @@ export function ClientList({ clients }: { clients: ClientRow[] }) {
 
   return (
     <>
-      <div className="space-y-4">
+      <div className="min-w-0 space-y-4">
         <div className="relative">
           <input
             type="search"
             placeholder="Search clients…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-white/10 bg-[#121821]/50 px-3 py-2.5 pr-4 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3B82F6]/50"
+            className="min-h-10 w-full min-w-0 rounded-lg border border-white/10 bg-[#121821]/50 px-3 py-2.5 pr-4 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3B82F6]/50"
             aria-label="Search clients"
           />
         </div>
 
         {filtered.length === 0 ? (
-          <p className="py-8 text-center text-muted-foreground">
+          <p className="py-6 text-center text-sm text-muted-foreground sm:py-8">
             {clients.length === 0 ? "No clients yet. Add one above." : "No clients match your search."}
           </p>
         ) : (
-          <ul className="divide-y divide-white/5 rounded-[20px] border border-white/5 bg-[#121821]/80">
+          <ul className="divide-y divide-white/5 min-w-0 overflow-hidden rounded-[14px] border border-white/5 bg-[#121821]/80 sm:rounded-[20px]">
             {filtered.map((client) => (
               <li
                 key={client.id}
-                className="flex min-h-[52px] items-center justify-between gap-2 px-4 py-3"
+                className="flex min-h-[52px] min-w-0 items-center justify-between gap-2 px-3 py-2.5 sm:px-4 sm:py-3"
               >
                 <div className="min-w-0 flex-1">
                   <p className="font-medium truncate">{client.name}</p>
@@ -68,8 +68,8 @@ export function ClientList({ clients }: { clients: ClientRow[] }) {
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-10 w-10 shrink-0" aria-label="Actions">
-                      <MoreHorizontalIcon className="h-5 w-5" />
+                    <Button variant="ghost" size="icon" className="h-10 min-h-10 w-10 shrink-0 touch-manipulation" aria-label="Actions">
+                      <MoreHorizontalIcon className="size-5" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -117,7 +117,7 @@ function EditClientDialog({ client, onClose }: { client: ClientRow | null; onClo
 
   return (
     <Dialog open={!!client} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="w-[min(100%,calc(100vw-2rem))] max-w-md sm:w-full">
         <DialogHeader>
           <DialogTitle>Edit client</DialogTitle>
         </DialogHeader>

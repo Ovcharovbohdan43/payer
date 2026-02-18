@@ -24,9 +24,9 @@ export function AppShell({ children, businessName }: AppShellProps) {
   const pathname = usePathname();
 
   return (
-    <div className="flex min-h-screen bg-[#0B0F14]">
+    <div className="flex min-h-screen min-w-0 bg-[#0B0F14]">
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-white/5 bg-[#0B0F14]/95 backdrop-blur-xl md:flex">
+      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-white/5 bg-[#0B0F14]/95 backdrop-blur-xl lg:flex">
         <div className="flex h-16 items-center border-b border-white/5 px-6">
           <Link href="/dashboard" className="font-semibold text-white">
             Payer
@@ -58,10 +58,10 @@ export function AppShell({ children, businessName }: AppShellProps) {
       </aside>
 
       {/* Main content */}
-      <div className="flex flex-1 flex-col md:pl-64">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden lg:pl-64">
         {/* Header */}
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-white/5 bg-[#0B0F14]/80 px-4 backdrop-blur-xl sm:px-6">
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <Link href="/dashboard" className="font-semibold text-white">
               Payer
             </Link>
@@ -92,7 +92,7 @@ export function AppShell({ children, businessName }: AppShellProps) {
           </div>
         </header>
 
-        <main className="flex-1 pb-20 md:pb-0">{children}</main>
+        <main className="flex-1 pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0">{children}</main>
         <MobileNav />
       </div>
     </div>

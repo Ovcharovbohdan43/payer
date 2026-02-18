@@ -17,7 +17,7 @@ export function ActivityFeed({ items }: Props) {
   if (items.length === 0) return null;
 
   return (
-    <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
+    <section className="min-w-0 overflow-hidden rounded-[14px] border border-white/5 bg-[#121821]/80 p-3 backdrop-blur sm:rounded-[20px] sm:p-6">
       <h2 className="mb-3 text-sm font-semibold sm:mb-4 sm:text-base">Recent activity</h2>
       <ul className="space-y-3">
         {items.map((item) => (
