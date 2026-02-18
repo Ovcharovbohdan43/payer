@@ -57,7 +57,7 @@ export function InvoiceList({
   }, [invoices, search, statusFilter]);
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <input
           type="search"
@@ -99,7 +99,7 @@ export function InvoiceList({
           )}
         </div>
       ) : (
-        <ul className="divide-y divide-white/5 overflow-hidden rounded-[16px] border border-white/5 bg-[#121821]/80 sm:rounded-[20px]">
+        <ul className="divide-y divide-white/5 min-w-0 overflow-hidden rounded-[16px] border border-white/5 bg-[#121821]/80 sm:rounded-[20px]">
           {filtered.map((inv) => (
             <li key={inv.id}>
               <Link

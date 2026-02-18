@@ -61,5 +61,5 @@ export function buildActivityFromInvoices(
   }
 
   items.sort((a, b) => new Date(b.sortAt).getTime() - new Date(a.sortAt).getTime());
-  return items.slice(0, 10);
+  return items.slice(0, 3);
 }

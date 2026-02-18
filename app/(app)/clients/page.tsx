@@ -14,10 +14,10 @@ export default async function ClientsPage() {
   const clients = await listClients();
 
   return (
-    <div className="min-h-screen bg-[#0B0F14]">
-      <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
+    <div className="min-h-screen w-full min-w-0 overflow-x-hidden bg-[#0B0F14]">
+      <div className="mx-auto w-full max-w-4xl px-3 py-3 min-[375px]:px-4 min-[375px]:py-4 sm:px-6 sm:py-8">
         <h1 className="mb-4 text-lg font-semibold sm:mb-6 sm:text-xl">Clients</h1>
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <AddClientForm />
           <ClientList clients={clients} />
         </div>

@@ -123,4 +123,15 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Prevent horizontal scroll on mobile and tablet; reserve scrollbar space */
+  @media (max-width: 1023px) {
+    html {
+      overflow-x: hidden;
+      scrollbar-gutter: stable;
+    }
+    body {
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
 }

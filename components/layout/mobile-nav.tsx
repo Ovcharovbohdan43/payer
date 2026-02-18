@@ -17,8 +17,8 @@ export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/5 bg-[#0B0F14]/95 backdrop-blur-xl md:hidden">
-      <div className="flex h-16 items-center justify-around px-2">
+    <nav className="fixed inset-x-0 bottom-0 z-50 flex items-end border-t border-white/5 bg-[#0B0F14] pb-[env(safe-area-inset-bottom,0px)] lg:hidden">
+      <div className="flex h-14 min-h-[56px] w-full items-center justify-around gap-0 px-1 sm:h-16 sm:px-2">
         {NAV_ITEMS.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -40,8 +40,8 @@ export function MobileNav() {
                     : "text-muted-foreground"
               )}
             >
-              <Icon className={cn("size-5 shrink-0", isCreate && "size-6")} />
-              <span className="truncate text-[10px] font-medium">{item.label}</span>
+              <Icon className={cn("shrink-0", isCreate ? "size-5 min-[360px]:size-6" : "size-4 min-[360px]:size-5")} />
+              <span className="truncate text-[9px] font-medium min-[360px]:text-[10px]">{item.label}</span>
             </Link>
           );
         })}

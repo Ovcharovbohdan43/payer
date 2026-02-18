@@ -21,7 +21,7 @@ export default async function InvoicesPage({
   const { status: statusFromUrl } = await searchParams;
 
   return (
-    <div className="min-h-screen bg-[#0B0F14]">
+    <div className="min-h-screen min-w-0 overflow-x-hidden bg-[#0B0F14]">
       <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
         <div className="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-lg font-semibold sm:text-xl">Invoices</h1>
