@@ -35,7 +35,10 @@ export async function GET(
     description: invoice.description,
     dueDate: invoice.due_date,
     clientName: invoice.client_name,
+    clientEmail: invoice.client_email,
     status: invoice.status,
+    createdAt: invoice.created_at,
+    notes: invoice.notes,
   });
 
   return new NextResponse(Buffer.from(pdfBytes), {
