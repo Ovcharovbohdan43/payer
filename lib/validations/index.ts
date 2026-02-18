@@ -38,3 +38,27 @@ export const onboardingSchema = z.object({
   timezone: z.string().max(50).optional(),
   show_vat_fields: z.boolean(),
 });
+
+export const clientSchema = z.object({
+  name: z.string().min(1, "Name is required").max(200),
+  email: optionalEmailSchema.or(z.literal("")),
+  phone: z.string().max(50).optional().or(z.literal("")),
+});
+
+/** Amount in major units (e.g. 99.99). Convert to cents in action. */
+export const amountMajorSchema = z
+  .number({ error: "Enter a valid amount" })
+  .nonnegative("Amount must be positive")
+  .finite();
+
+export const invoiceCreateSchema = z.object({
+  clientId: z.string().uuid().optional().or(z.literal("")),
+  clientName: z.string().min(1, "Client name is required").max(200),
+  clientEmail: z.string().max(255).optional().or(z.literal("")),
+  description: z.string().min(1, "Description is required").max(1000),
+  amount: amountMajorSchema,
+  currency: z.string().length(3).toUpperCase(),
+  dueDate: z.string().optional().or(z.literal("")),
+  notes: z.string().max(2000).optional().or(z.literal("")),
+  vatAmount: z.number().nonnegative().optional(),
+});
