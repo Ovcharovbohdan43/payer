@@ -4,6 +4,13 @@ All notable changes to the Payer project.
 
 ## [Unreleased]
 
+### [2025-02-18] – Invoice PDF generator improvements
+
+- **PDF layout:** Professional invoice layout with header (business name, INVOICE, invoice number, date), Bill to (client name, email), items table (description with word wrap, amount), due date, status, notes, footer.
+- **Word wrap:** Long description and notes wrap to fit page width via `font.widthOfTextAtSize`.
+- **Metadata:** PDF title and author set for better file properties.
+- **Owner PDF:** Passes `createdAt`, `clientEmail`, `notes` for full invoice details.
+
 ### [2025-02-18] – Payment success screen
 
 - **Public invoice:** After successful Stripe payment, user is redirected to `/i/[publicId]?paid=1` and sees a dedicated "Payment successful" screen with checkmark, thank-you message, invoice summary, and Download PDF. Shows success optimistically when `?paid=1` (even before webhook updates DB) or when `status=paid`.
