@@ -1,19 +1,23 @@
-# Supabase Rate Limits (Magic Links)
+# Supabase Rate Limits
 
-Magic link sign-in is limited by Supabase. If users often see "too many requests" or cannot receive new links, adjust the limits.
+Supabase limits how many **emails** can be sent for auth. This affects:
+- **Magic link** sign-in (sends email)
+- **Password registration** when "Confirm email" is ON (sends confirmation email)
 
-## How to change
+If users see "email limit exceeded" or "too many requests", adjust the limits.
+
+## How to fix
 
 1. Open [Supabase Dashboard](https://supabase.com/dashboard) → your project
 2. Go to **Authentication** → **Rate Limits**
-3. Adjust:
-   - **Email sign-ins per hour** — increase (e.g. 100–500) or disable
-   - **SMS OTP per hour** — only if using SMS
+3. Set **Email sign-ins per hour** to 100+ (or disable)
 4. Save
 
-## Recommendation for Payer
+## Option: Skip confirmation email for password signup
 
-- **Development:** Disable rate limits or set Email sign-ins to 100+
-- **Production:** Set to 100+ per hour per IP so users can reliably sign in
+To avoid sending emails on registration (and thus avoid rate limits):
+1. **Authentication** → **Providers** → **Email**
+2. Turn **OFF** "Confirm email"
+3. Users who sign up with password are logged in immediately (no confirmation email)
 
-Supabase default is often 4–10 per hour, which blocks frequent sign-ins.
+Magic link will still work; only the confirmation step for new password signups is skipped.

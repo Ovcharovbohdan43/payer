@@ -35,7 +35,19 @@ export async function signUpAction(formData: FormData) {
     },
   });
 
-  if (error) return { error: error.message };
+  if (error) {
+    const msg = error.message;
+    if (
+      /rate limit|too many requests|limit exceeded/i.test(msg) ||
+      msg.includes("over email sending")
+    ) {
+      return {
+        error:
+          "Email sending limit exceeded. Try again in an hour or use magic link to sign in. Ask the admin to increase limits in Supabase Dashboard → Authentication → Rate Limits.",
+      };
+    }
+    return { error: msg };
+  }
   if (!data.user) return { error: "Sign up failed" };
 
   // Profile is created by trigger with business_name from user_metadata.

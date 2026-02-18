@@ -37,7 +37,11 @@ export async function signInWithMagicLink(formData: FormData) {
   });
 
   if (error) {
-    return { error: error.message };
+    const msg = error.message;
+    if (/rate limit|too many requests|limit exceeded/i.test(msg) || msg.includes("over email sending")) {
+      return { error: "Email limit exceeded. Try again later or sign in with password." };
+    }
+    return { error: msg };
   }
 
   return { success: true };
