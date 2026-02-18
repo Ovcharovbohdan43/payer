@@ -43,7 +43,7 @@ export async function signUpAction(formData: FormData) {
     ) {
       return {
         error:
-          "Email sending limit exceeded. Try again in an hour or use magic link to sign in. Ask the admin to increase limits in Supabase Dashboard → Authentication → Rate Limits.",
+          "Email sending limit exceeded. Try again in an hour or use magic link to sign in.",
       };
     }
     return { error: msg };
