@@ -4,6 +4,11 @@ All notable changes to the Payer project.
 
 ## [Unreleased]
 
+### [2025-02-22] – Landing page, mobile-first responsive
+
+- **Landing:** Full landing page with Hero, Features (6 cards), How it works (3 steps), Pricing, CTA, Footer. Same palette (#0B0F14, #121821, #3B82F6).
+- **Mobile:** min-w-0 overflow-x-hidden, responsive typography (text-3xl→6xl), touch-manipulation on buttons (min 44px), min-[375px] breakpoints, responsive padding/gaps.
+
 ### [2025-02-22] – Activity feed Load more, Supabase rate limits docs
 
 - **Activity feed:** Shows first 6 items; "Load more" button reveals the rest (no infinite stretch).
