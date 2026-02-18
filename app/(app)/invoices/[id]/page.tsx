@@ -13,7 +13,7 @@ import {
 import { InvoiceDetailClient } from "./invoice-detail-client";
 import { InvoiceQrCode } from "@/components/invoice-qr-code";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
 
 export default async function InvoiceDetailPage({
   params,
@@ -98,6 +98,7 @@ export default async function InvoiceDetailPage({
             status={status}
             canVoid={status !== "void" && status !== "paid"}
             canMarkPaid={status !== "paid" && status !== "void"}
+            hasClientEmail={!!invoice.client_email}
           />
 
           {invoice.paid_at && (

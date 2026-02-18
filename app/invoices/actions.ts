@@ -2,11 +2,21 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { invoiceCreateSchema } from "@/lib/validations";
-import { getPublicInvoiceUrl } from "@/lib/invoices/utils";
+import {
+  getPublicInvoiceUrl,
+  formatAmount,
+  getDisplayAmountCents,
+} from "@/lib/invoices/utils";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { sendInvoiceEmail, sendReminderEmail } from "@/lib/email/send";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
+
+const REMINDER_RATE_LIMIT_HOURS = parseInt(
+  process.env.REMINDER_RATE_LIMIT_HOURS ?? "24",
+  10
+);
 
 export type InvoiceLineItem = {
   description: string;
@@ -127,7 +137,40 @@ export async function createInvoiceAction(
 
   const publicUrl = getPublicInvoiceUrl(invoice.public_id, BASE_URL);
   const intent = (formData.get("intent") as string) || "copy";
-  return { invoiceId: invoice.id, publicUrl, number: invoice.number, intent };
+
+  let emailSent: boolean | undefined;
+  if (intent === "email" && parsed.data.clientEmail) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("business_name")
+      .eq("id", user.id)
+      .single();
+    const amountFormatted = formatAmount(
+      getDisplayAmountCents(amountCents, vatIncluded),
+      parsed.data.currency
+    );
+    const result = await sendInvoiceEmail({
+      to: parsed.data.clientEmail,
+      businessName: profile?.business_name ?? "Business",
+      clientName: parsed.data.clientName,
+      amountFormatted,
+      invoiceNumber: invoice.number,
+      publicUrl,
+      dueDate: parsed.data.dueDate || null,
+    });
+    emailSent = result.ok;
+    if (!result.ok) {
+      console.error("[createInvoice] email failed:", result.error);
+    }
+  }
+
+  return {
+    invoiceId: invoice.id,
+    publicUrl,
+    number: invoice.number,
+    intent,
+    ...(emailSent !== undefined && { emailSent }),
+  };
 }
 
 export async function listInvoices(): Promise<InvoiceRow[]> {
@@ -293,4 +336,130 @@ export async function markAsPaidManualAction(invoiceId: string) {
   revalidatePath(`/invoices/${invoiceId}`);
   revalidatePath("/dashboard");
   return {};
+}
+
+export async function sendInvoiceEmailAction(
+  invoiceId: string
+): Promise<{ error?: string; success?: boolean }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in" };
+
+  const { data: invoice } = await supabase
+    .from("invoices")
+    .select(
+      "id, number, public_id, client_name, client_email, amount_cents, currency, vat_included, due_date"
+    )
+    .eq("id", invoiceId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!invoice || !invoice.client_email)
+    return { error: "Invoice not found or has no client email" };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("business_name")
+    .eq("id", user.id)
+    .single();
+
+  const publicUrl = getPublicInvoiceUrl(invoice.public_id, BASE_URL);
+  const amountFormatted = formatAmount(
+    getDisplayAmountCents(Number(invoice.amount_cents), invoice.vat_included),
+    invoice.currency
+  );
+  const dueDateFormatted = invoice.due_date
+    ? new Date(invoice.due_date).toLocaleDateString("en-US", {
+        dateStyle: "medium",
+      })
+    : null;
+
+  const result = await sendInvoiceEmail({
+    to: invoice.client_email,
+    businessName: profile?.business_name ?? "Business",
+    clientName: invoice.client_name,
+    amountFormatted,
+    invoiceNumber: invoice.number,
+    publicUrl,
+    dueDate: dueDateFormatted,
+  });
+
+  if (!result.ok) return { error: result.error };
+  revalidatePath(`/invoices/${invoiceId}`);
+  return { success: true };
+}
+
+export async function sendReminderAction(
+  invoiceId: string
+): Promise<{ error?: string; success?: boolean }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in" };
+
+  const { data: invoice } = await supabase
+    .from("invoices")
+    .select(
+      "id, number, public_id, client_name, client_email, amount_cents, currency, vat_included, due_date, last_reminder_at, status"
+    )
+    .eq("id", invoiceId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!invoice || !invoice.client_email)
+    return { error: "Invoice not found or has no client email" };
+  if (invoice.status === "paid" || invoice.status === "void")
+    return { error: "Cannot send reminder for paid or void invoice" };
+
+  if (REMINDER_RATE_LIMIT_HOURS > 0 && invoice.last_reminder_at) {
+    const hoursSince =
+      (Date.now() - new Date(invoice.last_reminder_at).getTime()) /
+      (1000 * 60 * 60);
+    if (hoursSince < REMINDER_RATE_LIMIT_HOURS) {
+      return {
+        error: `Please wait ${Math.ceil(REMINDER_RATE_LIMIT_HOURS - hoursSince)}h before sending another reminder`,
+      };
+    }
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("business_name")
+    .eq("id", user.id)
+    .single();
+
+  const publicUrl = getPublicInvoiceUrl(invoice.public_id, BASE_URL);
+  const amountFormatted = formatAmount(
+    getDisplayAmountCents(Number(invoice.amount_cents), invoice.vat_included),
+    invoice.currency
+  );
+  const dueDateFormatted = invoice.due_date
+    ? new Date(invoice.due_date).toLocaleDateString("en-US", {
+        dateStyle: "medium",
+      })
+    : null;
+
+  const result = await sendReminderEmail({
+    to: invoice.client_email,
+    businessName: profile?.business_name ?? "Business",
+    clientName: invoice.client_name,
+    amountFormatted,
+    invoiceNumber: invoice.number,
+    publicUrl,
+    dueDate: dueDateFormatted,
+  });
+
+  if (!result.ok) return { error: result.error };
+
+  await supabase
+    .from("invoices")
+    .update({ last_reminder_at: new Date().toISOString() })
+    .eq("id", invoiceId)
+    .eq("user_id", user.id);
+
+  revalidatePath(`/invoices/${invoiceId}`);
+  return { success: true };
 }

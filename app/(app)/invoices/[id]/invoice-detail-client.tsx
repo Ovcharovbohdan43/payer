@@ -5,9 +5,12 @@ import {
   voidInvoiceAction,
   markAsPaidManualAction,
   markInvoiceSentAction,
+  sendInvoiceEmailAction,
+  sendReminderAction,
 } from "@/app/invoices/actions";
 import type { InvoiceStatus } from "@/lib/invoices/utils";
 import { useTransition, useState } from "react";
+import { toast } from "sonner";
 
 type Props = {
   invoiceId: string;
@@ -15,7 +18,10 @@ type Props = {
   status: InvoiceStatus;
   canVoid: boolean;
   canMarkPaid: boolean;
+  hasClientEmail: boolean;
 };
+
+const CAN_SEND_REMINDER: InvoiceStatus[] = ["sent", "viewed", "overdue", "draft"];
 
 export function InvoiceDetailClient({
   invoiceId,
@@ -23,6 +29,7 @@ export function InvoiceDetailClient({
   status,
   canVoid,
   canMarkPaid,
+  hasClientEmail,
 }: Props) {
   const [pending, startTransition] = useTransition();
   const [copyDone, setCopyDone] = useState(false);
@@ -69,9 +76,53 @@ export function InvoiceDetailClient({
             Download PDF
           </a>
         </Button>
-        <Button variant="outline" size="sm" disabled title="Coming in Phase 7">
-          Send reminder
-        </Button>
+        {hasClientEmail && status !== "paid" && status !== "void" && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={pending}
+            onClick={() => {
+              startTransition(async () => {
+                const r = await sendInvoiceEmailAction(invoiceId);
+                if (r.error) {
+                  setError(r.error);
+                  toast.error(r.error);
+                } else {
+                  setError(null);
+                  toast.success("Invoice sent by email");
+                }
+              });
+            }}
+          >
+            Send by email
+          </Button>
+        )}
+        {hasClientEmail &&
+          CAN_SEND_REMINDER.includes(status) &&
+          status !== "paid" &&
+          status !== "void" && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={pending}
+              onClick={() => {
+                startTransition(async () => {
+                  const r = await sendReminderAction(invoiceId);
+                  if (r.error) {
+                    setError(r.error);
+                    toast.error(r.error);
+                  } else {
+                    setError(null);
+                    toast.success("Reminder sent");
+                  }
+                });
+              }}
+            >
+              Send reminder
+            </Button>
+          )}
         {canMarkPaid && (
           <form
             action={() => {

@@ -10,7 +10,7 @@ import { DashboardFab } from "@/app/dashboard/dashboard-fab";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
 
 export default async function DashboardPage() {
   const supabase = await createClient();

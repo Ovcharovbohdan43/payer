@@ -4,6 +4,14 @@ All notable changes to the Payer project.
 
 ## [Unreleased]
 
+### [2025-02-22] – Phase 7: Email & Reminders
+
+- **Resend:** `resend` package; `lib/email/send.ts` and `lib/email/templates.ts` for HTML email templates. Env: `RESEND_API_KEY`, optional `EMAIL_FROM` (default `Payer <onboarding@resend.dev>`).
+- **Send invoice email:** "Create & send email" on new invoice form sends email after create; "Send by email" button on invoice detail. Graceful: if email fails, invoice is still created; toast warns user.
+- **Manual reminder:** "Send reminder" button on invoice detail and Recent Invoices (dashboard). Rate limit: 1 per `REMINDER_RATE_LIMIT_HOURS` (default 24; 0 = no limit for debug).
+- **Migration:** `20250222000001_add_last_reminder_at.sql` — adds `last_reminder_at` to invoices for rate limiting.
+- **Templates:** Invoice and reminder HTML emails with "View & Pay" button, business name, amount, due date. All strings escaped to prevent injection.
+
 ### [2025-02-20] – Multiple services per invoice
 
 - **Form:** Create invoice with multiple line items (services). Add/remove rows via “Add service” and trash icon. Each row: description + amount.

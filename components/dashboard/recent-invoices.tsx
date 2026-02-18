@@ -6,8 +6,9 @@ import { formatAmount, STATUS_LABELS, type InvoiceStatus } from "@/lib/invoices/
 import { getPublicInvoiceUrl } from "@/lib/invoices/utils";
 import { Button } from "@/components/ui/button";
 import { Copy, Send, ExternalLink } from "lucide-react";
+import { toast } from "sonner";
 import { useTransition, useState } from "react";
-import { markInvoiceSentAction } from "@/app/invoices/actions";
+import { markInvoiceSentAction, sendReminderAction } from "@/app/invoices/actions";
 import { useRouter } from "next/navigation";
 
 const STATUS_VARIANTS: Record<InvoiceStatus, string> = {
@@ -55,6 +56,9 @@ function RecentInvoiceRow({ invoice, baseUrl }: { invoice: InvoiceRow; baseUrl: 
   const status = (invoice.status ?? "draft") as InvoiceStatus;
   const publicUrl = getPublicInvoiceUrl(invoice.public_id, baseUrl);
 
+  const canSendReminder =
+    !!invoice.client_email && !["paid", "void"].includes(status);
+
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(publicUrl);
@@ -69,6 +73,18 @@ function RecentInvoiceRow({ invoice, baseUrl }: { invoice: InvoiceRow; baseUrl: 
     } catch {
       // ignore
     }
+  };
+
+  const handleSendReminder = () => {
+    if (!canSendReminder) return;
+    startTransition(async () => {
+      const r = await sendReminderAction(invoice.id);
+      if (r.error) toast.error(r.error);
+      else {
+        toast.success("Reminder sent");
+        router.refresh();
+      }
+    });
   };
 
   return (
@@ -107,8 +123,9 @@ function RecentInvoiceRow({ invoice, baseUrl }: { invoice: InvoiceRow; baseUrl: 
           variant="ghost"
           size="icon-sm"
           className="h-8 w-8 text-muted-foreground hover:text-foreground"
-          disabled
-          title="Send reminder (coming soon)"
+          disabled={!canSendReminder || pending}
+          onClick={handleSendReminder}
+          title={canSendReminder ? "Send reminder" : "No client email"}
           aria-label="Send reminder"
         >
           <Send className="size-4" />
