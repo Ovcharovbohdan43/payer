@@ -4,6 +4,13 @@ All notable changes to the Payer project.
 
 ## [Unreleased]
 
+### [2025-02-23] – Password registration & login
+
+- **Register:** `/register` — form: email, name, business name, password. Creates account with Supabase signUp; profile gets business_name from user_metadata (trigger updated).
+- **Login:** Toggle "Magic link" | "Password". Magic link unchanged; password sign-in via `signInWithPassword`. Link to Create account.
+- **Settings:** "Account security" — Set password (for magic-link users). Explanation: "so you can always sign in with email and password, even if magic links don't work."
+- **Migration:** `20250223000001_profile_from_signup_metadata.sql` — trigger uses business_name from signUp metadata.
+
 ### [2025-02-22] – Landing page, mobile-first responsive
 
 - **Landing:** Full landing page with Hero, Features (6 cards), How it works (3 steps), Pricing, CTA, Footer. Same palette (#0B0F14, #121821, #3B82F6).

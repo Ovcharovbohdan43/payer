@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useActionState, useEffect, useState } from "react";
-import { updateProfileAction } from "./actions";
+import { updateProfileAction, setPasswordAction } from "./actions";
 import { ConnectStripeButton } from "./connect-stripe-button";
 import { useRouter } from "next/navigation";
 
@@ -123,6 +123,15 @@ export function SettingsForm({ profile }: { profile: Profile }) {
       </Button>
 
       <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
+        <h2 className="mb-2 text-base font-semibold">Account security</h2>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Set a password so you can always sign in with email and password, even if
+          magic links don&apos;t work.
+        </p>
+        <SetPasswordForm />
+      </section>
+
+      <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
         <h2 className="mb-2 text-base font-semibold">Payments</h2>
         <p className="mb-3 text-sm text-muted-foreground">
           Connect Stripe to receive payments directly. Payer does not store bank details.
@@ -136,6 +145,57 @@ export function SettingsForm({ profile }: { profile: Profile }) {
           <ConnectStripeButton />
         )}
       </section>
+    </form>
+  );
+}
+
+function SetPasswordForm() {
+  const [state, formAction, isPending] = useActionState(
+    async (_prev: { error?: string; success?: boolean } | null, formData: FormData) => {
+      return await setPasswordAction(formData);
+    },
+    null as { error?: string; success?: boolean } | null
+  );
+
+  return (
+    <form action={formAction} className="space-y-3">
+      <div className="space-y-2">
+        <Label htmlFor="password">New password</Label>
+        <Input
+          id="password"
+          name="password"
+          type="password"
+          placeholder="At least 8 characters"
+          autoComplete="new-password"
+          required
+          disabled={isPending}
+          className="h-10"
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="confirm">Confirm password</Label>
+        <Input
+          id="confirm"
+          name="confirm"
+          type="password"
+          placeholder="Repeat password"
+          autoComplete="new-password"
+          required
+          disabled={isPending}
+          className="h-10"
+        />
+      </div>
+      <Button
+        type="submit"
+        variant="outline"
+        size="sm"
+        disabled={isPending}
+        className="rounded-lg"
+      >
+        {isPending ? "Saving…" : "Set password"}
+      </Button>
+      {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
+      {state?.success && <p className="text-sm text-emerald-500">Password set.</p>}
     </form>
   );
 }
