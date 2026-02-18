@@ -146,7 +146,7 @@ export function NewInvoiceForm({ defaultCurrency, showVatFields, clients }: NewI
           name="intent"
           value="copy"
           disabled={isPending}
-          className="h-12 min-w-[200px] rounded-xl bg-[#3B82F6] font-semibold hover:bg-[#2563EB]"
+          className="min-h-12 w-full rounded-xl bg-[#3B82F6] font-semibold hover:bg-[#2563EB] sm:min-w-[200px] sm:w-auto"
         >
           {isPending ? "Creating…" : "Create invoice"}
         </Button>

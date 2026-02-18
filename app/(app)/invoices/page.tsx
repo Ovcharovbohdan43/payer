@@ -22,14 +22,17 @@ export default async function InvoicesPage({
 
   return (
     <div className="min-h-screen bg-[#0B0F14]">
-      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-xl font-semibold">Invoices</h1>
-          <Button asChild className="rounded-xl bg-[#3B82F6] font-semibold">
+      <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
+        <div className="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-lg font-semibold sm:text-xl">Invoices</h1>
+          <Button
+            asChild
+            className="h-10 w-full rounded-xl bg-[#3B82F6] font-semibold sm:h-9 sm:w-auto sm:px-4"
+          >
             <Link href="/invoices/new">+ New invoice</Link>
           </Button>
         </div>
-        <div className="pb-24 sm:pb-8">
+        <div className="pb-4 sm:pb-0">
           <InvoiceList invoices={invoices} initialStatusFilter={statusFromUrl} />
         </div>
       </div>

@@ -35,9 +35,9 @@ export function InvoiceDetailClient({ invoiceId, publicUrl, status, canVoid, can
   };
 
   return (
-    <section className="rounded-[20px] border border-white/5 bg-[#121821]/80 p-6 backdrop-blur">
-      <h2 className="mb-3 text-sm font-medium text-muted-foreground">Actions</h2>
-      <div className="flex flex-wrap gap-2">
+    <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
+      <h2 className="mb-2 text-sm font-medium text-muted-foreground sm:mb-3">Actions</h2>
+      <div className="flex flex-wrap gap-2 [&_button]:min-h-10 [&_button]:touch-manipulation">
         <Button
           type="button"
           variant="outline"

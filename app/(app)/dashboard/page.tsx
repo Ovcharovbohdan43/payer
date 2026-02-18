@@ -33,9 +33,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-[#0B0F14]">
-      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+      <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
         {/* KPI Cards */}
-        <div className="mb-8 flex gap-4 overflow-x-auto pb-2 sm:overflow-visible sm:pb-0">
+        <div className="-mx-4 mb-6 flex gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:mb-8 sm:overflow-visible sm:px-0 sm:pb-0">
           <KpiCard
             label="Revenue this month"
             value={formatAmount(stats.paidThisMonthCents, currency)}
@@ -60,10 +60,10 @@ export default async function DashboardPage() {
         </div>
 
         {/* Create Invoice CTA */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Button
             asChild
-            className="h-14 w-full rounded-[20px] bg-[#3B82F6] text-base font-semibold shadow-[0_0_30px_rgba(59,130,246,0.3)] transition-all hover:bg-[#2563EB] hover:shadow-[0_0_40px_rgba(59,130,246,0.4)] sm:h-16"
+            className="h-12 w-full rounded-[16px] bg-[#3B82F6] text-base font-semibold shadow-[0_0_30px_rgba(59,130,246,0.3)] transition-all hover:bg-[#2563EB] hover:shadow-[0_0_40px_rgba(59,130,246,0.4)] sm:h-16 sm:rounded-[20px]"
           >
             <Link href="/invoices/new" className="flex items-center justify-center gap-2">
               <Plus className="size-6" />
@@ -76,7 +76,7 @@ export default async function DashboardPage() {
         {!hasInvoices ? (
           <EmptyState />
         ) : (
-          <div className="grid gap-8 lg:grid-cols-5">
+          <div className="grid gap-6 sm:gap-8 lg:grid-cols-5">
             <div className="lg:col-span-3">
               <RecentInvoices invoices={invoices} baseUrl={BASE_URL} />
             </div>
@@ -113,24 +113,24 @@ function KpiCard({
   return (
     <Link
       href={href}
-      className={`group min-w-[200px] flex-1 rounded-[20px] border border-white/5 bg-gradient-to-br ${gradient} p-6 backdrop-blur transition-all duration-300 hover:border-white/10 ${glowColors[glow]} sm:min-w-0`}
+      className={`group min-w-[140px] shrink-0 flex-1 rounded-[16px] border border-white/5 bg-gradient-to-br ${gradient} p-4 backdrop-blur transition-all duration-300 hover:border-white/10 sm:min-w-0 sm:shrink sm:rounded-[20px] sm:p-6 ${glowColors[glow]}`}
     >
-      <p className="text-sm font-medium text-muted-foreground">{label}</p>
-      <p className="mt-2 text-3xl font-bold tabular-nums sm:text-4xl">{value}</p>
+      <p className="text-xs font-medium text-muted-foreground sm:text-sm">{label}</p>
+      <p className="mt-1 text-2xl font-bold tabular-nums sm:mt-2 sm:text-4xl">{value}</p>
     </Link>
   );
 }
 
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center rounded-[20px] border border-dashed border-white/10 bg-[#121821]/40 px-8 py-16 text-center">
-      <p className="text-lg font-medium">Create your first invoice in 15 seconds</p>
+    <div className="flex flex-col items-center justify-center rounded-[16px] border border-dashed border-white/10 bg-[#121821]/40 px-6 py-12 text-center sm:rounded-[20px] sm:px-8 sm:py-16">
+      <p className="text-base font-medium sm:text-lg">Create your first invoice in 15 seconds</p>
       <p className="mt-1 text-sm text-muted-foreground">
         Add a client, amount, and send a payment link.
       </p>
       <Button
         asChild
-        className="mt-6 h-12 rounded-xl bg-[#3B82F6] px-8 font-semibold"
+        className="mt-4 h-11 w-full rounded-xl bg-[#3B82F6] font-semibold sm:mt-6 sm:h-12 sm:w-auto sm:px-8"
       >
         <Link href="/invoices/new">Create invoice</Link>
       </Button>

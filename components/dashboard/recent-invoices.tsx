@@ -30,8 +30,8 @@ export function RecentInvoices({ invoices, baseUrl }: Props) {
   if (recent.length === 0) return null;
 
   return (
-    <section className="rounded-[20px] border border-white/5 bg-[#121821]/80 p-6 backdrop-blur">
-      <h2 className="mb-4 text-base font-semibold">Recent invoices</h2>
+    <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
+      <h2 className="mb-3 text-sm font-semibold sm:mb-4 sm:text-base">Recent invoices</h2>
       <ul className="space-y-2">
         {recent.map((inv) => (
           <RecentInvoiceRow key={inv.id} invoice={inv} baseUrl={baseUrl} />
@@ -72,11 +72,11 @@ function RecentInvoiceRow({ invoice, baseUrl }: { invoice: InvoiceRow; baseUrl: 
   };
 
   return (
-    <li className="group flex items-center justify-between gap-3 rounded-xl border border-white/5 bg-white/[0.02] p-3 transition-all hover:bg-white/5">
+    <li className="group flex items-center justify-between gap-2 rounded-xl border border-white/5 bg-white/[0.02] p-3 transition-all hover:bg-white/5 sm:gap-3">
       <Link href={`/invoices/${invoice.id}`} className="min-w-0 flex-1">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap sm:gap-3">
           <span className="font-medium truncate">{invoice.client_name}</span>
-          <span className="text-lg font-semibold tabular-nums text-foreground">
+          <span className="text-base font-semibold tabular-nums text-foreground sm:text-lg">
             {formatAmount(invoice.amount_cents, invoice.currency)}
           </span>
           <span
@@ -88,7 +88,7 @@ function RecentInvoiceRow({ invoice, baseUrl }: { invoice: InvoiceRow; baseUrl: 
           </span>
         </div>
       </Link>
-      <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+      <div className="flex shrink-0 items-center gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
         <Button
           variant="ghost"
           size="icon-sm"

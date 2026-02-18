@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, FileText, Users, Settings, Bell } from "lucide-react";
 import { signOut } from "@/app/login/actions";
+import { MobileNav } from "./mobile-nav";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -91,7 +92,8 @@ export function AppShell({ children, businessName }: AppShellProps) {
           </div>
         </header>
 
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 pb-20 md:pb-0">{children}</main>
+        <MobileNav />
       </div>
     </div>
   );

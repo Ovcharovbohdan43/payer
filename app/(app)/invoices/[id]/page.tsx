@@ -34,8 +34,8 @@ export default async function InvoiceDetailPage({
 
   return (
     <div className="min-h-screen bg-[#0B0F14]">
-      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
-        <div className="mb-6">
+      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
+        <div className="mb-4 sm:mb-6">
           <Button variant="ghost" size="sm" asChild>
             <Link href="/invoices" className="text-muted-foreground hover:text-foreground">
               ← Invoices
@@ -51,7 +51,7 @@ export default async function InvoiceDetailPage({
               >
                 {STATUS_LABELS[status] ?? status}
               </span>
-              <h1 className="mt-3 text-3xl font-bold tabular-nums">
+              <h1 className="mt-2 text-2xl font-bold tabular-nums sm:mt-3 sm:text-3xl">
                 {formatAmount(invoice.amount_cents, invoice.currency)}
               </h1>
               <p className="mt-1 text-muted-foreground">
@@ -78,7 +78,7 @@ export default async function InvoiceDetailPage({
           />
 
           {invoice.paid_at && (
-            <section className="rounded-[20px] border border-white/5 bg-[#121821]/80 p-6 backdrop-blur">
+            <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
               <h2 className="text-sm font-medium text-muted-foreground">Payment</h2>
               <p className="mt-1 text-sm">
                 Paid{" "}
@@ -123,8 +123,8 @@ function Timeline({
   if (steps.length === 0) return null;
 
   return (
-    <section className="rounded-[20px] border border-white/5 bg-[#121821]/80 p-6 backdrop-blur">
-      <h2 className="mb-3 text-sm font-medium text-muted-foreground">Timeline</h2>
+    <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
+      <h2 className="mb-2 text-sm font-medium text-muted-foreground sm:mb-3">Timeline</h2>
       <ul className="space-y-3">
         {steps.map((step, i) => (
           <li key={i} className="flex items-center gap-3 text-sm">

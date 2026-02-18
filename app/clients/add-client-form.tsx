@@ -15,8 +15,8 @@ export function AddClientForm() {
   );
 
   return (
-    <form action={formAction} className="flex flex-col gap-3 rounded-[20px] border border-white/5 bg-[#121821]/80 p-6 sm:flex-row sm:items-end sm:gap-4">
-      <div className="grid flex-1 gap-2 sm:grid-cols-3">
+    <form action={formAction} className="flex flex-col gap-3 rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 sm:rounded-[20px] sm:flex-row sm:items-end sm:gap-4 sm:p-6">
+      <div className="grid flex-1 grid-cols-1 gap-2 sm:grid-cols-3">
         <div className="space-y-1.5">
           <Label htmlFor="name">Name</Label>
           <Input id="name" name="name" placeholder="Client name" required disabled={isPending} className="h-10" />
@@ -30,7 +30,7 @@ export function AddClientForm() {
           <Input id="phone" name="phone" type="tel" placeholder="+1 234 567 8900" disabled={isPending} className="h-10" />
         </div>
       </div>
-      <Button type="submit" disabled={isPending} className="h-10 min-w-[120px]">
+      <Button type="submit" disabled={isPending} className="h-10 w-full min-w-0 sm:min-w-[120px] sm:w-auto">
         {isPending ? "Adding…" : "Add client"}
       </Button>
       {state?.error && <p className="text-sm text-destructive sm:col-span-2">{state.error}</p>}
