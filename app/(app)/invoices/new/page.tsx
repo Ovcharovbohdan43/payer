@@ -15,14 +15,13 @@ export default async function NewInvoicePage() {
   const [profile, clients] = await Promise.all([
     supabase
       .from("profiles")
-      .select("default_currency, show_vat_fields")
+      .select("default_currency")
       .eq("id", user.id)
       .single(),
     listClients(),
   ]);
 
   const defaultCurrency = profile?.data?.default_currency ?? "USD";
-  const showVatFields = profile?.data?.show_vat_fields ?? false;
 
   return (
     <div className="min-h-screen bg-[#0B0F14]">
@@ -35,11 +34,7 @@ export default async function NewInvoicePage() {
           </Button>
         </div>
         <h1 className="mb-4 text-lg font-semibold sm:mb-6 sm:text-xl">Create invoice</h1>
-        <NewInvoiceForm
-          defaultCurrency={defaultCurrency}
-          showVatFields={showVatFields}
-          clients={clients}
-        />
+        <NewInvoiceForm defaultCurrency={defaultCurrency} clients={clients} />
       </div>
     </div>
   );

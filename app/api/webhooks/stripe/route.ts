@@ -31,6 +31,37 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: message }, { status: 400 });
   }
 
+  const supabase = createAdminClient();
+
+  if (event.type === "payout.paid") {
+    const accountId = event.account;
+    if (!accountId || typeof accountId !== "string") {
+      return NextResponse.json({ received: true });
+    }
+    const payout = event.data.object as Stripe.Payout;
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("stripe_connect_account_id", accountId)
+      .single();
+    if (!profile) return NextResponse.json({ received: true });
+
+    const arrivalDate = payout.arrival_date
+      ? new Date(payout.arrival_date * 1000).toISOString().slice(0, 10)
+      : null;
+
+    await supabase.from("payouts").insert({
+      user_id: profile.id,
+      stripe_payout_id: payout.id,
+      amount_cents: payout.amount,
+      currency: (payout.currency ?? "usd").toUpperCase(),
+      status: "paid",
+      arrival_date: arrivalDate,
+    });
+
+    return NextResponse.json({ received: true });
+  }
+
   if (event.type !== "checkout.session.completed") {
     return NextResponse.json({ received: true });
   }
@@ -41,7 +72,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ received: true });
   }
 
-  const supabase = createAdminClient();
   const { data: invoice, error: fetchError } = await supabase
     .from("invoices")
     .select("id, paid_at")

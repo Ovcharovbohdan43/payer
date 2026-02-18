@@ -36,3 +36,11 @@ export function getPublicInvoiceUrl(publicId: string, baseUrl: string): string {
 export function amountToCents(amountMajor: number): number {
   return Math.round(amountMajor * 100);
 }
+
+/** Total amount to display/charge. invoices.amount_cents already stores the final total (with VAT when vat_included=false). */
+export function getDisplayAmountCents(
+  amountCents: number,
+  _vatIncluded?: boolean | null
+): number {
+  return amountCents;
+}

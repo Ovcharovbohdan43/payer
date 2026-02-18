@@ -36,7 +36,6 @@ export const onboardingSchema = z.object({
   default_currency: z.string().length(3).toUpperCase(),
   country: z.string().max(100).optional(),
   timezone: z.string().max(50).optional(),
-  show_vat_fields: z.boolean(),
 });
 
 export const clientSchema = z.object({
@@ -51,14 +50,31 @@ export const amountMajorSchema = z
   .nonnegative("Amount must be positive")
   .finite();
 
+export const lineItemSchema = z.object({
+  description: z.string().min(1, "Description is required").max(1000),
+  amount: amountMajorSchema,
+});
+
 export const invoiceCreateSchema = z.object({
   clientId: z.string().uuid().optional().or(z.literal("")),
   clientName: z.string().min(1, "Client name is required").max(200),
   clientEmail: z.string().max(255).optional().or(z.literal("")),
-  description: z.string().min(1, "Description is required").max(1000),
-  amount: amountMajorSchema,
   currency: z.string().length(3).toUpperCase(),
   dueDate: z.string().optional().or(z.literal("")),
   notes: z.string().max(2000).optional().or(z.literal("")),
-  vatAmount: z.number().nonnegative().optional(),
+  vatIncluded: z
+    .string()
+    .optional()
+    .transform((v) => v === "true"),
+  lineItems: z
+    .string()
+    .transform((s) => {
+      try {
+        const arr = JSON.parse(s || "[]");
+        return Array.isArray(arr) ? arr : [];
+      } catch {
+        return [];
+      }
+    })
+    .pipe(z.array(lineItemSchema).min(1, "Add at least one service")),
 });

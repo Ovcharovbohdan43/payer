@@ -4,6 +4,24 @@ All notable changes to the Payer project.
 
 ## [Unreleased]
 
+### [2025-02-20] – Multiple services per invoice
+
+- **Form:** Create invoice with multiple line items (services). Add/remove rows via “Add service” and trash icon. Each row: description + amount.
+- **Validation:** `invoiceCreateSchema` requires `lineItems` array (min 1). Legacy `description`/`amount` removed.
+- **Create action:** Inserts `invoice_line_items` per row; `invoices.amount_cents` = sum (with VAT when `vat_included=false`).
+- **PDF:** Renders each line item in the table; VAT and Total rows unchanged. Falls back to single “Invoice payment” row when `lineItems` empty (legacy).
+- **Public page & detail:** Display line items with description and amount instead of single description.
+- **Migration:** `20250220000001_add_invoice_line_items.sql` — table `invoice_line_items`, migrates existing invoices, updates `get_public_invoice` RPC to return `line_items`.
+
+### [2025-02-19] – VAT / tax support
+
+- **Settings:** Toggle "VAT included in price" — when checked, entered amount is gross; when unchecked, VAT 20% is added on top.
+- **Create invoice:** When VAT included: shows "VAT (20%) is included in the price." When not: shows live preview "+ VAT (20%): X → Total: Y".
+- **PDF:** VAT row and Total row when vat_included is set. vat_included=true: Subtotal (net), VAT (20% incl.), Total. vat_included=false: Subtotal, VAT (20%), Total. Legacy invoices (vat_included null) render without VAT row.
+- **Checkout:** Charges total with VAT when vat_included=false.
+- **Display:** Invoice list, detail, public page, dashboard stats, activity use getDisplayAmountCents (total with VAT when applicable).
+- **Migration:** `20250219000001_add_invoice_vat.sql` adds vat_included column, updates get_public_invoice.
+
 ### [2025-02-18] – Invoice PDF generator improvements
 
 - **PDF layout:** Professional invoice layout with header (business name, INVOICE, invoice number, date), Bill to (client name, email), items table (description with word wrap, amount), due date, status, notes, footer.

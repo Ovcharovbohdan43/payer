@@ -1,19 +1,28 @@
 import { createClient } from "@/lib/supabase/server";
-import { formatAmount } from "@/lib/invoices/utils";
+import { formatAmount, getDisplayAmountCents } from "@/lib/invoices/utils";
 import { notFound } from "next/navigation";
 import { PayButton } from "./pay-button";
 import { DownloadPdfLink } from "./download-pdf-placeholder";
+import { InvoiceQrCode } from "@/components/invoice-qr-code";
 import { CheckCircle2 } from "lucide-react";
+
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+
+export type PublicInvoiceLineItem = {
+  description: string;
+  amount_cents: number;
+};
 
 export type PublicInvoice = {
   business_name: string;
   invoice_number: string;
   amount_cents: number;
   currency: string;
-  description: string | null;
   due_date: string | null;
   status: string;
   client_name: string;
+  vat_included: boolean | null;
+  line_items: PublicInvoiceLineItem[];
 };
 
 async function getPublicInvoice(publicId: string): Promise<PublicInvoice | null> {
@@ -74,7 +83,13 @@ export default async function PublicInvoicePage({
                     {invoice.business_name}
                   </p>
                   <p className="mt-1 text-xl font-semibold tabular-nums">
-                    {formatAmount(invoice.amount_cents, invoice.currency)}
+                    {formatAmount(
+                      getDisplayAmountCents(
+                        Number(invoice.amount_cents),
+                        invoice.vat_included
+                      ),
+                      invoice.currency
+                    )}
                   </p>
                 </div>
                 <div className="mt-8 w-full">
@@ -84,16 +99,38 @@ export default async function PublicInvoicePage({
             </>
           ) : (
             <>
-              <p className="text-sm font-medium text-muted-foreground">
-                {invoice.business_name}
-              </p>
-              <h1 className="mt-2 text-3xl font-bold tabular-nums">
-                {formatAmount(invoice.amount_cents, invoice.currency)}
-              </h1>
-              {invoice.description && (
-                <p className="mt-3 text-sm text-muted-foreground">
-                  {invoice.description}
-                </p>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {invoice.business_name}
+                  </p>
+                  <h1 className="mt-2 text-3xl font-bold tabular-nums">
+                    {formatAmount(
+                      getDisplayAmountCents(
+                        Number(invoice.amount_cents),
+                        invoice.vat_included
+                      ),
+                      invoice.currency
+                    )}
+                  </h1>
+                </div>
+                <InvoiceQrCode
+                  url={`${BASE_URL}/i/${publicId}`}
+                  size={100}
+                  label="Scan to pay"
+                />
+              </div>
+              {invoice.line_items?.length > 0 && (
+                <ul className="mt-3 space-y-1 text-sm text-muted-foreground">
+                  {invoice.line_items.map((item, idx) => (
+                    <li key={idx} className="flex justify-between gap-2">
+                      <span>{item.description}</span>
+                      <span className="tabular-nums">
+                        {formatAmount(Number(item.amount_cents), invoice.currency)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
               )}
               {invoice.due_date && (
                 <p className="mt-1 text-sm text-muted-foreground">

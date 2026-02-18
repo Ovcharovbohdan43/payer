@@ -10,7 +10,6 @@ export async function updateProfileAction(formData: FormData) {
     default_currency: formData.get("default_currency"),
     country: formData.get("country") ?? "",
     timezone: formData.get("timezone") ?? "UTC",
-    show_vat_fields: formData.get("show_vat_fields") === "on",
   };
   const parsed = onboardingSchema.safeParse(raw);
   if (!parsed.success) {
@@ -28,6 +27,24 @@ export async function updateProfileAction(formData: FormData) {
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not signed in" };
 
+  const { data: currentProfile } = await supabase
+    .from("profiles")
+    .select("default_currency")
+    .eq("id", user.id)
+    .single();
+
+  const oldCurrency = currentProfile?.default_currency;
+  const newCurrency = parsed.data.default_currency;
+  if (oldCurrency && newCurrency && oldCurrency !== newCurrency) {
+    await supabase.from("audit_logs").insert({
+      user_id: user.id,
+      entity_type: "profile",
+      entity_id: user.id,
+      action: "currency_changed",
+      meta: { from: oldCurrency, to: newCurrency },
+    });
+  }
+
   const { error } = await supabase
     .from("profiles")
     .update({
@@ -35,7 +52,6 @@ export async function updateProfileAction(formData: FormData) {
       default_currency: parsed.data.default_currency,
       country: parsed.data.country || null,
       timezone: parsed.data.timezone || "UTC",
-      show_vat_fields: parsed.data.show_vat_fields,
       updated_at: new Date().toISOString(),
     })
     .eq("id", user.id);
@@ -43,6 +59,7 @@ export async function updateProfileAction(formData: FormData) {
   if (error) return { error: error.message };
   revalidatePath("/settings");
   revalidatePath("/dashboard");
+  revalidatePath("/invoices");
   revalidatePath("/invoices/new");
   return {};
 }

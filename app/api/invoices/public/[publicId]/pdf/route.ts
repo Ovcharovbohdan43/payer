@@ -2,22 +2,25 @@ import { createClient } from "@/lib/supabase/server";
 import { generateInvoicePdf } from "@/lib/pdf/invoice-pdf";
 import { NextResponse } from "next/server";
 
-async function getPublicInvoice(publicId: string) {
+type PublicInvoiceRpc = {
+  business_name: string;
+  invoice_number: string;
+  amount_cents: number;
+  currency: string;
+  due_date: string | null;
+  status: string;
+  client_name: string;
+  vat_included: boolean | null;
+  line_items: { description: string; amount_cents: number }[];
+};
+
+async function getPublicInvoice(publicId: string): Promise<PublicInvoiceRpc | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .rpc("get_public_invoice", { p_public_id: publicId })
     .maybeSingle();
   if (error || !data) return null;
-  return data as {
-    business_name: string;
-    invoice_number: string;
-    amount_cents: number;
-    currency: string;
-    description: string | null;
-    due_date: string | null;
-    status: string;
-    client_name: string;
-  };
+  return data as PublicInvoiceRpc;
 }
 
 export async function GET(
@@ -30,15 +33,21 @@ export async function GET(
     return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
   }
 
+  const lineItems = (invoice.line_items ?? []).map((i: { description: string; amount_cents: number }) => ({
+    description: i.description,
+    amountCents: Number(i.amount_cents),
+  }));
+
   const pdfBytes = await generateInvoicePdf({
     businessName: invoice.business_name,
     invoiceNumber: invoice.invoice_number,
     amountCents: Number(invoice.amount_cents),
     currency: invoice.currency,
-    description: invoice.description,
+    lineItems,
     dueDate: invoice.due_date,
     clientName: invoice.client_name,
     status: invoice.status,
+    vatIncluded: invoice.vat_included ?? undefined,
   });
 
   return new NextResponse(Buffer.from(pdfBytes), {

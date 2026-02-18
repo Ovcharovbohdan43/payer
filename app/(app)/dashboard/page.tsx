@@ -26,16 +26,46 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .single();
 
+  const { data: currencyChanges } = await supabase
+    .from("audit_logs")
+    .select("created_at, meta")
+    .eq("user_id", user.id)
+    .eq("entity_type", "profile")
+    .eq("action", "currency_changed")
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  const { data: payouts } = await supabase
+    .from("payouts")
+    .select("amount_cents, currency, created_at, arrival_date")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(10);
+
+  const { data: allPayouts } = await supabase
+    .from("payouts")
+    .select("amount_cents, currency")
+    .eq("user_id", user.id);
+
+  const totalPaidOutCents = (allPayouts ?? [])
+    .filter((p) => p.currency === (profile?.default_currency ?? "USD"))
+    .reduce((s, p) => s + Number(p.amount_cents), 0);
+
   const currency = profile?.default_currency ?? "USD";
   const stats = computeDashboardStats(invoices, currency);
-  const activity = buildActivityFromInvoices(invoices, currency);
+  const activity = buildActivityFromInvoices(
+    invoices,
+    currency,
+    currencyChanges ?? [],
+    payouts ?? []
+  );
   const hasInvoices = invoices.length > 0;
 
   return (
     <div className="min-h-screen min-w-0 overflow-x-hidden bg-[#0B0F14]">
       <div className="mx-auto max-w-4xl px-3 py-3 sm:px-6 sm:py-8 min-[375px]:px-4 min-[375px]:py-4">
-        {/* KPI Cards — no horizontal scroll: grid on mobile, flex on desktop */}
-        <div className="mb-4 grid grid-cols-3 gap-2 sm:mb-8 sm:flex sm:grid-cols-none sm:gap-4">
+        {/* KPI Cards */}
+        <div className="mb-4 grid grid-cols-2 gap-2 sm:mb-8 sm:grid-cols-4 sm:gap-4">
           <KpiCard
             label="Revenue this month"
             value={formatAmount(stats.paidThisMonthCents, currency)}
@@ -57,6 +87,13 @@ export default async function DashboardPage() {
             gradient="from-red-500/10 via-[#121821] to-[#121821]"
             glow="red"
           />
+          <KpiCard
+            label="Paid out"
+            value={formatAmount(totalPaidOutCents, currency)}
+            href="/settings"
+            gradient="from-violet-500/10 via-[#121821] to-[#121821]"
+            glow="violet"
+          />
         </div>
 
         {/* Create Invoice CTA */}
@@ -74,7 +111,16 @@ export default async function DashboardPage() {
 
         {/* Empty state or content */}
         {!hasInvoices ? (
-          <EmptyState />
+          <div className="grid gap-4 sm:gap-8 lg:grid-cols-5">
+            <div className="lg:col-span-3">
+              <EmptyState />
+            </div>
+            {activity.length > 0 && (
+              <div className="lg:col-span-2">
+                <ActivityFeed items={activity} />
+              </div>
+            )}
+          </div>
         ) : (
           <div className="grid gap-4 sm:gap-8 lg:grid-cols-5">
             <div className="lg:col-span-3">
@@ -102,12 +148,13 @@ function KpiCard({
   value: string;
   href: string;
   gradient: string;
-  glow: "emerald" | "blue" | "red";
+  glow: "emerald" | "blue" | "red" | "violet";
 }) {
   const glowColors = {
     emerald: "group-hover:shadow-[0_0_30px_rgba(16,185,129,0.2)]",
     blue: "group-hover:shadow-[0_0_30px_rgba(59,130,246,0.2)]",
     red: "group-hover:shadow-[0_0_30px_rgba(239,68,68,0.2)]",
+    violet: "group-hover:shadow-[0_0_30px_rgba(139,92,246,0.2)]",
   };
 
   return (

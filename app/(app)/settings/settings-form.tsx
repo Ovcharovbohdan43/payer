@@ -3,11 +3,17 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useActionState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useActionState, useEffect, useState } from "react";
 import { updateProfileAction } from "./actions";
-import { cn } from "@/lib/utils";
+import { ConnectStripeButton } from "./connect-stripe-button";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 const CURRENCIES = ["USD", "EUR", "GBP"];
 
@@ -16,11 +22,12 @@ type Profile = {
   default_currency: string;
   country: string | null;
   timezone: string | null;
-  show_vat_fields: boolean;
+  stripe_connect_account_id: string | null;
 };
 
 export function SettingsForm({ profile }: { profile: Profile }) {
   const router = useRouter();
+  const [currency, setCurrency] = useState(profile.default_currency);
   const [state, formAction, isPending] = useActionState(
     async (_prev: { error?: string } | null, formData: FormData) => {
       return await updateProfileAction(formData);
@@ -35,7 +42,7 @@ export function SettingsForm({ profile }: { profile: Profile }) {
   }, [state, router]);
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form action={formAction} className="space-y-6" key={profile.default_currency}>
       <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
         <h2 className="mb-4 text-base font-semibold">Business profile</h2>
         <div className="space-y-4">
@@ -53,23 +60,29 @@ export function SettingsForm({ profile }: { profile: Profile }) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="default_currency">Default currency</Label>
-            <select
-              id="default_currency"
-              name="default_currency"
-              required
+            <p className="text-xs text-muted-foreground">
+              Changing currency resets dashboard counters (revenue, money owed, overdue) — only invoices in the selected currency are counted.
+            </p>
+            <Select
+              value={currency}
+              onValueChange={setCurrency}
               disabled={isPending}
-              defaultValue={profile.default_currency}
-              className={cn(
-                "flex h-10 w-full rounded-lg border border-white/10 bg-[#121821]/50 px-3 py-2 text-sm",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3B82F6]/50"
-              )}
             >
-              {CURRENCIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger
+                id="default_currency"
+                className="h-10 w-full rounded-lg border-white/10 bg-[#121821]/50"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="border-white/10 bg-[#121821] text-white [&_[data-slot=select-item]]:focus:bg-white/10 [&_[data-slot=select-item][data-highlighted]]:bg-white/10">
+                {CURRENCIES.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <input type="hidden" name="default_currency" value={currency} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="country">Country (optional)</Label>
@@ -93,19 +106,6 @@ export function SettingsForm({ profile }: { profile: Profile }) {
               className="h-10"
             />
           </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="show_vat_fields"
-              name="show_vat_fields"
-              defaultChecked={profile.show_vat_fields}
-              disabled={isPending}
-              className="h-4 w-4 rounded border-white/20 bg-[#121821]"
-            />
-            <Label htmlFor="show_vat_fields" className="cursor-pointer font-normal">
-              Show VAT / tax fields on invoices
-            </Label>
-          </div>
         </div>
       </section>
 
@@ -123,10 +123,18 @@ export function SettingsForm({ profile }: { profile: Profile }) {
       </Button>
 
       <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
-        <h2 className="mb-2 text-base font-semibold">Billing</h2>
-        <p className="text-sm text-muted-foreground">
-          Billing portal and subscription management coming soon.
+        <h2 className="mb-2 text-base font-semibold">Payments</h2>
+        <p className="mb-3 text-sm text-muted-foreground">
+          Connect Stripe to receive payments directly. Payer does not store bank details.
         </p>
+        {profile.stripe_connect_account_id ? (
+          <div className="flex items-center gap-2 text-sm text-emerald-500">
+            <span className="size-2 rounded-full bg-emerald-500" />
+            Stripe connected
+          </div>
+        ) : (
+          <ConnectStripeButton />
+        )}
       </section>
     </form>
   );
