@@ -3,7 +3,12 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { InvoiceRow } from "./actions";
-import { formatAmount, STATUS_LABELS, type InvoiceStatus } from "@/lib/invoices/utils";
+import {
+  formatAmount,
+  getDisplayAmountCents,
+  STATUS_LABELS,
+  type InvoiceStatus,
+} from "@/lib/invoices/utils";
 import { useState, useMemo } from "react";
 
 const STATUS_VARIANTS: Record<InvoiceStatus, string> = {
@@ -112,7 +117,10 @@ export function InvoiceList({
                 </div>
                 <div className="flex items-center justify-between gap-2 sm:justify-end sm:gap-3">
                   <span className="text-sm font-medium tabular-nums">
-                    {formatAmount(inv.amount_cents, inv.currency)}
+                    {formatAmount(
+                      getDisplayAmountCents(inv.amount_cents, inv.vat_included),
+                      inv.currency
+                    )}
                   </span>
                   <span
                     className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${

@@ -4,8 +4,14 @@ import { getPublicInvoiceUrl } from "@/lib/invoices/utils";
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { formatAmount, STATUS_LABELS, type InvoiceStatus } from "@/lib/invoices/utils";
-import { InvoiceDetailClient } from "@/app/invoices/[id]/invoice-detail-client";
+import {
+  formatAmount,
+  getDisplayAmountCents,
+  STATUS_LABELS,
+  type InvoiceStatus,
+} from "@/lib/invoices/utils";
+import { InvoiceDetailClient } from "./invoice-detail-client";
+import { InvoiceQrCode } from "@/components/invoice-qr-code";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
@@ -45,24 +51,41 @@ export default async function InvoiceDetailPage({
 
         <div className="space-y-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
+            <div className="min-w-0 flex-1">
               <span
                 className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${statusVariant}`}
               >
                 {STATUS_LABELS[status] ?? status}
               </span>
               <h1 className="mt-2 text-2xl font-bold tabular-nums sm:mt-3 sm:text-3xl">
-                {formatAmount(invoice.amount_cents, invoice.currency)}
+                {formatAmount(
+                  getDisplayAmountCents(invoice.amount_cents, invoice.vat_included),
+                  invoice.currency
+                )}
               </h1>
               <p className="mt-1 text-muted-foreground">
                 {invoice.number} · {invoice.client_name}
               </p>
             </div>
+            {status !== "paid" && status !== "void" && (
+              <InvoiceQrCode url={getPublicInvoiceUrl(invoice.public_id, BASE_URL)} />
+            )}
           </div>
 
-          {invoice.description && (
+          {invoice.line_items && invoice.line_items.length > 0 ? (
+            <ul className="space-y-1 text-sm text-muted-foreground">
+              {invoice.line_items.map((item, idx) => (
+                <li key={idx} className="flex justify-between gap-4">
+                  <span>{item.description}</span>
+                  <span className="tabular-nums">
+                    {formatAmount(item.amount_cents, invoice.currency)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : invoice.description ? (
             <p className="text-sm text-muted-foreground">{invoice.description}</p>
-          )}
+          ) : null}
           {invoice.notes && (
             <p className="text-sm text-muted-foreground">Notes: {invoice.notes}</p>
           )}

@@ -1,4 +1,5 @@
 import type { InvoiceRow } from "@/app/invoices/actions";
+import { getDisplayAmountCents } from "@/lib/invoices/utils";
 
 export type DashboardStats = {
   unpaidSumCents: number;
@@ -31,24 +32,29 @@ export function computeDashboardStats(
     const isUnpaid = !isPaid && !isVoid;
     const duePast = inv.due_date && inv.due_date < today;
 
+    const displayCents = getDisplayAmountCents(
+      Number(inv.amount_cents),
+      inv.vat_included
+    );
+
     if (isUnpaid) {
       unpaidCount++;
       if (inv.currency === defaultCurrency) {
-        unpaidSumCents += Number(inv.amount_cents);
+        unpaidSumCents += displayCents;
       }
     }
 
     if (isPaid && inv.paid_at && inv.paid_at >= thisMonthStart.toISOString()) {
       paidThisMonthCount++;
       if (inv.currency === defaultCurrency) {
-        paidThisMonthCents += Number(inv.amount_cents);
+        paidThisMonthCents += displayCents;
       }
     }
 
     if (inv.status === "overdue" || (isUnpaid && duePast)) {
       overdueCount++;
       if (inv.currency === defaultCurrency) {
-        overdueSumCents += Number(inv.amount_cents);
+        overdueSumCents += displayCents;
       }
     }
   }

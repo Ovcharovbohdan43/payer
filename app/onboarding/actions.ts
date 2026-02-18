@@ -10,7 +10,6 @@ export async function submitOnboarding(formData: FormData) {
     default_currency: formData.get("default_currency") ?? "USD",
     country: formData.get("country") || null,
     timezone: formData.get("timezone") || null,
-    show_vat_fields: formData.get("show_vat_fields") === "on",
   };
 
   const parsed = onboardingSchema.safeParse(raw);
@@ -37,7 +36,6 @@ export async function submitOnboarding(formData: FormData) {
         default_currency: parsed.data.default_currency,
         country: parsed.data.country ?? undefined,
         timezone: parsed.data.timezone ?? "UTC",
-        show_vat_fields: parsed.data.show_vat_fields,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "id" }

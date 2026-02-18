@@ -27,18 +27,25 @@ export async function GET(
     .eq("id", user.id)
     .single();
 
+  const lineItems =
+    invoice.line_items?.map((i) => ({
+      description: i.description,
+      amountCents: i.amount_cents,
+    })) ?? [];
+
   const pdfBytes = await generateInvoicePdf({
     businessName: profile?.business_name ?? "Business",
     invoiceNumber: invoice.number,
     amountCents: Number(invoice.amount_cents),
     currency: invoice.currency,
-    description: invoice.description,
+    lineItems,
     dueDate: invoice.due_date,
     clientName: invoice.client_name,
     clientEmail: invoice.client_email,
     status: invoice.status,
     createdAt: invoice.created_at,
     notes: invoice.notes,
+    vatIncluded: invoice.vat_included ?? undefined,
   });
 
   return new NextResponse(Buffer.from(pdfBytes), {

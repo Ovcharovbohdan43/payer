@@ -8,6 +8,11 @@ import { redirect } from "next/navigation";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
+export type InvoiceLineItem = {
+  description: string;
+  amount_cents: number;
+};
+
 export type InvoiceRow = {
   id: string;
   number: string;
@@ -26,6 +31,8 @@ export type InvoiceRow = {
   due_date: string | null;
   notes: string | null;
   stripe_payment_intent_id: string | null;
+  vat_included: boolean | null;
+  line_items?: InvoiceLineItem[];
 };
 
 export type CreateResult =
@@ -36,24 +43,35 @@ export async function createInvoiceAction(
   formData: FormData,
   options: { markSent: boolean }
 ): Promise<CreateResult> {
-  const amountRaw = formData.get("amount");
-  const amountNum = typeof amountRaw === "string" ? parseFloat(amountRaw) : NaN;
   const raw = {
     clientId: formData.get("clientId") ?? "",
     clientName: formData.get("clientName"),
     clientEmail: formData.get("clientEmail") ?? "",
-    description: formData.get("description"),
-    amount: isNaN(amountNum) ? 0 : amountNum,
     currency: formData.get("currency") ?? "USD",
     dueDate: formData.get("dueDate") ?? "",
     notes: formData.get("notes") ?? "",
+    vatIncluded: formData.get("vatIncluded") ?? "",
+    lineItems: formData.get("lineItems") ?? "[]",
   };
   const parsed = invoiceCreateSchema.safeParse(raw);
   if (!parsed.success) {
     const first = parsed.error.flatten().fieldErrors;
     const msg =
-      first.clientName?.[0] ?? first.description?.[0] ?? first.amount?.[0] ?? "Invalid fields";
+      first.clientName?.[0] ??
+      first.lineItems?.[0] ??
+      "Add at least one service with description and amount";
     return { error: msg };
+  }
+
+  const vatIncluded = parsed.data.vatIncluded ?? false;
+  const lineItems = parsed.data.lineItems;
+  let amountCents: number;
+  if (vatIncluded) {
+    amountCents = lineItems.reduce((s, i) => s + Math.round(i.amount * 100), 0);
+  } else {
+    const subtotalCents = lineItems.reduce((s, i) => s + Math.round(i.amount * 100), 0);
+    const vatCents = Math.round(subtotalCents * 0.2);
+    amountCents = subtotalCents + vatCents;
   }
 
   const supabase = await createClient();
@@ -66,7 +84,6 @@ export async function createInvoiceAction(
   if (!number || typeof number !== "string") return { error: "Could not generate invoice number" };
 
   const publicId = crypto.randomUUID();
-  const amountCents = Math.round(parsed.data.amount * 100);
 
   const { data: invoice, error: insertError } = await supabase
     .from("invoices")
@@ -80,16 +97,30 @@ export async function createInvoiceAction(
       status: options.markSent ? "sent" : "draft",
       amount_cents: amountCents,
       currency: parsed.data.currency,
-      description: parsed.data.description,
+      description: null,
       notes: parsed.data.notes || null,
       due_date: parsed.data.dueDate || null,
       sent_at: options.markSent ? new Date().toISOString() : null,
+      vat_included: vatIncluded,
     })
     .select("id, number, public_id")
     .single();
 
   if (insertError) return { error: insertError.message };
-  if (!invoice) return { error: "Failed to create invoice" };
+  if (!invoice) return { error: "Failed to create invoice" }
+
+  const lineItemRows = lineItems.map((item, idx) => ({
+    invoice_id: invoice.id,
+    description: item.description,
+    amount_cents: Math.round(item.amount * 100),
+    sort_order: idx,
+  }));
+
+  const { error: lineItemsError } = await supabase
+    .from("invoice_line_items")
+    .insert(lineItemRows);
+
+  if (lineItemsError) return { error: lineItemsError.message };
 
   revalidatePath("/invoices");
   revalidatePath("/dashboard");
@@ -109,7 +140,7 @@ export async function listInvoices(): Promise<InvoiceRow[]> {
   const { data } = await supabase
     .from("invoices")
     .select(
-      "id, number, public_id, status, client_name, client_email, amount_cents, currency, description, created_at, sent_at, viewed_at, paid_at, voided_at, due_date, notes, stripe_payment_intent_id"
+      "id, number, public_id, status, client_name, client_email, amount_cents, currency, description, created_at, sent_at, viewed_at, paid_at, voided_at, due_date, notes, stripe_payment_intent_id, vat_included"
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
@@ -124,16 +155,30 @@ export async function getInvoiceById(id: string): Promise<InvoiceRow | null> {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data } = await supabase
+  const { data: invoice } = await supabase
     .from("invoices")
     .select(
-      "id, number, public_id, status, client_name, client_email, amount_cents, currency, description, created_at, sent_at, viewed_at, paid_at, voided_at, due_date, notes, stripe_payment_intent_id"
+      "id, number, public_id, status, client_name, client_email, amount_cents, currency, description, created_at, sent_at, viewed_at, paid_at, voided_at, due_date, notes, stripe_payment_intent_id, vat_included"
     )
     .eq("id", id)
     .eq("user_id", user.id)
     .single();
 
-  return data as InvoiceRow | null;
+  if (!invoice) return null;
+
+  const { data: items } = await supabase
+    .from("invoice_line_items")
+    .select("description, amount_cents")
+    .eq("invoice_id", id)
+    .order("sort_order", { ascending: true });
+
+  return {
+    ...invoice,
+    line_items: (items ?? []).map((i) => ({
+      description: i.description,
+      amount_cents: Number(i.amount_cents),
+    })),
+  } as InvoiceRow;
 }
 
 export async function markInvoiceSentAction(invoiceId: string) {

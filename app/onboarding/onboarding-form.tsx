@@ -69,17 +69,6 @@ export function OnboardingForm() {
           className="h-11"
         />
       </div>
-      <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          id="show_vat_fields"
-          name="show_vat_fields"
-          className="h-4 w-4 rounded border-input"
-        />
-        <Label htmlFor="show_vat_fields" className="font-normal cursor-pointer">
-          Show VAT / tax fields on invoices
-        </Label>
-      </div>
       {state?.error && (
         <p className="text-sm text-destructive">{state.error}</p>
       )}
