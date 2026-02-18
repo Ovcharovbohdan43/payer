@@ -25,3 +25,7 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Stripe CLI (downloaded binary; run npm run stripe:login)
+tools/stripe.exe
+tools/stripe-cli.zip
