@@ -4,6 +4,13 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2025-02-27] – Payment processing fee (Stripe 1.5% + fixed)
+
+- **Create invoice:** Checkbox "Include payment processing fee in invoice (1.5% + fixed)" next to VAT. When enabled, fee is added to total.
+- **Calculation:** `calcPaymentProcessingFeeCents()` — 1.5% + fixed per currency (GBP 20p, USD/EUR/other 30¢). Amount is derived so that after Stripe deduction the net equals subtotal+VAT.
+- **PDF:** Row "Payment processing fee" with amount; Total always uses canonical `amount_cents`.
+- **Migration:** `20250227000001_payment_processing_fee.sql` — `payment_processing_fee_included`, `payment_processing_fee_cents`; `get_public_invoice` returns both.
+
 ### [2025-02-25] – Login OTP (password + email code)
 
 - **Flow:** Password sign-in → 5-digit code sent by email (5 min validity) → enter code → access. Magic link unchanged (no OTP).
