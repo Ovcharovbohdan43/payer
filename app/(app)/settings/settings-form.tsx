@@ -42,9 +42,10 @@ export function SettingsForm({ profile }: { profile: Profile }) {
   }, [state, router]);
 
   return (
-    <form action={formAction} className="space-y-6" key={profile.default_currency}>
-      <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
-        <h2 className="mb-4 text-base font-semibold">Business profile</h2>
+    <div className="space-y-6" key={profile.default_currency}>
+      <form action={formAction} className="space-y-6">
+        <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
+          <h2 className="mb-4 text-base font-semibold">Business profile</h2>
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="business_name">Business name</Label>
@@ -107,20 +108,21 @@ export function SettingsForm({ profile }: { profile: Profile }) {
             />
           </div>
         </div>
-      </section>
+        </section>
 
-      {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
-      {state && !state.error && (
-        <p className="text-sm text-emerald-500">Settings saved.</p>
-      )}
+        {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
+        {state && !state.error && (
+          <p className="text-sm text-emerald-500">Settings saved.</p>
+        )}
 
-      <Button
-        type="submit"
-        disabled={isPending}
-        className="h-10 rounded-xl bg-[#3B82F6] px-6 font-semibold hover:bg-[#2563EB]"
-      >
-        {isPending ? "Saving…" : "Save changes"}
-      </Button>
+        <Button
+          type="submit"
+          disabled={isPending}
+          className="h-10 rounded-xl bg-[#3B82F6] px-6 font-semibold hover:bg-[#2563EB]"
+        >
+          {isPending ? "Saving…" : "Save changes"}
+        </Button>
+      </form>
 
       <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
         <h2 className="mb-2 text-base font-semibold">Account security</h2>
@@ -145,7 +147,7 @@ export function SettingsForm({ profile }: { profile: Profile }) {
           <ConnectStripeButton />
         )}
       </section>
-    </form>
+    </div>
   );
 }
 

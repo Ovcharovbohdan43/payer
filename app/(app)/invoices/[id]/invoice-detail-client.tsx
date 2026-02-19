@@ -198,7 +198,7 @@ export function InvoiceDetailClient({
                   }
                 });
               }}
-              className="h-4 w-4 rounded border-white/20 bg-[#121821]"
+              className="h-4 w-4 rounded border-white/20 bg-[#121821] accent-[#3B82F6]"
             />
             <Label
               htmlFor="autoRemindToggle"
