@@ -255,7 +255,7 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
             checked={vatIncluded}
             onChange={(e) => setVatIncluded(e.target.checked)}
             disabled={isPending}
-            className="h-4 w-4 rounded border-white/20 bg-[#121821]"
+            className="h-4 w-4 rounded border-white/20 bg-[#121821] accent-[#3B82F6]"
           />
           <Label
             htmlFor="vatIncluded"
@@ -316,7 +316,7 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
                     checked={autoRemind}
                     onChange={(e) => setAutoRemind(e.target.checked)}
                     disabled={isPending}
-                    className="h-4 w-4 rounded border-white/20 bg-[#121821]"
+                    className="h-4 w-4 rounded border-white/20 bg-[#121821] accent-[#3B82F6]"
                   />
                   <Label
                     htmlFor="autoRemind"
@@ -340,7 +340,7 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
                             }
                           }}
                           disabled={isPending}
-                          className="h-4 w-4 rounded border-white/20 bg-[#121821]"
+                          className="h-4 w-4 rounded border-white/20 bg-[#121821] accent-[#3B82F6]"
                         />
                         <span className="text-sm">
                           {d === 1 ? "1 day" : d === 3 ? "3 days" : "1 week"}
