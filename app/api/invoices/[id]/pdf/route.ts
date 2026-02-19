@@ -46,6 +46,7 @@ export async function GET(
     createdAt: invoice.created_at,
     notes: invoice.notes,
     vatIncluded: invoice.vat_included ?? undefined,
+    paymentProcessingFeeCents: invoice.payment_processing_fee_cents ?? undefined,
   });
 
   return new NextResponse(Buffer.from(pdfBytes), {

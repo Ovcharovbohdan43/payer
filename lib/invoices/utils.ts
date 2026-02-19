@@ -37,6 +37,22 @@ export function amountToCents(amountMajor: number): number {
   return Math.round(amountMajor * 100);
 }
 
+/** Stripe-like fee: 1.5% + fixed. Fixed in smallest unit: GBP 20p, USD 30¢, EUR 30¢. */
+const FIXED_FEE_CENTS: Record<string, number> = {
+  GBP: 20,
+  USD: 30,
+  EUR: 30,
+};
+
+export function calcPaymentProcessingFeeCents(
+  amountBeforeFeeCents: number,
+  currency: string
+): number {
+  const fixed = FIXED_FEE_CENTS[currency.toUpperCase()] ?? 30;
+  const fee = (amountBeforeFeeCents * 0.015 + fixed) / 0.985;
+  return Math.max(0, Math.ceil(fee));
+}
+
 /** Total amount to display/charge. invoices.amount_cents already stores the final total (with VAT when vat_included=false). */
 export function getDisplayAmountCents(
   amountCents: number,
