@@ -3,6 +3,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { emailSchema } from "@/lib/validations";
 import { redirect } from "next/navigation";
+import { createAndSendOtp, verifyOtp } from "@/lib/auth/login-otp";
+import {
+  isRememberedForUser,
+  setOtpPendingCookie,
+  clearOtpPendingCookie,
+  setRememberCookie,
+} from "@/lib/auth/remember-cookie";
 
 export async function signInWithMagicLink(formData: FormData) {
   const email = formData.get("email");
@@ -59,12 +66,56 @@ export async function signInWithPassword(formData: FormData) {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email: parsed.data,
     password,
   });
 
   if (error) return { error: error.message };
+  if (!data.user) return { error: "Sign-in failed" };
+
+  if (await isRememberedForUser(data.user.id)) {
+    redirect("/dashboard");
+  }
+
+  const otpResult = await createAndSendOtp(data.user.id, parsed.data);
+  if (!otpResult.ok) {
+    await supabase.auth.signOut();
+    return { error: otpResult.error };
+  }
+
+  await setOtpPendingCookie();
+  redirect("/login/verify-otp");
+}
+
+export async function verifyOtpAction(
+  formData: FormData
+): Promise<{ error?: string }> {
+  const code = formData.get("code");
+  if (!code || typeof code !== "string") {
+    return { error: "Enter the 5-digit code" };
+  }
+  const codeDigits = code.replace(/\D/g, "");
+  if (codeDigits.length !== 5) {
+    return { error: "Code must be 5 digits" };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Session expired. Please sign in again." };
+
+  const result = await verifyOtp(user.id, codeDigits);
+  if (!result.ok) return { error: result.error };
+
+  await clearOtpPendingCookie();
+
+  const remember = formData.get("remember") === "true";
+  if (remember) {
+    await setRememberCookie(user.id);
+  }
+
   redirect("/dashboard");
 }
 

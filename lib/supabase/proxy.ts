@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { OTP_PENDING_COOKIE_NAME } from "@/lib/auth/constants";
 
 const PROTECTED_PREFIXES = ["/dashboard", "/invoices", "/clients", "/settings", "/onboarding"];
 
@@ -37,12 +38,18 @@ export async function updateSession(request: NextRequest) {
 
   const { data } = await supabase.auth.getClaims();
   const user = data?.claims;
+  const pathname = request.nextUrl.pathname;
 
-  if (!user && isProtectedPath(request.nextUrl.pathname)) {
+  if (!user && (isProtectedPath(pathname) || pathname === "/login/verify-otp")) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
-    redirectUrl.searchParams.set("redirectTo", request.nextUrl.pathname);
+    if (isProtectedPath(pathname)) redirectUrl.searchParams.set("redirectTo", pathname);
     return NextResponse.redirect(redirectUrl);
+  }
+
+  const otpPending = request.cookies.get(OTP_PENDING_COOKIE_NAME)?.value;
+  if (user && otpPending && isProtectedPath(pathname) && pathname !== "/login/verify-otp") {
+    return NextResponse.redirect(new URL("/login/verify-otp", request.url));
   }
 
   return supabaseResponse;

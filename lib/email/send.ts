@@ -2,6 +2,7 @@ import { Resend } from "resend";
 import {
   buildInvoiceEmailHtml,
   buildReminderEmailHtml,
+  buildLoginOtpEmailHtml,
   type InvoiceEmailParams,
 } from "./templates";
 
@@ -59,6 +60,31 @@ export async function sendReminderEmail(params: {
   });
   if (error) {
     console.error("[email] sendReminder failed:", error.message);
+    return { ok: false, error: error.message };
+  }
+  return { ok: true };
+}
+
+/**
+ * Send login OTP code (5 digits, 5 min expiry).
+ */
+export async function sendLoginOtpEmail(params: {
+  to: string;
+  code: string;
+}): Promise<SendResult> {
+  const client = getResendClient();
+  if (!client) {
+    return { ok: false, error: "Email is not configured (RESEND_API_KEY)" };
+  }
+  const html = buildLoginOtpEmailHtml({ code: params.code });
+  const { error } = await client.emails.send({
+    from: EMAIL_FROM,
+    to: params.to,
+    subject: "Your Puyer login code",
+    html,
+  });
+  if (error) {
+    console.error("[email] sendLoginOtp failed:", error.message);
     return { ok: false, error: error.message };
   }
   return { ok: true };

@@ -4,6 +4,13 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2025-02-25] – Login OTP (password + email code)
+
+- **Flow:** Password sign-in → 5-digit code sent by email (5 min validity) → enter code → access. Magic link unchanged (no OTP).
+- **Remember 30 days:** After entering the correct code, user can tick "Remember this device for 30 days" to skip OTP on next password login.
+- **Migration:** `20250225000001_login_otps.sql` — table for OTP hashes (HMAC). RLS: users manage own OTPs.
+- **Env:** `LOGIN_OTP_SECRET` (optional), `LOGIN_VERIFY_SECRET` (optional, for remember cookie).
+
 ### [2025-02-24] – Auto-reminders (1, 3, 7 days after send)
 
 - **Create form:** "More options" — checkbox "Auto-remind client" and select days (1, 3, 7). Shown when client has email.
