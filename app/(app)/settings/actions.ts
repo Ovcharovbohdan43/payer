@@ -82,8 +82,22 @@ export async function setPasswordAction(formData: FormData) {
   if (!user) return { error: "Not signed in" };
 
   const { error } = await supabase.auth.updateUser({ password: parsed.data });
-
   if (error) return { error: error.message };
+
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .update({ password_set_at: new Date().toISOString() })
+    .eq("id", user.id);
+  if (profileError) console.error("[setPassword] profile update:", profileError);
+
+  if (user.email) {
+    const { sendPasswordChangeConfirmEmail } = await import("@/lib/email/send");
+    const emailResult = await sendPasswordChangeConfirmEmail({ to: user.email });
+    if (!emailResult.ok) {
+      console.error("[setPassword] confirmation email:", emailResult.error);
+    }
+  }
+
   revalidatePath("/settings");
   return { success: true };
 }

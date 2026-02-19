@@ -3,6 +3,7 @@ import {
   buildInvoiceEmailHtml,
   buildReminderEmailHtml,
   buildLoginOtpEmailHtml,
+  buildPasswordChangeConfirmEmailHtml,
   type InvoiceEmailParams,
 } from "./templates";
 
@@ -85,6 +86,30 @@ export async function sendLoginOtpEmail(params: {
   });
   if (error) {
     console.error("[email] sendLoginOtp failed:", error.message);
+    return { ok: false, error: error.message };
+  }
+  return { ok: true };
+}
+
+/**
+ * Send password change confirmation to user.
+ */
+export async function sendPasswordChangeConfirmEmail(params: {
+  to: string;
+}): Promise<SendResult> {
+  const client = getResendClient();
+  if (!client) {
+    return { ok: false, error: "Email is not configured (RESEND_API_KEY)" };
+  }
+  const html = buildPasswordChangeConfirmEmailHtml();
+  const { error } = await client.emails.send({
+    from: EMAIL_FROM,
+    to: params.to,
+    subject: "Your Puyer password was changed",
+    html,
+  });
+  if (error) {
+    console.error("[email] sendPasswordChangeConfirm failed:", error.message);
     return { ok: false, error: error.message };
   }
   return { ok: true };

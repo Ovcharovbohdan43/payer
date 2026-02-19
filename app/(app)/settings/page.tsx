@@ -11,7 +11,7 @@ export default async function SettingsPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("business_name, default_currency, country, timezone, stripe_connect_account_id")
+    .select("business_name, default_currency, country, timezone, stripe_connect_account_id, password_set_at")
     .eq("id", user.id)
     .single();
 
@@ -26,6 +26,7 @@ export default async function SettingsPage() {
             country: profile?.country ?? null,
             timezone: profile?.timezone ?? "UTC",
             stripe_connect_account_id: profile?.stripe_connect_account_id ?? null,
+            hasPassword: !!profile?.password_set_at,
           }}
         />
       </div>
