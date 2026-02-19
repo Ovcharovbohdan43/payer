@@ -45,8 +45,8 @@ export async function runAutoReminders(): Promise<{ sent: number; errors: number
     const sentAt = new Date(inv.sent_at);
     const schedule = (inv.auto_remind_days ?? "1,3,7")
       .split(",")
-      .map((s) => s.trim())
-      .filter((s) => ["1", "3", "7"].includes(s)) as DayKey[];
+      .map((s: string) => s.trim())
+      .filter((s: string): s is DayKey => ["1", "3", "7"].includes(s));
 
     for (const day of days) {
       const dayStr = String(day) as DayKey;
