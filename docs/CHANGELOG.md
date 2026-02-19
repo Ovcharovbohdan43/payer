@@ -4,6 +4,14 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2025-02-24] – Auto-reminders (1, 3, 7 days after send)
+
+- **Create form:** "More options" — checkbox "Auto-remind client" and select days (1, 3, 7). Shown when client has email.
+- **Invoice detail:** Toggle "Auto-remind client (1, 3, 7 days after sent)" for sent/viewed/overdue invoices with client email.
+- **Cron:** `GET /api/cron/reminders` protected by `CRON_SECRET` (Bearer). Vercel Cron runs daily at 9:00 UTC.
+- **Logic:** `lib/reminders/run-auto-reminders.ts` selects invoices with `auto_remind_enabled`, status sent/viewed/overdue, sends reminders at 1/3/7 days after `sent_at`, updates `reminder_1d_sent_at` etc. Stops when invoice becomes paid/void.
+- **Migration:** `20250224000001_auto_remind.sql` — `auto_remind_enabled`, `auto_remind_days`, `reminder_1d_sent_at`, `reminder_3d_sent_at`, `reminder_7d_sent_at`.
+
 ### [2025-02-23] – Rebrand Payer → Puyer (puyer.org)
 
 - Renamed app/brand from Payer to Puyer across UI, docs, emails, PDF, package.json.

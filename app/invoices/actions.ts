@@ -42,6 +42,8 @@ export type InvoiceRow = {
   notes: string | null;
   stripe_payment_intent_id: string | null;
   vat_included: boolean | null;
+  auto_remind_enabled?: boolean;
+  auto_remind_days?: string;
   line_items?: InvoiceLineItem[];
 };
 
@@ -61,6 +63,8 @@ export async function createInvoiceAction(
     dueDate: formData.get("dueDate") ?? "",
     notes: formData.get("notes") ?? "",
     vatIncluded: formData.get("vatIncluded") ?? "",
+    autoRemindEnabled: formData.get("autoRemindEnabled") ?? "",
+    autoRemindDays: formData.get("autoRemindDays") ?? "1,3,7",
     lineItems: formData.get("lineItems") ?? "[]",
   };
   const parsed = invoiceCreateSchema.safeParse(raw);
@@ -95,6 +99,9 @@ export async function createInvoiceAction(
 
   const publicId = crypto.randomUUID();
 
+  const autoRemindEnabled = parsed.data.autoRemindEnabled ?? false;
+  const autoRemindDays = parsed.data.autoRemindDays ?? "1,3,7";
+
   const { data: invoice, error: insertError } = await supabase
     .from("invoices")
     .insert({
@@ -112,6 +119,8 @@ export async function createInvoiceAction(
       due_date: parsed.data.dueDate || null,
       sent_at: options.markSent ? new Date().toISOString() : null,
       vat_included: vatIncluded,
+      auto_remind_enabled: options.markSent && autoRemindEnabled,
+      auto_remind_days: autoRemindDays,
     })
     .select("id, number, public_id")
     .single();
@@ -201,7 +210,7 @@ export async function getInvoiceById(id: string): Promise<InvoiceRow | null> {
   const { data: invoice } = await supabase
     .from("invoices")
     .select(
-      "id, number, public_id, status, client_name, client_email, amount_cents, currency, description, created_at, sent_at, viewed_at, paid_at, voided_at, due_date, notes, stripe_payment_intent_id, vat_included"
+      "id, number, public_id, status, client_name, client_email, amount_cents, currency, description, created_at, sent_at, viewed_at, paid_at, voided_at, due_date, notes, stripe_payment_intent_id, vat_included, auto_remind_enabled, auto_remind_days"
     )
     .eq("id", id)
     .eq("user_id", user.id)
@@ -462,4 +471,48 @@ export async function sendReminderAction(
 
   revalidatePath(`/invoices/${invoiceId}`);
   return { success: true };
+}
+
+export async function updateAutoRemindAction(
+  invoiceId: string,
+  enabled: boolean,
+  days: string
+): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in" };
+
+  const { data: invoice } = await supabase
+    .from("invoices")
+    .select("id, status, client_email")
+    .eq("id", invoiceId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!invoice) return { error: "Invoice not found" };
+  if (invoice.status === "paid" || invoice.status === "void")
+    return { error: "Cannot change auto-remind for paid or void invoice" };
+  if (enabled && !invoice.client_email)
+    return { error: "Add client email to enable auto-reminders" };
+
+  const validDays = days
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => ["1", "3", "7"].includes(s));
+  const daysStr = validDays.length > 0 ? validDays.join(",") : "1,3,7";
+
+  const { error } = await supabase
+    .from("invoices")
+    .update({
+      auto_remind_enabled: enabled,
+      auto_remind_days: daysStr,
+    })
+    .eq("id", invoiceId)
+    .eq("user_id", user.id);
+
+  if (error) return { error: error.message };
+  revalidatePath(`/invoices/${invoiceId}`);
+  return {};
 }

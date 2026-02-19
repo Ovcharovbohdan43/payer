@@ -46,6 +46,8 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
   const [clientsList, setClientsList] = useState(clients);
   const [showMore, setShowMore] = useState(false);
   const [vatIncluded, setVatIncluded] = useState(false);
+  const [autoRemind, setAutoRemind] = useState(false);
+  const [autoRemindDays, setAutoRemindDays] = useState<number[]>([1, 3, 7]);
   const [lineItems, setLineItems] = useState<LineItemInput[]>(() => [
     createEmptyLineItem(),
   ]);
@@ -144,6 +146,20 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
         type="hidden"
         name="vatIncluded"
         value={vatIncluded ? "true" : "false"}
+      />
+      <input
+        type="hidden"
+        name="autoRemindEnabled"
+        value={autoRemind ? "true" : "false"}
+      />
+      <input
+        type="hidden"
+        name="autoRemindDays"
+        value={
+          autoRemind && autoRemindDays.length > 0
+            ? autoRemindDays.slice().sort((a, b) => a - b).join(",")
+            : "1,3,7"
+        }
       />
       <input type="hidden" name="lineItems" value={lineItemsJson} />
 
@@ -291,6 +307,50 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
                 className="h-10"
               />
             </div>
+            {selectedClient?.email && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="autoRemind"
+                    checked={autoRemind}
+                    onChange={(e) => setAutoRemind(e.target.checked)}
+                    disabled={isPending}
+                    className="h-4 w-4 rounded border-white/20 bg-[#121821]"
+                  />
+                  <Label
+                    htmlFor="autoRemind"
+                    className="cursor-pointer text-sm font-normal text-muted-foreground"
+                  >
+                    Auto-remind client (1, 3, 7 days after send)
+                  </Label>
+                </div>
+                {autoRemind && (
+                  <div className="flex flex-wrap gap-3 pl-6">
+                    {[1, 3, 7].map((d) => (
+                      <label key={d} className="flex cursor-pointer items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={autoRemindDays.includes(d)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setAutoRemindDays((prev) => [...prev, d].sort((a, b) => a - b));
+                            } else {
+                              setAutoRemindDays((prev) => prev.filter((x) => x !== d));
+                            }
+                          }}
+                          disabled={isPending}
+                          className="h-4 w-4 rounded border-white/20 bg-[#121821]"
+                        />
+                        <span className="text-sm">
+                          {d === 1 ? "1 day" : d === 3 ? "3 days" : "1 week"}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
