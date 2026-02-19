@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useActionState, useEffect, useState } from "react";
+import { Pencil } from "lucide-react";
 import { updateProfileAction, setPasswordAction } from "./actions";
 import { ConnectStripeButton } from "./connect-stripe-button";
 import { useRouter } from "next/navigation";
@@ -23,6 +24,7 @@ type Profile = {
   country: string | null;
   timezone: string | null;
   stripe_connect_account_id: string | null;
+  hasPassword?: boolean;
 };
 
 export function SettingsForm({ profile }: { profile: Profile }) {
@@ -130,7 +132,7 @@ export function SettingsForm({ profile }: { profile: Profile }) {
           Set a password so you can always sign in with email and password, even if
           magic links don&apos;t work.
         </p>
-        <SetPasswordForm />
+        <SetPasswordForm hasPassword={profile.hasPassword ?? false} />
       </section>
 
       <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
@@ -151,13 +153,44 @@ export function SettingsForm({ profile }: { profile: Profile }) {
   );
 }
 
-function SetPasswordForm() {
+function SetPasswordForm({ hasPassword }: { hasPassword: boolean }) {
+  const router = useRouter();
+  const [isEditing, setIsEditing] = useState(false);
   const [state, formAction, isPending] = useActionState(
     async (_prev: { error?: string; success?: boolean } | null, formData: FormData) => {
       return await setPasswordAction(formData);
     },
     null as { error?: string; success?: boolean } | null
   );
+
+  useEffect(() => {
+    if (state?.success) {
+      setIsEditing(false);
+      router.refresh();
+    }
+  }, [state?.success, router]);
+
+  const showForm = !hasPassword || isEditing;
+
+  if (!showForm) {
+    return (
+      <div className="flex items-center gap-3">
+        <span className="font-mono text-lg tracking-widest text-muted-foreground">
+          ••••••••
+        </span>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsEditing(true)}
+          className="h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground"
+          aria-label="Change password"
+        >
+          <Pencil className="h-4 w-4" />
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <form action={formAction} className="space-y-3">
@@ -187,17 +220,31 @@ function SetPasswordForm() {
           className="h-10"
         />
       </div>
-      <Button
-        type="submit"
-        variant="outline"
-        size="sm"
-        disabled={isPending}
-        className="rounded-lg"
-      >
-        {isPending ? "Saving…" : "Set password"}
-      </Button>
+      <div className="flex items-center gap-2">
+        <Button
+          type="submit"
+          variant="outline"
+          size="sm"
+          disabled={isPending}
+          className="rounded-lg"
+        >
+          {isPending ? "Saving…" : hasPassword ? "Change password" : "Set password"}
+        </Button>
+        {hasPassword && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={isPending}
+            onClick={() => setIsEditing(false)}
+            className="rounded-lg"
+          >
+            Cancel
+          </Button>
+        )}
+      </div>
       {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
-      {state?.success && <p className="text-sm text-emerald-500">Password set.</p>}
+      {state?.success && <p className="text-sm text-emerald-500">Password updated. Confirmation sent to your email.</p>}
     </form>
   );
 }
