@@ -29,7 +29,7 @@ export function AppShell({ children, businessName }: AppShellProps) {
       <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-white/5 bg-[#0B0F14]/95 backdrop-blur-xl lg:flex">
         <div className="flex h-16 items-center border-b border-white/5 px-6">
           <Link href="/dashboard" className="font-semibold text-white">
-            Payer
+            Puyer
           </Link>
         </div>
         <nav className="flex-1 space-y-0.5 p-4">
@@ -63,7 +63,7 @@ export function AppShell({ children, businessName }: AppShellProps) {
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-white/5 bg-[#0B0F14]/80 px-4 backdrop-blur-xl sm:px-6">
           <div className="lg:hidden">
             <Link href="/dashboard" className="font-semibold text-white">
-              Payer
+              Puyer
             </Link>
           </div>
           <div className="flex flex-1 flex-wrap items-center justify-end gap-2 md:justify-end">

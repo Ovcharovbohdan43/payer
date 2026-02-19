@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Payer — Invoice in 15 seconds",
+  title: "Puyer — Invoice in 15 seconds",
   description:
     "Create invoices in seconds, send payment links, track payments, and get paid faster.",
 };

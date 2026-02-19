@@ -7,7 +7,7 @@ import {
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const EMAIL_FROM =
-  process.env.EMAIL_FROM ?? "Payer <onboarding@resend.dev>";
+  process.env.EMAIL_FROM ?? "Puyer <onboarding@resend.dev>";
 
 function getResendClient(): Resend | null {
   if (!RESEND_API_KEY || RESEND_API_KEY === "your-api-key") return null;

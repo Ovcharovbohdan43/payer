@@ -1,4 +1,4 @@
-# Payer
+# Puyer
 
 Web SaaS for micro-businesses and freelancers: create invoices in 15–30 seconds, send payment links, track payments via Stripe, and send reminders.
 

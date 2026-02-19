@@ -146,7 +146,7 @@ export default async function PublicInvoicePage({
           )}
 
           <p className="mt-8 text-center text-xs text-muted-foreground">
-            Powered by Payer
+            Powered by Puyer
           </p>
         </div>
       </div>

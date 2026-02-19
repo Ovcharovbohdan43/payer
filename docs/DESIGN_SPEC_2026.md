@@ -12,7 +12,7 @@
 ## Layout structure
 
 ### 1. Header (top)
-- **Left:** Payer (logo/brand)
+- **Left:** Puyer (logo/brand)
 - **Right:** Notifications icon, Business name, Sign out
 
 ### 2. Sidebar (left, always visible on desktop)

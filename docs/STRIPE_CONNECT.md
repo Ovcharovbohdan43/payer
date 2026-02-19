@@ -1,9 +1,9 @@
 # Stripe Connect Setup
 
-Payer uses **Stripe Connect Express** so that:
+Puyer uses **Stripe Connect Express** so that:
 
 - Users receive payments directly to their Stripe account
-- Payer does not store or process bank details
+- Puyer does not store or process bank details
 - Payouts to users' banks are handled by Stripe
 
 ## Configuration
