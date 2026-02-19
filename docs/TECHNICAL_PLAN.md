@@ -1,4 +1,4 @@
-# Payer — Technical Development Plan
+# Puyer — Technical Development Plan
 
 **Product:** Web SaaS for micro-businesses to create invoices in 15–30 seconds, send payment links, track payments via Stripe, and send reminders.
 
@@ -206,7 +206,7 @@
 
 ### 5.2 Public page UI
 
-- [x] Route: `/i/[publicId]`. Clean layout: business name, invoice number, amount, description, “Pay” button. Footer: “Powered by Payer”.
+- [x] Route: `/i/[publicId]`. Clean layout: business name, invoice number, amount, description, “Pay” button. Footer: “Powered by Puyer”.
 - [x] On first load when status = sent: RPC `record_public_invoice_viewed(public_id)` sets `viewed_at` and status to `viewed` (migration 20250218100001).
 - [ ] Rate limit this route (Phase 9); no auth required.
 

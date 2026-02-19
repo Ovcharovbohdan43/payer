@@ -1,4 +1,4 @@
-# Payer — Database
+# Puyer — Database
 
 ## Migrations
 

@@ -50,7 +50,7 @@ export function buildInvoiceEmailHtml(params: InvoiceEmailParams): string {
           </tr>
           <tr>
             <td style="padding: 24px 40px 32px; border-top: 1px solid #e4e4e7; background:#fafafa; border-radius: 0 0 12px 12px;">
-              <p style="margin: 0; font-size: 12px; color: #a1a1aa;">Powered by Payer.</p>
+              <p style="margin: 0; font-size: 12px; color: #a1a1aa;">Powered by Puyer.</p>
             </td>
           </tr>
         </table>
@@ -99,7 +99,7 @@ export function buildReminderEmailHtml(params: ReminderEmailParams): string {
           </tr>
           <tr>
             <td style="padding: 24px 40px 32px; border-top: 1px solid #e4e4e7; background:#fafafa; border-radius: 0 0 12px 12px;">
-              <p style="margin: 0; font-size: 12px; color: #a1a1aa;">Powered by Payer.</p>
+              <p style="margin: 0; font-size: 12px; color: #a1a1aa;">Powered by Puyer.</p>
             </td>
           </tr>
         </table>

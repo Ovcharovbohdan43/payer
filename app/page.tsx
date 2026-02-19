@@ -21,7 +21,7 @@ export default function HomePage() {
             href="/"
             className="text-xl font-bold tracking-tight text-white"
           >
-            Payer
+            Puyer
           </Link>
           <div className="flex items-center gap-2">
             <Button asChild variant="ghost" size="sm" className="min-h-10 touch-manipulation rounded-xl text-muted-foreground hover:text-foreground">
@@ -215,7 +215,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="border-t border-white/5 px-4 py-6 sm:px-6 sm:py-8 min-[375px]:px-4">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 text-center sm:flex-row sm:gap-4 sm:text-left">
-          <span className="text-sm text-white/50">© Payer. Invoice in 15 seconds.</span>
+          <span className="text-sm text-white/50">© Puyer. Invoice in 15 seconds.</span>
           <div className="flex gap-6 text-sm">
             <Link href="/login" className="text-white/50 hover:text-white/80">
               Log in

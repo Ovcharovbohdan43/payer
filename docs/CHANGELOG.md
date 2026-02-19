@@ -1,8 +1,12 @@
 # Changelog
 
-All notable changes to the Payer project.
+All notable changes to the Puyer project.
 
 ## [Unreleased]
+
+### [2025-02-23] – Rebrand Payer → Puyer (puyer.org)
+
+- Renamed app/brand from Payer to Puyer across UI, docs, emails, PDF, package.json.
 
 ### [2025-02-23] – Password registration & login
 
@@ -23,7 +27,7 @@ All notable changes to the Payer project.
 
 ### [2025-02-22] – Phase 7: Email & Reminders
 
-- **Resend:** `resend` package; `lib/email/send.ts` and `lib/email/templates.ts` for HTML email templates. Env: `RESEND_API_KEY`, optional `EMAIL_FROM` (default `Payer <onboarding@resend.dev>`).
+- **Resend:** `resend` package; `lib/email/send.ts` and `lib/email/templates.ts` for HTML email templates. Env: `RESEND_API_KEY`, optional `EMAIL_FROM` (default `Puyer <onboarding@resend.dev>`).
 - **Send invoice email:** "Create & send email" on new invoice form sends email after create; "Send by email" button on invoice detail. Graceful: if email fails, invoice is still created; toast warns user.
 - **Manual reminder:** "Send reminder" button on invoice detail and Recent Invoices (dashboard). Rate limit: 1 per `REMINDER_RATE_LIMIT_HOURS` (default 24; 0 = no limit for debug).
 - **Migration:** `20250222000001_add_last_reminder_at.sql` — adds `last_reminder_at` to invoices for rate limiting.

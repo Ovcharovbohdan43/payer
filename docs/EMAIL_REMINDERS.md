@@ -18,7 +18,7 @@
 
 ### Optional
 
-- `EMAIL_FROM` — Sender address (default: `Payer <onboarding@resend.dev>`)
+- `EMAIL_FROM` — Sender address (default: `Puyer <onboarding@resend.dev>`)
 - `REMINDER_RATE_LIMIT_HOURS` — Limit reminders per invoice (default: 24). Set to `0` to disable during debugging
 
 ## Flows

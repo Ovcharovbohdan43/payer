@@ -419,7 +419,7 @@ export async function generateInvoicePdf(
     font,
     color: cMuted,
   });
-  page.drawText("Powered by Payer", {
+  page.drawText("Powered by Puyer", {
     x: MARGIN,
     y: footerY - 6,
     size: 8,
