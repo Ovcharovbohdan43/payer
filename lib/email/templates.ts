@@ -110,6 +110,41 @@ export function buildReminderEmailHtml(params: ReminderEmailParams): string {
 </html>`;
 }
 
+export function buildLoginOtpEmailHtml(params: { code: string }) {
+  const { code } = params;
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color:#f4f4f5;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 400px; background:#fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+          <tr>
+            <td style="padding: 32px 40px 24px; border-bottom: 1px solid #e4e4e7;">
+              <span style="font-size: 22px; font-weight: 700; color: #18181b;">Puyer</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 32px 40px;">
+              <h1 style="margin: 0 0 12px 0; font-size: 20px; font-weight: 600; color: #18181b;">Your login code</h1>
+              <p style="margin: 0 0 16px 0; font-size: 15px; color: #52525b;">Use this code to complete sign-in. It expires in 5 minutes.</p>
+              <p style="margin: 0; font-size: 28px; font-weight: 700; letter-spacing: 0.2em; color: #18181b;">${escapeHtml(code)}</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 24px 40px 32px; border-top: 1px solid #e4e4e7; background:#fafafa; border-radius: 0 0 12px 12px;">
+              <p style="margin: 0; font-size: 12px; color: #a1a1aa;">If you did not request this code, ignore this email.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")
