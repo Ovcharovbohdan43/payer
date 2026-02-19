@@ -6,6 +6,7 @@ import {
   getPublicInvoiceUrl,
   formatAmount,
   getDisplayAmountCents,
+  calcPaymentProcessingFeeCents,
 } from "@/lib/invoices/utils";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -42,6 +43,7 @@ export type InvoiceRow = {
   notes: string | null;
   stripe_payment_intent_id: string | null;
   vat_included: boolean | null;
+  payment_processing_fee_cents?: number | null;
   auto_remind_enabled?: boolean;
   auto_remind_days?: string;
   line_items?: InvoiceLineItem[];
@@ -63,6 +65,7 @@ export async function createInvoiceAction(
     dueDate: formData.get("dueDate") ?? "",
     notes: formData.get("notes") ?? "",
     vatIncluded: formData.get("vatIncluded") ?? "",
+    paymentProcessingFeeIncluded: formData.get("paymentProcessingFeeIncluded") ?? "",
     autoRemindEnabled: formData.get("autoRemindEnabled") ?? "",
     autoRemindDays: formData.get("autoRemindDays") ?? "1,3,7",
     lineItems: formData.get("lineItems") ?? "[]",
@@ -78,14 +81,24 @@ export async function createInvoiceAction(
   }
 
   const vatIncluded = parsed.data.vatIncluded ?? false;
+  const paymentProcessingFeeIncluded = parsed.data.paymentProcessingFeeIncluded ?? false;
   const lineItems = parsed.data.lineItems;
-  let amountCents: number;
+  const currency = parsed.data.currency;
+
+  let amountBeforeFeeCents: number;
   if (vatIncluded) {
-    amountCents = lineItems.reduce((s, i) => s + Math.round(i.amount * 100), 0);
+    amountBeforeFeeCents = lineItems.reduce((s, i) => s + Math.round(i.amount * 100), 0);
   } else {
     const subtotalCents = lineItems.reduce((s, i) => s + Math.round(i.amount * 100), 0);
     const vatCents = Math.round(subtotalCents * 0.2);
-    amountCents = subtotalCents + vatCents;
+    amountBeforeFeeCents = subtotalCents + vatCents;
+  }
+
+  let amountCents = amountBeforeFeeCents;
+  let paymentProcessingFeeCents: number | null = null;
+  if (paymentProcessingFeeIncluded) {
+    paymentProcessingFeeCents = calcPaymentProcessingFeeCents(amountBeforeFeeCents, currency);
+    amountCents = amountBeforeFeeCents + paymentProcessingFeeCents;
   }
 
   const MIN_AMOUNT_CENTS = 100; // £1, $1, €1, etc.
@@ -124,6 +137,8 @@ export async function createInvoiceAction(
       due_date: parsed.data.dueDate || null,
       sent_at: options.markSent ? new Date().toISOString() : null,
       vat_included: vatIncluded,
+      payment_processing_fee_included: paymentProcessingFeeIncluded,
+      payment_processing_fee_cents: paymentProcessingFeeCents,
       auto_remind_enabled: options.markSent && autoRemindEnabled,
       auto_remind_days: autoRemindDays,
     })
@@ -215,7 +230,7 @@ export async function getInvoiceById(id: string): Promise<InvoiceRow | null> {
   const { data: invoice } = await supabase
     .from("invoices")
     .select(
-      "id, number, public_id, status, client_name, client_email, amount_cents, currency, description, created_at, sent_at, viewed_at, paid_at, voided_at, due_date, notes, stripe_payment_intent_id, vat_included, auto_remind_enabled, auto_remind_days"
+      "id, number, public_id, status, client_name, client_email, amount_cents, currency, description, created_at, sent_at, viewed_at, paid_at, voided_at, due_date, notes, stripe_payment_intent_id, vat_included, payment_processing_fee_cents, auto_remind_enabled, auto_remind_days"
     )
     .eq("id", id)
     .eq("user_id", user.id)

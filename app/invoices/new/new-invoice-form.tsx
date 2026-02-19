@@ -11,6 +11,7 @@ import { useActionState, useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
+import { calcPaymentProcessingFeeCents } from "@/lib/invoices/utils";
 
 const VAT_RATE = 0.2; // 20%
 
@@ -46,6 +47,7 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
   const [clientsList, setClientsList] = useState(clients);
   const [showMore, setShowMore] = useState(false);
   const [vatIncluded, setVatIncluded] = useState(false);
+  const [paymentProcessingFeeIncluded, setPaymentProcessingFeeIncluded] = useState(false);
   const [autoRemind, setAutoRemind] = useState(false);
   const [autoRemindDays, setAutoRemindDays] = useState<number[]>([1, 3, 7]);
   const [lineItems, setLineItems] = useState<LineItemInput[]>(() => [
@@ -88,7 +90,11 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
     return sum + (isNaN(amt) || amt < 0 ? 0 : Math.round(amt * 100));
   }, 0);
   const vatCents = Math.round(subtotalCents * VAT_RATE);
-  const totalCents = subtotalCents + vatCents;
+  const amountBeforeFeeCents = subtotalCents + vatCents;
+  const processingFeeCents = paymentProcessingFeeIncluded
+    ? calcPaymentProcessingFeeCents(amountBeforeFeeCents, defaultCurrency)
+    : 0;
+  const totalCents = amountBeforeFeeCents + processingFeeCents;
 
   const [state, formAction, isPending] = useActionState(
     async (_prev: CreateResult | null, formData: FormData) => {
@@ -150,6 +156,11 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
         type="hidden"
         name="vatIncluded"
         value={vatIncluded ? "true" : "false"}
+      />
+      <input
+        type="hidden"
+        name="paymentProcessingFeeIncluded"
+        value={paymentProcessingFeeIncluded ? "true" : "false"}
       />
       <input
         type="hidden"
@@ -252,30 +263,51 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
             </div>
           ))}
         </div>
-        <div className="flex items-center gap-2 pt-1">
-          <input
-            type="checkbox"
-            id="vatIncluded"
-            checked={vatIncluded}
-            onChange={(e) => setVatIncluded(e.target.checked)}
-            disabled={isPending}
-            className="h-4 w-4 rounded border-white/20 bg-[#121821] accent-[#3B82F6]"
-          />
-          <Label
-            htmlFor="vatIncluded"
-            className="cursor-pointer text-sm font-normal text-muted-foreground"
-          >
-            Tax included in amount (20% VAT shown as breakdown)
-          </Label>
+        <div className="flex flex-col gap-2 pt-1">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="vatIncluded"
+              checked={vatIncluded}
+              onChange={(e) => setVatIncluded(e.target.checked)}
+              disabled={isPending}
+              className="h-4 w-4 rounded border-white/20 bg-[#121821] accent-[#3B82F6]"
+            />
+            <Label
+              htmlFor="vatIncluded"
+              className="cursor-pointer text-sm font-normal text-muted-foreground"
+            >
+              Tax included in amount (20% VAT shown as breakdown)
+            </Label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="paymentProcessingFeeIncluded"
+              checked={paymentProcessingFeeIncluded}
+              onChange={(e) => setPaymentProcessingFeeIncluded(e.target.checked)}
+              disabled={isPending}
+              className="h-4 w-4 rounded border-white/20 bg-[#121821] accent-[#3B82F6]"
+            />
+            <Label
+              htmlFor="paymentProcessingFeeIncluded"
+              className="cursor-pointer text-sm font-normal text-muted-foreground"
+            >
+              Include payment processing fee in invoice (1.5% + fixed)
+            </Label>
+          </div>
         </div>
-        {vatIncluded ? (
+        {vatIncluded && !paymentProcessingFeeIncluded ? (
           <p className="text-xs text-muted-foreground">
             VAT (20%) is included in the price.
           </p>
         ) : subtotalCents > 0 ? (
           <p className="text-xs text-muted-foreground">
-            Subtotal: {formatMoney(subtotalCents, defaultCurrency)} + VAT
-            (20%): {formatMoney(vatCents, defaultCurrency)} → Total:{" "}
+            Subtotal: {formatMoney(subtotalCents, defaultCurrency)}
+            {!vatIncluded && ` + VAT (20%): ${formatMoney(vatCents, defaultCurrency)}`}
+            {paymentProcessingFeeIncluded &&
+              ` + Processing fee: ${formatMoney(processingFeeCents, defaultCurrency)}`}
+            {" → Total: "}
             {formatMoney(totalCents, defaultCurrency)}
           </p>
         ) : null}

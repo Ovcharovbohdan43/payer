@@ -11,6 +11,8 @@ type PublicInvoiceRpc = {
   status: string;
   client_name: string;
   vat_included: boolean | null;
+  payment_processing_fee_included: boolean;
+  payment_processing_fee_cents: number | null;
   line_items: { description: string; amount_cents: number }[];
 };
 
@@ -48,6 +50,7 @@ export async function GET(
     clientName: invoice.client_name,
     status: invoice.status,
     vatIncluded: invoice.vat_included ?? undefined,
+    paymentProcessingFeeCents: invoice.payment_processing_fee_cents ?? undefined,
   });
 
   return new NextResponse(Buffer.from(pdfBytes), {

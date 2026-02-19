@@ -78,6 +78,10 @@ export const invoiceCreateSchema = z.object({
     .string()
     .optional()
     .transform((v) => v === "true"),
+  paymentProcessingFeeIncluded: z
+    .string()
+    .optional()
+    .transform((v) => v === "true"),
   autoRemindEnabled: z
     .string()
     .optional()

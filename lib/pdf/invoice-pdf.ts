@@ -36,6 +36,8 @@ export type InvoicePdfData = {
   notes?: string | null;
   /** true = amount is gross (VAT included), false = amount is net (VAT added) */
   vatIncluded?: boolean;
+  /** Payment processing fee in cents; shown as row before Total when set */
+  paymentProcessingFeeCents?: number | null;
 };
 
 const VAT_RATE = 0.2; // 20%
@@ -298,6 +300,37 @@ export async function generateInvoicePdf(
   }
   y -= 6;
 
+  // Payment processing fee row (when set)
+  if (data.paymentProcessingFeeCents != null && data.paymentProcessingFeeCents > 0) {
+    const feeLabel = "Payment processing fee";
+    const feeText = formatAmount(data.paymentProcessingFeeCents, data.currency);
+
+    page.drawRectangle({
+      x: MARGIN,
+      y: y - rowHeight,
+      width: CONTENT_WIDTH,
+      height: rowHeight,
+      borderColor: rgb(0.9, 0.9, 0.9),
+      borderWidth: 0.5,
+    });
+    page.drawText(feeLabel, {
+      x: MARGIN + cellPadding,
+      y: y - rowHeight + textBaselineY,
+      size: descFontSize,
+      font,
+      color: c,
+    });
+    const feeTextWidth = fontBold.widthOfTextAtSize(feeText, amountFontSize);
+    page.drawText(feeText, {
+      x: PAGE_WIDTH - MARGIN - feeTextWidth - cellPadding,
+      y: y - rowHeight + textBaselineY,
+      size: amountFontSize,
+      font: fontBold,
+      color: c,
+    });
+    y -= rowHeight;
+  }
+
   // VAT row (when vatIncluded set) + Total row (always)
   if (vatIncluded != null) {
     const vatLabel = vatIncluded ? "VAT (20% incl.)" : "VAT (20%)";
@@ -330,8 +363,8 @@ export async function generateInvoicePdf(
     y -= rowHeight;
   }
 
-  // Total row (always; uses data.amountCents as canonical total)
-  const displayTotalCents = vatIncluded != null ? totalCents : data.amountCents;
+  // Total row (always; uses data.amountCents as canonical total, incl. payment fee when present)
+  const displayTotalCents = data.amountCents;
   const totalText = formatAmount(displayTotalCents, data.currency);
   page.drawRectangle({
     x: MARGIN,
