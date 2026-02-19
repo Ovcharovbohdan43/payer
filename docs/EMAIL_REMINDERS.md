@@ -34,6 +34,14 @@
 - **Recent Invoices (dashboard)** — Send icon on each row when applicable.
 - **Rate limit:** One reminder per `REMINDER_RATE_LIMIT_HOURS` per invoice. Error message shows wait time.
 
+### Auto-reminders
+
+- **Enable:** On create (More options) or on invoice detail for sent invoices. Requires client email.
+- **Schedule:** 1, 3, 7 days after `sent_at`. User can choose subset (e.g. only 3 and 7).
+- **Cron:** `/api/cron/reminders` runs daily (Vercel Cron, 9:00 UTC). Protected by `CRON_SECRET` (Bearer token).
+- **Stops when:** Invoice status becomes paid or void.
+- **Setup:** Add `CRON_SECRET` to Vercel env; Vercel sends it as `Authorization: Bearer <CRON_SECRET>`.
+
 ## Templates
 
 - `lib/email/templates.ts` — HTML templates for invoice and reminder
@@ -42,4 +50,5 @@
 
 ## Version
 
+- 2025-02-24 — Auto-reminders (1, 3, 7 days), cron endpoint, UI in create form and invoice detail
 - 2025-02-22 — Phase 7 implemented

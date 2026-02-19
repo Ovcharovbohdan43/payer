@@ -78,6 +78,16 @@ export const invoiceCreateSchema = z.object({
     .string()
     .optional()
     .transform((v) => v === "true"),
+  autoRemindEnabled: z
+    .string()
+    .optional()
+    .transform((v) => v === "true"),
+  autoRemindDays: z
+    .string()
+    .optional()
+    .default("1,3,7")
+    .transform((s) => (s || "1,3,7").replace(/\s/g, ""))
+    .refine((s) => /^(1|3|7)(,(1|3|7))*$/.test(s), "Invalid days (use 1, 3, 7)"),
   lineItems: z
     .string()
     .transform((s) => {

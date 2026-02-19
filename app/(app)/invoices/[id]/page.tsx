@@ -99,6 +99,8 @@ export default async function InvoiceDetailPage({
             canVoid={status !== "void" && status !== "paid"}
             canMarkPaid={status !== "paid" && status !== "void"}
             hasClientEmail={!!invoice.client_email}
+            autoRemindEnabled={invoice.auto_remind_enabled ?? false}
+            autoRemindDays={invoice.auto_remind_days ?? "1,3,7"}
           />
 
           {invoice.paid_at && (

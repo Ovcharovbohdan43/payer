@@ -7,10 +7,12 @@ import {
   markInvoiceSentAction,
   sendInvoiceEmailAction,
   sendReminderAction,
+  updateAutoRemindAction,
 } from "@/app/invoices/actions";
 import type { InvoiceStatus } from "@/lib/invoices/utils";
 import { useTransition, useState } from "react";
 import { toast } from "sonner";
+import { Label } from "@/components/ui/label";
 
 type Props = {
   invoiceId: string;
@@ -19,6 +21,8 @@ type Props = {
   canVoid: boolean;
   canMarkPaid: boolean;
   hasClientEmail: boolean;
+  autoRemindEnabled: boolean;
+  autoRemindDays: string;
 };
 
 const CAN_SEND_REMINDER: InvoiceStatus[] = ["sent", "viewed", "overdue", "draft"];
@@ -30,10 +34,13 @@ export function InvoiceDetailClient({
   canVoid,
   canMarkPaid,
   hasClientEmail,
+  autoRemindEnabled: initialAutoRemind,
+  autoRemindDays,
 }: Props) {
   const [pending, startTransition] = useTransition();
   const [copyDone, setCopyDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [autoRemindEnabled, setAutoRemindEnabled] = useState(initialAutoRemind);
 
   const handleCopyLink = async () => {
     try {
@@ -158,6 +165,49 @@ export function InvoiceDetailClient({
           </form>
         )}
       </div>
+      {hasClientEmail &&
+        status !== "paid" &&
+        status !== "void" &&
+        status !== "draft" && (
+          <div className="mt-4 flex items-center gap-2 border-t border-white/5 pt-4">
+            <input
+              type="checkbox"
+              id="autoRemindToggle"
+              checked={autoRemindEnabled}
+              disabled={pending}
+              onChange={(e) => {
+                const next = e.target.checked;
+                setAutoRemindEnabled(next);
+                startTransition(async () => {
+                  const r = await updateAutoRemindAction(
+                    invoiceId,
+                    next,
+                    autoRemindDays
+                  );
+                  if (r.error) {
+                    setError(r.error);
+                    toast.error(r.error);
+                    setAutoRemindEnabled(!next);
+                  } else {
+                    setError(null);
+                    toast.success(
+                      next
+                        ? "Auto-reminders enabled (1, 3, 7 days)"
+                        : "Auto-reminders disabled"
+                    );
+                  }
+                });
+              }}
+              className="h-4 w-4 rounded border-white/20 bg-[#121821]"
+            />
+            <Label
+              htmlFor="autoRemindToggle"
+              className="cursor-pointer text-sm font-normal text-muted-foreground"
+            >
+              Auto-remind client (1, 3, 7 days after sent)
+            </Label>
+          </div>
+        )}
       {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
     </section>
   );
