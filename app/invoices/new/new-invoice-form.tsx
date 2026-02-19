@@ -92,6 +92,10 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
 
   const [state, formAction, isPending] = useActionState(
     async (_prev: CreateResult | null, formData: FormData) => {
+      if (totalCents < 100) {
+        toast.error("Minimum invoice amount is £1 (or equivalent in your currency)");
+        return { error: "Minimum invoice amount is £1 (or equivalent in your currency)" };
+      }
       const intent = formData.get("intent");
       const markSent = intent === "copy" || intent === "email";
       return await createInvoiceAction(formData, { markSent });
@@ -359,13 +363,13 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
         <p className="text-sm text-destructive">{state.error}</p>
       )}
 
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
         <Button
           type="submit"
           name="intent"
           value="copy"
           disabled={isPending}
-          className="min-h-12 w-full rounded-xl bg-[#3B82F6] font-semibold hover:bg-[#2563EB] sm:min-w-[200px] sm:w-auto"
+          className="h-12 min-h-12 w-full rounded-xl bg-[#3B82F6] font-semibold hover:bg-[#2563EB] sm:min-w-[200px] sm:w-auto"
         >
           {isPending ? "Creating…" : "Create invoice"}
         </Button>
@@ -376,7 +380,7 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
             value="email"
             variant="secondary"
             disabled={isPending}
-            className="min-w-[180px]"
+            className="h-12 min-h-12 min-w-[180px]"
           >
             {isPending ? "Creating…" : "Create & send email"}
           </Button>

@@ -88,6 +88,11 @@ export async function createInvoiceAction(
     amountCents = subtotalCents + vatCents;
   }
 
+  const MIN_AMOUNT_CENTS = 100; // £1, $1, €1, etc.
+  if (amountCents < MIN_AMOUNT_CENTS) {
+    return { error: "Minimum invoice amount is £1 (or equivalent in your currency)" };
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
