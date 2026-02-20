@@ -12,8 +12,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useActionState, useEffect, useState } from "react";
-import { Pencil } from "lucide-react";
-import { updateProfileAction, setPasswordAction, sendPasswordResetEmailAction } from "./actions";
+import { Pencil, Building2, ImagePlus, Trash2 } from "lucide-react";
+import { updateProfileAction, setPasswordAction, sendPasswordResetEmailAction, uploadLogoAction, removeLogoAction } from "./actions";
 import { maskEmail } from "@/lib/utils";
 import { ConnectStripeButton } from "./connect-stripe-button";
 import { useRouter } from "next/navigation";
@@ -28,6 +28,11 @@ type Profile = {
   stripe_connect_account_id: string | null;
   hasPassword?: boolean;
   email?: string | null;
+  address?: string | null;
+  phone?: string | null;
+  company_number?: string | null;
+  vat_number?: string | null;
+  logo_url?: string | null;
 };
 
 export function SettingsForm({ profile, recovery = false }: { profile: Profile; recovery?: boolean }) {
@@ -112,6 +117,59 @@ export function SettingsForm({ profile, recovery = false }: { profile: Profile; 
               className="h-10"
             />
           </div>
+          <div className="border-t border-white/5 pt-4">
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-medium">
+              <Building2 className="size-4" />
+              Contact & legal (shown on invoices)
+            </h3>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="address">Address (optional)</Label>
+                <Input
+                  id="address"
+                  name="address"
+                  placeholder="Street, city, postcode, country"
+                  disabled={isPending}
+                  defaultValue={profile.address ?? ""}
+                  className="h-10"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone (optional)</Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  placeholder="+44 123 456 7890"
+                  disabled={isPending}
+                  defaultValue={profile.phone ?? ""}
+                  className="h-10"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="company_number">Company / Registration number (optional)</Label>
+                <Input
+                  id="company_number"
+                  name="company_number"
+                  placeholder="e.g. 12345678"
+                  disabled={isPending}
+                  defaultValue={profile.company_number ?? ""}
+                  className="h-10"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="vat_number">VAT number (optional)</Label>
+                <Input
+                  id="vat_number"
+                  name="vat_number"
+                  placeholder="e.g. GB123456789"
+                  disabled={isPending}
+                  defaultValue={profile.vat_number ?? ""}
+                  className="h-10"
+                />
+              </div>
+            </div>
+          </div>
         </div>
         </section>
 
@@ -128,6 +186,8 @@ export function SettingsForm({ profile, recovery = false }: { profile: Profile; 
           {isPending ? "Saving…" : "Save changes"}
         </Button>
       </form>
+
+      <LogoSection profile={profile} />
 
       <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
         <h2 className="mb-2 text-base font-semibold">Account security</h2>
@@ -178,6 +238,87 @@ export function SettingsForm({ profile, recovery = false }: { profile: Profile; 
         </div>
       </section>
     </div>
+  );
+}
+
+function LogoSection({ profile }: { profile: Profile }) {
+  const router = useRouter();
+  const [logoState, setLogoState] = useState<{ error?: string } | null>(null);
+  const [logoPending, setLogoPending] = useState(false);
+  const [removePending, setRemovePending] = useState(false);
+
+  async function handleUpload(formData: FormData) {
+    setLogoPending(true);
+    setLogoState(null);
+    const result = await uploadLogoAction(formData);
+    setLogoPending(false);
+    if ("error" in result) {
+      setLogoState({ error: result.error });
+      return;
+    }
+    router.refresh();
+  }
+
+  async function handleRemove() {
+    setRemovePending(true);
+    setLogoState(null);
+    const result = await removeLogoAction();
+    setRemovePending(false);
+    if (result?.error) {
+      setLogoState({ error: result.error });
+      return;
+    }
+    router.refresh();
+  }
+
+  return (
+    <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
+      <h2 className="mb-2 flex items-center gap-2 text-base font-semibold">
+        <ImagePlus className="size-4" />
+        Company logo
+      </h2>
+      <p className="mb-4 text-sm text-muted-foreground">
+        Used in the app header, on invoices (PDF), and the public payment page. PNG, JPEG, or WebP, max 1MB.
+      </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+        {profile.logo_url && (
+          <div className="flex items-center gap-3">
+            <img
+              src={profile.logo_url}
+              alt="Company logo"
+              className="h-16 w-16 rounded-lg border border-white/10 object-contain bg-white/5"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleRemove}
+              disabled={removePending}
+              className="text-destructive hover:text-destructive"
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          </div>
+        )}
+        <form action={handleUpload} className="flex flex-col gap-2">
+          <input
+            type="file"
+            name="logo"
+            accept="image/png,image/jpeg,image/webp"
+            className="text-sm file:mr-2 file:rounded-lg file:border-0 file:bg-[#3B82F6] file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white hover:file:bg-[#2563EB]"
+          />
+          <Button
+            type="submit"
+            variant="outline"
+            size="sm"
+            disabled={logoPending}
+          >
+            {logoPending ? "Uploading…" : profile.logo_url ? "Replace logo" : "Upload logo"}
+          </Button>
+        </form>
+      </div>
+      {logoState?.error && <p className="mt-2 text-sm text-destructive">{logoState.error}</p>}
+    </section>
   );
 }
 

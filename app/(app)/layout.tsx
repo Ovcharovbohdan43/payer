@@ -15,12 +15,12 @@ export default async function AppLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("business_name")
+    .select("business_name, logo_url")
     .eq("id", user.id)
     .single();
 
   return (
-    <AppShell businessName={profile?.business_name ?? "Business"}>
+    <AppShell businessName={profile?.business_name ?? "Business"} logoUrl={profile?.logo_url ?? null}>
       {children}
     </AppShell>
   );

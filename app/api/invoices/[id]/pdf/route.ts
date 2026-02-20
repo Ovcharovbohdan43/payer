@@ -23,7 +23,7 @@ export async function GET(
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("business_name")
+    .select("business_name, logo_url, address, phone, company_number, vat_number")
     .eq("id", user.id)
     .single();
 
@@ -47,6 +47,11 @@ export async function GET(
     notes: invoice.notes,
     vatIncluded: invoice.vat_included ?? undefined,
     paymentProcessingFeeCents: invoice.payment_processing_fee_cents ?? undefined,
+    logoUrl: profile?.logo_url ?? undefined,
+    address: profile?.address ?? undefined,
+    phone: profile?.phone ?? undefined,
+    companyNumber: profile?.company_number ?? undefined,
+    vatNumber: profile?.vat_number ?? undefined,
   });
 
   return new NextResponse(Buffer.from(pdfBytes), {
