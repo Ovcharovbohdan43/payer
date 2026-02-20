@@ -4,6 +4,13 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2025-02-21] – Email: password reset template, unsubscribe, spam compliance
+
+- **Password reset template:** `docs/email-templates/password-reset.html` — branded HTML for Supabase Auth Reset Password. Copy into Supabase Dashboard → Email Templates.
+- **Unsubscribe:** Clients can opt out of invoice/reminder emails. Link in every email footer; `/unsubscribe` page; `email_unsubscribes` table. Signed token prevents abuse.
+- **Spam compliance:** List-Unsubscribe + List-Unsubscribe-Post headers (one-click); physical address in footer (`MAILING_ADDRESS`); docs/EMAIL_SPAM_COMPLIANCE.md.
+- **Migration:** `20250231000001_email_unsubscribes.sql`.
+
 ### [2025-02-20] – Password change: old password required, email reset fallback
 
 - **Change password:** Users with a password must enter their current password before changing it. Only after successful verification can they set a new password.

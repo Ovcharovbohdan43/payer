@@ -12,6 +12,7 @@ Run in order (Supabase SQL Editor or `supabase db push`):
 6. `supabase/migrations/20250221000001_stripe_connect_and_payouts.sql` — stripe_connect_account_id, payouts table
 7. `supabase/migrations/20250222000001_add_last_reminder_at.sql` — last_reminder_at for reminder rate limiting
 8. `supabase/migrations/20250223000001_profile_from_signup_metadata.sql` — handle_new_user uses business_name from signUp user_metadata
+9. `supabase/migrations/20250231000001_email_unsubscribes.sql` — email_unsubscribes table for opt-out from invoice/reminder emails
 
 ## Public invoice access
 
