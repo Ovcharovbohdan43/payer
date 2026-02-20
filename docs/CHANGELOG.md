@@ -4,6 +4,13 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2025-02-20] – Password change: old password required, email reset fallback
+
+- **Change password:** Users with a password must enter their current password before changing it. Only after successful verification can they set a new password.
+- **Forgot password:** If the user cannot enter the current password, they can click "Confirm via email" to receive a password reset link. The email address is shown masked (e.g. `ab***@e***`).
+- **Recovery flow:** After clicking the reset link in the email, the user lands on `/settings?recovery=1` and can set a new password without entering the old one.
+- **lib/utils:** Added `maskEmail()` helper for display.
+
 ### [2025-02-28] – Terms of Service & support email
 
 - **Terms of Service:** New page `/terms` with production-ready Terms of Service (acceptance, service description, eligibility, acceptable use, payments, liability, indemnification, termination, governing law, contact).
