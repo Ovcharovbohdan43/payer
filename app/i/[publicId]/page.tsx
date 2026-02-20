@@ -23,6 +23,13 @@ export type PublicInvoice = {
   client_name: string;
   vat_included: boolean | null;
   line_items: PublicInvoiceLineItem[];
+  /** Company logo URL; shown in header */
+  logo_url?: string | null;
+  /** Business address; shown under business name */
+  address?: string | null;
+  phone?: string | null;
+  company_number?: string | null;
+  vat_number?: string | null;
 };
 
 async function getPublicInvoice(publicId: string): Promise<PublicInvoice | null> {
@@ -62,10 +69,43 @@ export default async function PublicInvoicePage({
   const isPaid = invoice.status === "paid";
   const showSuccessScreen = paidParam === "1" || isPaid;
 
+  const contactLines: string[] = [];
+    if (invoice.address?.trim()) contactLines.push(invoice.address.trim());
+    if (invoice.phone?.trim()) contactLines.push(invoice.phone.trim());
+    if (invoice.company_number?.trim())
+      contactLines.push(`Company no: ${invoice.company_number.trim()}`);
+    if (invoice.vat_number?.trim())
+      contactLines.push(`VAT: ${invoice.vat_number.trim()}`);
+
   return (
     <main className="min-h-screen bg-[#0B0F14]">
       <div className="mx-auto max-w-md px-4 py-12">
         <div className="rounded-[20px] border border-white/5 bg-[#121821] p-8 backdrop-blur">
+          {/* Header: logo + business name + contact info */}
+          <div className="mb-8 flex flex-col gap-3">
+            <div className="flex items-start gap-4">
+              {invoice.logo_url ? (
+                <img
+                  src={invoice.logo_url}
+                  alt=""
+                  className="h-12 w-12 shrink-0 rounded-lg object-contain"
+                />
+              ) : null}
+              <div className="min-w-0 flex-1">
+                <p className="text-base font-semibold text-white">
+                  {invoice.business_name}
+                </p>
+                {contactLines.length > 0 ? (
+                  <div className="mt-1 space-y-0.5 text-xs text-muted-foreground">
+                    {contactLines.map((line, i) => (
+                      <p key={i}>{line}</p>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          </div>
+
           {showSuccessScreen ? (
             <>
               <div className="flex flex-col items-center text-center">
@@ -101,10 +141,7 @@ export default async function PublicInvoicePage({
             <>
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    {invoice.business_name}
-                  </p>
-                  <h1 className="mt-2 text-3xl font-bold tabular-nums">
+                  <h1 className="text-3xl font-bold tabular-nums">
                     {formatAmount(
                       getDisplayAmountCents(
                         Number(invoice.amount_cents),
@@ -113,6 +150,9 @@ export default async function PublicInvoicePage({
                       invoice.currency
                     )}
                   </h1>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Invoice {invoice.invoice_number}
+                  </p>
                 </div>
                 <InvoiceQrCode
                   url={`${BASE_URL}/i/${publicId}`}

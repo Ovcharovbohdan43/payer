@@ -4,6 +4,15 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2025-02-20] – Business contact & logo (invoices, PDF, public page)
+
+- **Settings:** "Business contact" — address, phone, company number, VAT number; "Company logo" — upload PNG/JPEG/WebP (max 1MB), preview, remove.
+- **Profile icon:** App header shows company logo (or fallback initial) when logo is set.
+- **Invoice PDF:** Header includes logo + business name + contact block (address, phone, Company no, VAT). Logo fetched and embedded; WebP skipped (pdf-lib doesn't support).
+- **Public invoice page:** Logo and contact info shown in header; branded payment page for clients.
+- **Storage:** Bucket `logos` (public, 1MB, image/png, image/jpeg, image/webp); RLS: authenticated users can upload/update/delete only in `{user_id}/*`.
+- **Migrations:** `20250232000001_business_contact_logo.sql`, `20250232000002_get_public_invoice_contact_logo.sql`, `20250232000003_storage_logos_bucket.sql`.
+
 ### [2025-02-21] – Email: password reset template, unsubscribe, spam compliance
 
 - **Password reset template:** `docs/email-templates/password-reset.html` — branded HTML for Supabase Auth Reset Password. Copy into Supabase Dashboard → Email Templates.

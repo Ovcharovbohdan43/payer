@@ -54,6 +54,13 @@ export const onboardingSchema = z.object({
   timezone: z.string().max(50).optional(),
 });
 
+export const profileContactSchema = z.object({
+  address: z.string().max(500).optional().or(z.literal("")),
+  phone: z.string().max(50).optional().or(z.literal("")),
+  company_number: z.string().max(50).optional().or(z.literal("")),
+  vat_number: z.string().max(50).optional().or(z.literal("")),
+});
+
 export const clientSchema = z.object({
   name: z.string().min(1, "Name is required").max(200),
   email: optionalEmailSchema.or(z.literal("")),

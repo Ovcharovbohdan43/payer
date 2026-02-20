@@ -13,13 +13,16 @@ Run in order (Supabase SQL Editor or `supabase db push`):
 7. `supabase/migrations/20250222000001_add_last_reminder_at.sql` — last_reminder_at for reminder rate limiting
 8. `supabase/migrations/20250223000001_profile_from_signup_metadata.sql` — handle_new_user uses business_name from signUp user_metadata
 9. `supabase/migrations/20250231000001_email_unsubscribes.sql` — email_unsubscribes table for opt-out from invoice/reminder emails
+10. `supabase/migrations/20250232000001_business_contact_logo.sql` — profiles: address, phone, company_number, vat_number, logo_url (contact & legal info for invoices)
+11. `supabase/migrations/20250232000002_get_public_invoice_contact_logo.sql` — get_public_invoice returns logo_url, address, phone, company_number, vat_number
+12. `supabase/migrations/20250232000003_storage_logos_bucket.sql` — storage bucket `logos` (public, 1MB, PNG/JPEG/WebP); RLS for authenticated upload/delete in own folder
 
 ## Public invoice access
 
 - **Never** expose `invoices` by internal `id` or `user_id` to unauthenticated users.
 - Public invoice data is available **only** by `public_id` via:
   - **RPC:** `select * from get_public_invoice('...public_id...')`  
-  - Returns: `business_name`, `invoice_number`, `amount_cents`, `currency`, `description`, `due_date`, `status`, `client_name` (no `user_id`, no internal `id`).
+  - Returns: `business_name`, `invoice_number`, `amount_cents`, `currency`, `line_items`, `due_date`, `status`, `client_name`, `logo_url`, `address`, `phone`, `company_number`, `vat_number` (no `user_id`, no internal `id`).
 - Use this from the public invoice page; call with anon client.
 - **Record view:** Call `record_public_invoice_viewed(public_id)` on first load when status is `sent`; RPC updates `viewed_at` and status to `viewed` (idempotent).
 

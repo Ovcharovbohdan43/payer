@@ -1,8 +1,12 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { onboardingSchema, passwordSchema } from "@/lib/validations";
+import { onboardingSchema, passwordSchema, profileContactSchema } from "@/lib/validations";
 import { revalidatePath } from "next/cache";
+
+const LOGO_BUCKET = "logos";
+const LOGO_MAX_BYTES = 1024 * 1024; // 1MB
+const LOGO_ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp"];
 
 export async function updateProfileAction(formData: FormData) {
   const raw = {
@@ -45,6 +49,15 @@ export async function updateProfileAction(formData: FormData) {
     });
   }
 
+  const contactRaw = {
+    address: formData.get("address") ?? "",
+    phone: formData.get("phone") ?? "",
+    company_number: formData.get("company_number") ?? "",
+    vat_number: formData.get("vat_number") ?? "",
+  };
+  const contactParsed = profileContactSchema.safeParse(contactRaw);
+  const contact = contactParsed.success ? contactParsed.data : {};
+
   const { error } = await supabase
     .from("profiles")
     .update({
@@ -52,6 +65,10 @@ export async function updateProfileAction(formData: FormData) {
       default_currency: parsed.data.default_currency,
       country: parsed.data.country || null,
       timezone: parsed.data.timezone || "UTC",
+      address: contact.address || null,
+      phone: contact.phone || null,
+      company_number: contact.company_number || null,
+      vat_number: contact.vat_number || null,
       updated_at: new Date().toISOString(),
     })
     .eq("id", user.id);
@@ -133,7 +150,12 @@ export async function sendPasswordResetEmailAction() {
   if (!user.email) return { error: "No email on account" };
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
-  const redirectTo = `${appUrl.replace(/\/$/, "")}/auth/reset-password`;
+  // Use www for password reset redirect (Supabase may require it for redirect URLs)
+  const resetBase =
+    appUrl.includes("puyer.org") && !appUrl.includes("www.")
+      ? "https://www.puyer.org"
+      : appUrl;
+  const redirectTo = `${resetBase.replace(/\/$/, "")}/auth/reset-password`;
 
   const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
     redirectTo,
@@ -141,4 +163,92 @@ export async function sendPasswordResetEmailAction() {
 
   if (error) return { error: error.message };
   return { success: true };
+}
+
+/**
+ * Upload company logo to Supabase Storage, update profile.logo_url.
+ * Accepts PNG, JPEG, WebP up to 1MB.
+ */
+export async function uploadLogoAction(formData: FormData): Promise<{ error?: string } | { url: string }> {
+  const file = formData.get("logo") as File | null;
+  if (!file || !(file instanceof File) || file.size === 0) {
+    return { error: "Please select an image file" };
+  }
+  if (!LOGO_ALLOWED_TYPES.includes(file.type)) {
+    return { error: "Image must be PNG, JPEG, or WebP" };
+  }
+  if (file.size > LOGO_MAX_BYTES) {
+    return { error: "Image must be under 1MB" };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in" };
+
+  const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+  const path = `${user.id}/logo.${ext}`;
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  const { error: uploadError } = await supabase.storage
+    .from(LOGO_BUCKET)
+    .upload(path, buffer, { upsert: true, contentType: file.type });
+
+  if (uploadError) {
+    console.error("[uploadLogo]", uploadError.message);
+    return { error: uploadError.message };
+  }
+
+  const { data: urlData } = supabase.storage.from(LOGO_BUCKET).getPublicUrl(path);
+  const publicUrl = urlData.publicUrl;
+
+  const { error: updateError } = await supabase
+    .from("profiles")
+    .update({ logo_url: publicUrl, updated_at: new Date().toISOString() })
+    .eq("id", user.id);
+
+  if (updateError) return { error: updateError.message };
+
+  revalidatePath("/settings");
+  revalidatePath("/dashboard");
+  revalidatePath("/invoices");
+  revalidatePath("/invoices/new");
+  return { url: publicUrl };
+}
+
+/**
+ * Remove company logo from profile.
+ */
+export async function removeLogoAction(): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in" };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("logo_url")
+    .eq("id", user.id)
+    .single();
+
+  if (profile?.logo_url) {
+    const pathMatch = profile.logo_url.match(/\/logos\/([^?]+)/);
+    if (pathMatch) {
+      const path = decodeURIComponent(pathMatch[1]);
+      await supabase.storage.from(LOGO_BUCKET).remove([path]);
+    }
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ logo_url: null, updated_at: new Date().toISOString() })
+    .eq("id", user.id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/settings");
+  revalidatePath("/dashboard");
+  return {};
 }

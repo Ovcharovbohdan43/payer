@@ -14,6 +14,11 @@ type PublicInvoiceRpc = {
   payment_processing_fee_included: boolean;
   payment_processing_fee_cents: number | null;
   line_items: { description: string; amount_cents: number }[];
+  logo_url: string | null;
+  address: string | null;
+  phone: string | null;
+  company_number: string | null;
+  vat_number: string | null;
 };
 
 async function getPublicInvoice(publicId: string): Promise<PublicInvoiceRpc | null> {
@@ -51,6 +56,11 @@ export async function GET(
     status: invoice.status,
     vatIncluded: invoice.vat_included ?? undefined,
     paymentProcessingFeeCents: invoice.payment_processing_fee_cents ?? undefined,
+    logoUrl: invoice.logo_url ?? undefined,
+    address: invoice.address ?? undefined,
+    phone: invoice.phone ?? undefined,
+    companyNumber: invoice.company_number ?? undefined,
+    vatNumber: invoice.vat_number ?? undefined,
   });
 
   return new NextResponse(Buffer.from(pdfBytes), {

@@ -38,6 +38,13 @@ export type InvoicePdfData = {
   vatIncluded?: boolean;
   /** Payment processing fee in cents; shown as row before Total when set */
   paymentProcessingFeeCents?: number | null;
+  /** Company logo URL; fetched and embedded in PDF */
+  logoUrl?: string | null;
+  /** Contact & legal info shown under business name */
+  address?: string | null;
+  phone?: string | null;
+  companyNumber?: string | null;
+  vatNumber?: string | null;
 };
 
 const VAT_RATE = 0.2; // 20%
@@ -123,15 +130,66 @@ export async function generateInvoicePdf(
 
   let y = PAGE_HEIGHT - MARGIN;
 
-  // ─── Header ─────────────────────────────────────────────────────────
+  // ─── Header: logo (optional) + business name + contact ───────────────
+  let headerStartY = y;
+  const logoSize = 48;
+  let contentStartX = MARGIN;
+
+  if (data.logoUrl) {
+    try {
+      const imgRes = await fetch(data.logoUrl);
+      if (imgRes.ok) {
+        const bytes = new Uint8Array(await imgRes.arrayBuffer());
+        const contentType = imgRes.headers.get("content-type") ?? "";
+        const url = data.logoUrl.toLowerCase();
+        let img: Awaited<ReturnType<typeof pdfDoc.embedPng>> | null = null;
+        if (contentType.includes("png") || url.endsWith(".png")) {
+          img = await pdfDoc.embedPng(bytes);
+        } else if (!contentType.includes("webp") && !url.endsWith(".webp")) {
+          img = await pdfDoc.embedJpg(bytes);
+        }
+        // pdf-lib does not support WebP; skip logo for WebP
+        if (img) {
+          const scale = Math.min(logoSize / img.width, logoSize / img.height, 1);
+          const w = img.width * scale;
+          const h = img.height * scale;
+          page.drawImage(img, { x: MARGIN, y: y - h, width: w, height: h });
+          contentStartX = MARGIN + w + 12;
+        }
+      }
+    } catch {
+      // Skip logo on fetch error
+    }
+  }
+
+  let headerY = y;
   page.drawText(toAsciiSafe(data.businessName), {
-    x: MARGIN,
-    y,
+    x: contentStartX,
+    y: headerY,
     size: 20,
     font: fontBold,
     color: c,
   });
-  y -= lineHeight(20);
+  headerY -= lineHeight(20);
+
+  const contactLines: string[] = [];
+  if (data.address?.trim()) contactLines.push(toAsciiSafe(data.address.trim()));
+  if (data.phone?.trim()) contactLines.push(toAsciiSafe(data.phone.trim()));
+  if (data.companyNumber?.trim()) contactLines.push(`Company no: ${toAsciiSafe(data.companyNumber.trim())}`);
+  if (data.vatNumber?.trim()) contactLines.push(`VAT: ${toAsciiSafe(data.vatNumber.trim())}`);
+
+  for (const line of contactLines) {
+    page.drawText(line, {
+      x: contentStartX,
+      y: headerY,
+      size: 9,
+      font,
+      color: cMuted,
+    });
+    headerY -= lineHeight(9);
+  }
+
+  y = Math.min(headerY, y - (data.logoUrl ? logoSize : 0)) - 4;
 
   page.drawText("INVOICE", {
     x: MARGIN,

@@ -18,9 +18,10 @@ const NAV_ITEMS = [
 type AppShellProps = {
   children: React.ReactNode;
   businessName: string;
+  logoUrl?: string | null;
 };
 
-export function AppShell({ children, businessName }: AppShellProps) {
+export function AppShell({ children, businessName, logoUrl }: AppShellProps) {
   const pathname = usePathname();
 
   return (
@@ -76,9 +77,22 @@ export function AppShell({ children, businessName }: AppShellProps) {
             >
               <Bell className="size-5" />
             </Button>
-            <span className="hidden max-w-[140px] truncate text-sm text-muted-foreground sm:inline sm:leading-9">
-              {businessName}
-            </span>
+            <div className="flex items-center gap-2">
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt=""
+                  className="h-8 w-8 shrink-0 rounded-full object-cover ring-1 ring-white/10"
+                />
+              ) : (
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#3B82F6]/20 text-sm font-medium text-[#3B82F6]">
+                  {businessName.charAt(0).toUpperCase() || "B"}
+                </div>
+              )}
+              <span className="hidden max-w-[120px] truncate text-sm text-muted-foreground sm:inline sm:leading-9">
+                {businessName}
+              </span>
+            </div>
             <form action={signOut} className="leading-none">
               <Button
                 type="submit"
