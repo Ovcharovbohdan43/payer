@@ -67,6 +67,10 @@ export async function updateProfileAction(formData: FormData) {
 export async function setPasswordAction(formData: FormData) {
   const password = formData.get("password");
   const confirm = formData.get("confirm");
+  const oldPassword = formData.get("old_password");
+  const isRecovery = formData.get("recovery") === "true";
+  const hasPassword = formData.get("has_password") === "true";
+
   const parsed = passwordSchema.safeParse(password);
   if (!parsed.success) {
     return { error: parsed.error.flatten().formErrors[0] ?? "Invalid password" };
@@ -80,6 +84,21 @@ export async function setPasswordAction(formData: FormData) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not signed in" };
+  if (!user.email) return { error: "No email on account" };
+
+  // When changing password (not recovery), require old password verification
+  if (hasPassword && !isRecovery) {
+    if (!oldPassword || typeof oldPassword !== "string" || oldPassword.length < 8) {
+      return { error: "Current password is required" };
+    }
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: oldPassword,
+    });
+    if (signInError) {
+      return { error: "Current password is incorrect" };
+    }
+  }
 
   const { error } = await supabase.auth.updateUser({ password: parsed.data });
   if (error) return { error: error.message };
@@ -99,5 +118,27 @@ export async function setPasswordAction(formData: FormData) {
   }
 
   revalidatePath("/settings");
+  return { success: true };
+}
+
+/**
+ * Send password reset link to user's email. User must confirm via email to set a new password.
+ */
+export async function sendPasswordResetEmailAction() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in" };
+  if (!user.email) return { error: "No email on account" };
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
+  const redirectTo = `${appUrl}/auth/callback?next=${encodeURIComponent("/settings?recovery=1")}`;
+
+  const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+    redirectTo,
+  });
+
+  if (error) return { error: error.message };
   return { success: true };
 }
