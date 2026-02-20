@@ -50,6 +50,9 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
   const [paymentProcessingFeeIncluded, setPaymentProcessingFeeIncluded] = useState(false);
   const [autoRemind, setAutoRemind] = useState(false);
   const [autoRemindDays, setAutoRemindDays] = useState<number[]>([1, 3, 7]);
+  const [recurring, setRecurring] = useState(false);
+  const [recurringInterval, setRecurringInterval] = useState<"minutes" | "days">("days");
+  const [recurringIntervalValue, setRecurringIntervalValue] = useState(7);
   const [lineItems, setLineItems] = useState<LineItemInput[]>(() => [
     createEmptyLineItem(),
   ]);
@@ -177,6 +180,17 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
             ? autoRemindDays.slice().sort((a, b) => a - b).join(",")
             : "1,3,7"
         }
+      />
+      <input
+        type="hidden"
+        name="recurringEnabled"
+        value={recurring ? "true" : "false"}
+      />
+      <input type="hidden" name="recurringInterval" value={recurringInterval} />
+      <input
+        type="hidden"
+        name="recurringIntervalValue"
+        value={String(recurringIntervalValue)}
       />
       <input type="hidden" name="lineItems" value={lineItemsJson} />
 
@@ -387,6 +401,75 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
                     ))}
                   </div>
                 )}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="recurring"
+                      checked={recurring}
+                      onChange={(e) => setRecurring(e.target.checked)}
+                      disabled={isPending || !selectedClient?.email}
+                      className="h-4 w-4 rounded border-white/20 bg-[#121821] accent-[#3B82F6]"
+                    />
+                    <Label
+                      htmlFor="recurring"
+                      className="cursor-pointer text-sm font-normal text-muted-foreground"
+                    >
+                      Recurring invoice — auto-generate and send at interval
+                    </Label>
+                  </div>
+                  {recurring && selectedClient?.email && (
+                    <div className="flex flex-wrap items-center gap-3 pl-6">
+                      <span className="text-sm text-muted-foreground">
+                        Every
+                      </span>
+                      <select
+                        value={recurringInterval}
+                        onChange={(e) =>
+                          setRecurringInterval(e.target.value as "minutes" | "days")
+                        }
+                        disabled={isPending}
+                        className="h-9 rounded-md border border-border bg-[#121821] px-2 text-sm"
+                      >
+                        <option value="minutes">minutes</option>
+                        <option value="days">days</option>
+                      </select>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={recurringInterval === "minutes" ? 60 : 365}
+                        value={recurringIntervalValue}
+                        onChange={(e) =>
+                          setRecurringIntervalValue(
+                            Math.max(
+                              1,
+                              Math.min(
+                                recurringInterval === "minutes" ? 60 : 365,
+                                parseInt(e.target.value || "1", 10)
+                              )
+                            )
+                          )
+                        }
+                        disabled={isPending}
+                        className="h-9 w-20"
+                      />
+                      <span className="text-sm text-muted-foreground">
+                        {recurringInterval === "minutes"
+                          ? recurringIntervalValue === 1
+                            ? "minute"
+                            : "minutes"
+                          : recurringIntervalValue === 1
+                            ? "day"
+                            : "days"}
+                      </span>
+                      {recurringInterval === "minutes" && (
+                        <span className="text-xs text-amber-500">
+                          (test mode)
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>

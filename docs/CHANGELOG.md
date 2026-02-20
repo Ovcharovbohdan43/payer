@@ -4,6 +4,14 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2025-02-28] – Recurring invoices
+
+- **Create invoice:** Checkbox "Recurring invoice — auto-generate and send at interval" in More options. Requires client email. Interval: every X minutes (test) or X days.
+- **Form:** Interval selector: minutes (1–60, test mode) or days (1–365). Recurring only works with "Create & send email".
+- **Cron:** `GET /api/cron/recurring` runs every minute. Finds templates (recurring=true, sent) due for next run, creates copy, sends email, updates last_recurred_at.
+- **Migration:** `20250228000001_recurring_invoices.sql` — recurring, recurring_interval, recurring_interval_value, last_recurred_at, recurring_parent_id.
+- **Detail:** Shows "Recurring: every X days/minutes" or "Auto-generated from recurring template".
+
 ### [2025-02-27] – Payment processing fee (Stripe 1.5% + fixed)
 
 - **Create invoice:** Checkbox "Include payment processing fee in invoice (1.5% + fixed)" next to VAT. When enabled, fee is added to total.

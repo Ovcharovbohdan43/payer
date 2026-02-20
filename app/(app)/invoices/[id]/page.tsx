@@ -66,6 +66,17 @@ export default async function InvoiceDetailPage({
               <p className="mt-1 text-muted-foreground">
                 {invoice.number} · {invoice.client_name}
               </p>
+              {invoice.recurring && invoice.recurring_interval && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Recurring: every {invoice.recurring_interval_value}{" "}
+                  {invoice.recurring_interval === "minutes" ? "minutes" : "days"}
+                </p>
+              )}
+              {invoice.recurring_parent_id && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Auto-generated from recurring template
+                </p>
+              )}
             </div>
             {status !== "paid" && status !== "void" && (
               <InvoiceQrCode url={getPublicInvoiceUrl(invoice.public_id, BASE_URL)} />
