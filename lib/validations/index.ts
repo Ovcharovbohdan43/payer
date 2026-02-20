@@ -95,7 +95,7 @@ export const invoiceCreateSchema = z.object({
     .optional()
     .default("1,3,7")
     .transform((s) => (s || "1,3,7").replace(/\s/g, ""))
-    .refine((s) => /^(1|3|7)(,(1|3|7))*$/.test(s), "Invalid days (use 1, 3, 7)"),
+    .refine((s) => /^(1|2|3|5|7|10|14)(,(1|2|3|5|7|10|14))*$/.test(s), "Pick at least one day: 1, 2, 3, 5, 7, 10, 14"),
   recurringEnabled: z
     .string()
     .optional()

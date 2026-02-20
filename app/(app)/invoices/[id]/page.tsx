@@ -66,17 +66,24 @@ export default async function InvoiceDetailPage({
               <p className="mt-1 text-muted-foreground">
                 {invoice.number} · {invoice.client_name}
               </p>
-              {invoice.recurring && invoice.recurring_interval_value && (
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Recurring: every {invoice.recurring_interval_value}{" "}
-                  {invoice.recurring_interval_value === 1 ? "day" : "days"}
-                </p>
-              )}
-              {invoice.recurring_parent_id && (
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Auto-generated from recurring template
-                </p>
-              )}
+              <div className="mt-2 flex flex-wrap gap-2">
+                {invoice.recurring && invoice.recurring_interval_value && (
+                  <span className="inline-flex items-center rounded-full border border-[#3B82F6]/30 bg-[#3B82F6]/10 px-2.5 py-0.5 text-xs font-medium text-[#3B82F6]">
+                    Recurring · every {invoice.recurring_interval_value}{" "}
+                    {invoice.recurring_interval_value === 1 ? "day" : "days"}
+                  </span>
+                )}
+                {invoice.recurring_parent_id && (
+                  <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                    Auto-generated
+                  </span>
+                )}
+                {invoice.auto_remind_enabled && invoice.auto_remind_days && (
+                  <span className="inline-flex items-center rounded-full border border-[#3B82F6]/30 bg-[#3B82F6]/10 px-2.5 py-0.5 text-xs font-medium text-[#3B82F6]">
+                    Reminders · {invoice.auto_remind_days.split(",").join(", ")} days
+                  </span>
+                )}
+              </div>
             </div>
             {status !== "paid" && status !== "void" && (
               <InvoiceQrCode url={getPublicInvoiceUrl(invoice.public_id, BASE_URL)} />

@@ -49,6 +49,7 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
   const [vatIncluded, setVatIncluded] = useState(false);
   const [paymentProcessingFeeIncluded, setPaymentProcessingFeeIncluded] = useState(false);
   const [autoRemind, setAutoRemind] = useState(false);
+  const AUTO_REMIND_DAYS = [1, 2, 3, 5, 7, 10, 14] as const;
   const [autoRemindDays, setAutoRemindDays] = useState<number[]>([1, 3, 7]);
   const [recurring, setRecurring] = useState(false);
   const [recurringIntervalValue, setRecurringIntervalValue] = useState(7);
@@ -373,12 +374,12 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
                     htmlFor="autoRemind"
                     className="cursor-pointer text-sm font-normal text-muted-foreground"
                   >
-                    Auto-remind client (1, 3, 7 days after send)
+                    Auto-remind client — pick days after send
                   </Label>
                 </div>
                 {autoRemind && (
                   <div className="flex flex-wrap gap-3 pl-6">
-                    {[1, 3, 7].map((d) => (
+                    {AUTO_REMIND_DAYS.map((d) => (
                       <label key={d} className="flex cursor-pointer items-center gap-2">
                         <input
                           type="checkbox"
@@ -387,14 +388,15 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
                             if (e.target.checked) {
                               setAutoRemindDays((prev) => [...prev, d].sort((a, b) => a - b));
                             } else {
-                              setAutoRemindDays((prev) => prev.filter((x) => x !== d));
+                              const next = autoRemindDays.filter((x) => x !== d);
+                              setAutoRemindDays(next.length > 0 ? next : [1]);
                             }
                           }}
                           disabled={isPending}
                           className="h-4 w-4 rounded border-white/20 bg-[#121821] accent-[#3B82F6]"
                         />
                         <span className="text-sm">
-                          {d === 1 ? "1 day" : d === 3 ? "3 days" : "1 week"}
+                          {d} {d === 1 ? "day" : "days"}
                         </span>
                       </label>
                     ))}

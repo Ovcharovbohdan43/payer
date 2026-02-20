@@ -4,11 +4,14 @@ import { formatAmount, getDisplayAmountCents } from "@/lib/invoices/utils";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
 
-type DayKey = "1" | "3" | "7";
-const SENT_COLUMN: Record<DayKey, string> = {
+const SENT_COLUMN: Record<string, string> = {
   "1": "reminder_1d_sent_at",
+  "2": "reminder_2d_sent_at",
   "3": "reminder_3d_sent_at",
+  "5": "reminder_5d_sent_at",
   "7": "reminder_7d_sent_at",
+  "10": "reminder_10d_sent_at",
+  "14": "reminder_14d_sent_at",
 };
 
 /**
@@ -25,7 +28,7 @@ export async function runAutoReminders(): Promise<{ sent: number; errors: number
   const { data: invoices, error: fetchError } = await supabase
     .from("invoices")
     .select(
-      "id, user_id, number, public_id, client_name, client_email, amount_cents, currency, vat_included, due_date, sent_at, status, auto_remind_enabled, auto_remind_days, reminder_1d_sent_at, reminder_3d_sent_at, reminder_7d_sent_at"
+      "id, user_id, number, public_id, client_name, client_email, amount_cents, currency, vat_included, due_date, sent_at, status, auto_remind_enabled, auto_remind_days, reminder_1d_sent_at, reminder_2d_sent_at, reminder_3d_sent_at, reminder_5d_sent_at, reminder_7d_sent_at, reminder_10d_sent_at, reminder_14d_sent_at"
     )
     .eq("auto_remind_enabled", true)
     .not("client_email", "is", null)
@@ -37,8 +40,6 @@ export async function runAutoReminders(): Promise<{ sent: number; errors: number
     return { sent: 0, errors: 1 };
   }
 
-  const days = [1, 3, 7] as const;
-
   for (const inv of invoices) {
     if (inv.status === "paid" || inv.status === "void") continue;
 
@@ -46,13 +47,12 @@ export async function runAutoReminders(): Promise<{ sent: number; errors: number
     const schedule = (inv.auto_remind_days ?? "1,3,7")
       .split(",")
       .map((s: string) => s.trim())
-      .filter((s: string): s is DayKey => ["1", "3", "7"].includes(s));
+      .filter((s: string) => SENT_COLUMN[s] != null);
 
-    for (const day of days) {
-      const dayStr = String(day) as DayKey;
-      if (!schedule.includes(dayStr)) continue;
-
+    for (const dayStr of schedule) {
       const sentCol = SENT_COLUMN[dayStr];
+      if (!sentCol) continue;
+      const day = parseInt(dayStr, 10);
       const alreadySent = (inv as Record<string, unknown>)[sentCol];
       if (alreadySent) continue;
 
