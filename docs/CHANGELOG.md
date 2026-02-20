@@ -13,7 +13,7 @@ All notable changes to the Puyer project.
 ### [2025-02-28] – Recurring invoices
 
 - **Create invoice:** Checkbox "Recurring invoice — auto-generate and send at interval" in More options. Requires client email. Interval: every X minutes (test) or X days.
-- **Form:** Interval selector: minutes (1–60, test mode) or days (1–365). Recurring only works with "Create & send email".
+- **Form:** Interval selector: 1, 7, 14, 21, or 30 days. Recurring only works with "Create & send email". (Removed minutes test mode for Vercel Hobby compatibility.)
 - **Cron:** `GET /api/cron/recurring` runs daily at 9:00 UTC. Finds templates (recurring=true, sent) due for next run, creates copy, sends email, updates last_recurred_at.
 - **Migration:** `20250228000001_recurring_invoices.sql` — recurring, recurring_interval, recurring_interval_value, last_recurred_at, recurring_parent_id.
 - **Detail:** Shows "Recurring: every X days/minutes" or "Auto-generated from recurring template".
@@ -31,6 +31,12 @@ All notable changes to the Puyer project.
 - **Remember 30 days:** After entering the correct code, user can tick "Remember this device for 30 days" to skip OTP on next password login.
 - **Migration:** `20250225000001_login_otps.sql` — table for OTP hashes (HMAC). RLS: users manage own OTPs.
 - **Env:** `LOGIN_OTP_SECRET` (optional), `LOGIN_VERIFY_SECRET` (optional, for remember cookie).
+
+### [2025-02-29] – Auto-remind: user-picked days, badges
+
+- **Create invoice:** User picks reminder days: 1, 2, 3, 5, 7, 10, or 14 days after send (at least one required).
+- **Invoice detail:** Badges for "Recurring · every X days" and "Reminders · 1, 3, 7 days" (actual configured days). Toggle + day picker to change reminders.
+- **Migration:** `20250230000001_auto_remind_more_days.sql` — reminder_2d, 5d, 10d, 14d columns.
 
 ### [2025-02-24] – Auto-reminders (1, 3, 7 days after send)
 

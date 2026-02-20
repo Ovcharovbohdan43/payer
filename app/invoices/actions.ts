@@ -531,11 +531,12 @@ export async function updateAutoRemindAction(
   if (enabled && !invoice.client_email)
     return { error: "Add client email to enable auto-reminders" };
 
+  const ALLOWED_DAYS = ["1", "2", "3", "5", "7", "10", "14"];
   const validDays = days
     .split(",")
     .map((s) => s.trim())
-    .filter((s) => ["1", "3", "7"].includes(s));
-  const daysStr = validDays.length > 0 ? validDays.join(",") : "1,3,7";
+    .filter((s) => ALLOWED_DAYS.includes(s));
+  const daysStr = validDays.length > 0 ? [...new Set(validDays)].sort((a, b) => parseInt(a, 10) - parseInt(b, 10)).join(",") : "1,3,7";
 
   const { error } = await supabase
     .from("invoices")

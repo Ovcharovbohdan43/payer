@@ -14,6 +14,8 @@ import { useTransition, useState } from "react";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 
+const AUTO_REMIND_DAYS = [1, 2, 3, 5, 7, 10, 14] as const;
+
 type Props = {
   invoiceId: string;
   publicUrl: string;
@@ -26,6 +28,14 @@ type Props = {
 };
 
 const CAN_SEND_REMINDER: InvoiceStatus[] = ["sent", "viewed", "overdue", "draft"];
+
+function parseDays(s: string): number[] {
+  return s
+    .split(",")
+    .map((x) => parseInt(x.trim(), 10))
+    .filter((n) => !isNaN(n) && AUTO_REMIND_DAYS.includes(n as (typeof AUTO_REMIND_DAYS)[number]))
+    .sort((a, b) => a - b);
+}
 
 export function InvoiceDetailClient({
   invoiceId,
@@ -41,6 +51,9 @@ export function InvoiceDetailClient({
   const [copyDone, setCopyDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [autoRemindEnabled, setAutoRemindEnabled] = useState(initialAutoRemind);
+  const [selectedDays, setSelectedDays] = useState<number[]>(() =>
+    parseDays(autoRemindDays)
+  );
 
   const handleCopyLink = async () => {
     try {
@@ -169,43 +182,84 @@ export function InvoiceDetailClient({
         status !== "paid" &&
         status !== "void" &&
         status !== "draft" && (
-          <div className="mt-4 flex items-center gap-2 border-t border-white/5 pt-4">
-            <input
-              type="checkbox"
-              id="autoRemindToggle"
-              checked={autoRemindEnabled}
-              disabled={pending}
-              onChange={(e) => {
-                const next = e.target.checked;
-                setAutoRemindEnabled(next);
-                startTransition(async () => {
-                  const r = await updateAutoRemindAction(
-                    invoiceId,
-                    next,
-                    autoRemindDays
-                  );
-                  if (r.error) {
-                    setError(r.error);
-                    toast.error(r.error);
-                    setAutoRemindEnabled(!next);
-                  } else {
-                    setError(null);
-                    toast.success(
-                      next
-                        ? "Auto-reminders enabled (1, 3, 7 days)"
-                        : "Auto-reminders disabled"
+          <div className="mt-4 space-y-2 border-t border-white/5 pt-4">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="autoRemindToggle"
+                checked={autoRemindEnabled}
+                disabled={pending}
+                onChange={(e) => {
+                  const next = e.target.checked;
+                  const days = next && selectedDays.length === 0 ? [1, 3, 7] : selectedDays;
+                  if (next) setSelectedDays(days);
+                  setAutoRemindEnabled(next);
+                  startTransition(async () => {
+                    const r = await updateAutoRemindAction(
+                      invoiceId,
+                      next,
+                      days.join(",")
                     );
-                  }
-                });
-              }}
-              className="h-4 w-4 rounded border-white/20 bg-[#121821] accent-[#3B82F6]"
-            />
-            <Label
-              htmlFor="autoRemindToggle"
-              className="cursor-pointer text-sm font-normal text-muted-foreground"
-            >
-              Auto-remind client (1, 3, 7 days after sent)
-            </Label>
+                    if (r.error) {
+                      setError(r.error);
+                      toast.error(r.error);
+                      setAutoRemindEnabled(!next);
+                    } else {
+                      setError(null);
+                      toast.success(
+                        next
+                          ? `Auto-reminders enabled (${days.join(", ")} days)`
+                          : "Auto-reminders disabled"
+                      );
+                    }
+                  });
+                }}
+                className="h-4 w-4 rounded border-white/20 bg-[#121821] accent-[#3B82F6]"
+              />
+              <Label
+                htmlFor="autoRemindToggle"
+                className="cursor-pointer text-sm font-normal text-muted-foreground"
+              >
+                Auto-remind client — pick days after sent
+              </Label>
+            </div>
+            {autoRemindEnabled && (
+              <div className="flex flex-wrap gap-3 pl-6">
+                {AUTO_REMIND_DAYS.map((d) => (
+                  <label key={d} className="flex cursor-pointer items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedDays.includes(d)}
+                      disabled={pending}
+                      onChange={(e) => {
+                        const next = e.target.checked
+                          ? [...selectedDays, d].sort((a, b) => a - b)
+                          : selectedDays.filter((x) => x !== d);
+                        const days = next.length > 0 ? next : [1];
+                        setSelectedDays(days);
+                        startTransition(async () => {
+                          const r = await updateAutoRemindAction(
+                            invoiceId,
+                            true,
+                            days.join(",")
+                          );
+                          if (r.error) {
+                            toast.error(r.error);
+                            setSelectedDays(selectedDays);
+                          } else {
+                            toast.success(`Reminders: ${days.join(", ")} days`);
+                          }
+                        });
+                      }}
+                      className="h-4 w-4 rounded border-white/20 bg-[#121821] accent-[#3B82F6]"
+                    />
+                    <span className="text-sm text-muted-foreground">
+                      {d} {d === 1 ? "day" : "days"}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            )}
           </div>
         )}
       {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
