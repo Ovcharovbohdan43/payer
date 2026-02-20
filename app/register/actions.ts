@@ -10,6 +10,7 @@ export async function signUpAction(formData: FormData) {
     name: formData.get("name"),
     business_name: formData.get("business_name"),
     password: formData.get("password"),
+    termsAccepted: formData.get("termsAccepted"),
   };
   const parsed = registerSchema.safeParse(raw);
   if (!parsed.success) {
@@ -19,6 +20,7 @@ export async function signUpAction(formData: FormData) {
       first.name?.[0] ??
       first.business_name?.[0] ??
       first.password?.[0] ??
+      first.termsAccepted?.[0] ??
       "Invalid fields";
     return { error: msg };
   }

@@ -20,6 +20,10 @@ export const registerSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
   business_name: z.string().min(1, "Business name is required").max(200),
   password: passwordSchema,
+  termsAccepted: z
+    .string()
+    .optional()
+    .refine((v) => v === "true", "You must agree to the Terms of Service"),
 });
 
 export const optionalEmailSchema = z

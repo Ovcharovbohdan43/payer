@@ -4,6 +4,12 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2025-02-28] – Terms of Service & support email
+
+- **Terms of Service:** New page `/terms` with production-ready Terms of Service (acceptance, service description, eligibility, acceptable use, payments, liability, indemnification, termination, governing law, contact).
+- **Support email:** `support@puyer.org` shown in landing footer, login page, settings, and Terms page.
+- **Registration:** Checkbox "I agree to the Terms of Service" with link to `/terms`; required to create account.
+
 ### [2025-02-28] – Recurring invoices
 
 - **Create invoice:** Checkbox "Recurring invoice — auto-generate and send at interval" in More options. Requires client email. Interval: every X minutes (test) or X days.

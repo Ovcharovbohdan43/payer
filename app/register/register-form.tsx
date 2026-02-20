@@ -68,6 +68,29 @@ export function RegisterForm() {
           className="h-11"
         />
       </div>
+      <div className="flex items-start gap-3">
+        <input
+          type="checkbox"
+          id="termsAccepted"
+          name="termsAccepted"
+          value="true"
+          required
+          disabled={isPending}
+          className="mt-1 h-4 w-4 shrink-0 rounded border-white/20 accent-[#3B82F6]"
+        />
+        <Label htmlFor="termsAccepted" className="cursor-pointer text-sm font-normal leading-relaxed">
+          I agree to the{" "}
+          <a
+            href="/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-foreground"
+          >
+            Terms of Service
+          </a>
+          . By clicking Create account, you accept these terms.
+        </Label>
+      </div>
       <Button
         type="submit"
         className="h-11 w-full"

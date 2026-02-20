@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -148,6 +149,27 @@ export function SettingsForm({ profile }: { profile: Profile }) {
         ) : (
           <ConnectStripeButton />
         )}
+      </section>
+
+      <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
+        <h2 className="mb-2 text-base font-semibold">Support</h2>
+        <p className="mb-3 text-sm text-muted-foreground">
+          Need help? Contact us or review our terms.
+        </p>
+        <div className="flex flex-wrap gap-4 text-sm">
+          <a
+            href="mailto:support@puyer.org"
+            className="text-[#3B82F6] underline hover:text-blue-400"
+          >
+            support@puyer.org
+          </a>
+          <Link
+            href="/terms"
+            className="text-[#3B82F6] underline hover:text-blue-400"
+          >
+            Terms of Service
+          </Link>
+        </div>
       </section>
     </div>
   );

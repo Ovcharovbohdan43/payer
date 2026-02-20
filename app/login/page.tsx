@@ -38,6 +38,14 @@ export default async function LoginPage({
           <Link href="/" className="underline hover:text-foreground">
             Back to home
           </Link>
+          {" · "}
+          <Link href="/terms" className="underline hover:text-foreground">
+            Terms of Service
+          </Link>
+          {" · "}
+          <a href="mailto:support@puyer.org" className="underline hover:text-foreground">
+            support@puyer.org
+          </a>
         </p>
       </div>
     </div>
