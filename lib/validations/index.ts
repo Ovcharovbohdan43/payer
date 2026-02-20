@@ -92,6 +92,20 @@ export const invoiceCreateSchema = z.object({
     .default("1,3,7")
     .transform((s) => (s || "1,3,7").replace(/\s/g, ""))
     .refine((s) => /^(1|3|7)(,(1|3|7))*$/.test(s), "Invalid days (use 1, 3, 7)"),
+  recurringEnabled: z
+    .string()
+    .optional()
+    .transform((v) => v === "true"),
+  recurringInterval: z
+    .enum(["minutes", "days"])
+    .optional()
+    .default("days"),
+  recurringIntervalValue: z
+    .string()
+    .optional()
+    .default("7")
+    .transform((s) => parseInt(s || "7", 10))
+    .refine((n) => n > 0 && n <= 365, "Interval must be 1–365"),
   lineItems: z
     .string()
     .transform((s) => {

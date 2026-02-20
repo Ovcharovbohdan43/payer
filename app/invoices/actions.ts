@@ -46,6 +46,10 @@ export type InvoiceRow = {
   payment_processing_fee_cents?: number | null;
   auto_remind_enabled?: boolean;
   auto_remind_days?: string;
+  recurring?: boolean;
+  recurring_interval?: string | null;
+  recurring_interval_value?: number | null;
+  recurring_parent_id?: string | null;
   line_items?: InvoiceLineItem[];
 };
 
@@ -68,6 +72,9 @@ export async function createInvoiceAction(
     paymentProcessingFeeIncluded: formData.get("paymentProcessingFeeIncluded") ?? "",
     autoRemindEnabled: formData.get("autoRemindEnabled") ?? "",
     autoRemindDays: formData.get("autoRemindDays") ?? "1,3,7",
+    recurringEnabled: formData.get("recurringEnabled") ?? "",
+    recurringInterval: formData.get("recurringInterval") ?? "days",
+    recurringIntervalValue: formData.get("recurringIntervalValue") ?? "7",
     lineItems: formData.get("lineItems") ?? "[]",
   };
   const parsed = invoiceCreateSchema.safeParse(raw);
@@ -119,6 +126,9 @@ export async function createInvoiceAction(
 
   const autoRemindEnabled = parsed.data.autoRemindEnabled ?? false;
   const autoRemindDays = parsed.data.autoRemindDays ?? "1,3,7";
+  const recurringEnabled = parsed.data.recurringEnabled ?? false;
+  const recurringInterval = parsed.data.recurringInterval ?? "days";
+  const recurringIntervalValue = parsed.data.recurringIntervalValue ?? 7;
 
   const { data: invoice, error: insertError } = await supabase
     .from("invoices")
@@ -141,6 +151,10 @@ export async function createInvoiceAction(
       payment_processing_fee_cents: paymentProcessingFeeCents,
       auto_remind_enabled: options.markSent && autoRemindEnabled,
       auto_remind_days: autoRemindDays,
+      recurring: recurringEnabled && options.markSent,
+      recurring_interval: recurringEnabled ? recurringInterval : null,
+      recurring_interval_value: recurringEnabled ? recurringIntervalValue : null,
+      last_recurred_at: null,
     })
     .select("id, number, public_id")
     .single();
@@ -230,7 +244,7 @@ export async function getInvoiceById(id: string): Promise<InvoiceRow | null> {
   const { data: invoice } = await supabase
     .from("invoices")
     .select(
-      "id, number, public_id, status, client_name, client_email, amount_cents, currency, description, created_at, sent_at, viewed_at, paid_at, voided_at, due_date, notes, stripe_payment_intent_id, vat_included, payment_processing_fee_cents, auto_remind_enabled, auto_remind_days"
+      "id, number, public_id, status, client_name, client_email, amount_cents, currency, description, created_at, sent_at, viewed_at, paid_at, voided_at, due_date, notes, stripe_payment_intent_id, vat_included, payment_processing_fee_cents, auto_remind_enabled, auto_remind_days, recurring, recurring_interval, recurring_interval_value, recurring_parent_id"
     )
     .eq("id", id)
     .eq("user_id", user.id)
