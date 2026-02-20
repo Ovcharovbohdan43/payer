@@ -85,12 +85,14 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
       }))
   );
 
-  const subtotalCents = lineItems.reduce((sum, item) => {
+  const enteredCents = lineItems.reduce((sum, item) => {
     const amt = parseFloat(item.amount);
     return sum + (isNaN(amt) || amt < 0 ? 0 : Math.round(amt * 100));
   }, 0);
-  const vatCents = Math.round(subtotalCents * VAT_RATE);
-  const amountBeforeFeeCents = subtotalCents + vatCents;
+  // vatIncluded: entered amount is gross (incl. VAT) → no extra VAT
+  // !vatIncluded: entered amount is net → add 20% VAT on top
+  const vatCents = vatIncluded ? 0 : Math.round(enteredCents * VAT_RATE);
+  const amountBeforeFeeCents = vatIncluded ? enteredCents : enteredCents + vatCents;
   const processingFeeCents = paymentProcessingFeeIncluded
     ? calcPaymentProcessingFeeCents(amountBeforeFeeCents, defaultCurrency)
     : 0;
@@ -301,9 +303,9 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
           <p className="text-xs text-muted-foreground">
             VAT (20%) is included in the price.
           </p>
-        ) : subtotalCents > 0 ? (
+        ) : enteredCents > 0 ? (
           <p className="text-xs text-muted-foreground">
-            Subtotal: {formatMoney(subtotalCents, defaultCurrency)}
+            Subtotal: {formatMoney(enteredCents, defaultCurrency)}
             {!vatIncluded && ` + VAT (20%): ${formatMoney(vatCents, defaultCurrency)}`}
             {paymentProcessingFeeIncluded &&
               ` + Processing fee: ${formatMoney(processingFeeCents, defaultCurrency)}`}
