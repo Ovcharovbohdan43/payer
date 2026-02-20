@@ -27,7 +27,9 @@ Puyer sends transactional emails (invoices, reminders) and auth emails (login OT
 
 ## Password Reset Template (Supabase)
 
-Supabase sends password reset emails. Use a branded template:
+Supabase sends password reset emails. Use a branded template.
+
+**Redirect URL:** Add `https://your-domain.com/auth/reset-password` to Supabase Dashboard → Authentication → URL Configuration → Redirect URLs.
 
 1. Open Supabase Dashboard → Authentication → Email Templates → Reset Password.
 2. Copy HTML from `docs/email-templates/password-reset.html`.

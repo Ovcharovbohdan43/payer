@@ -133,7 +133,7 @@ export async function sendPasswordResetEmailAction() {
   if (!user.email) return { error: "No email on account" };
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
-  const redirectTo = `${appUrl}/auth/callback?next=${encodeURIComponent("/settings?recovery=1")}`;
+  const redirectTo = `${appUrl.replace(/\/$/, "")}/auth/reset-password`;
 
   const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
     redirectTo,

@@ -11,6 +11,10 @@ All notable changes to the Puyer project.
 - **Spam compliance:** List-Unsubscribe + List-Unsubscribe-Post headers (one-click); physical address in footer (`MAILING_ADDRESS`); docs/EMAIL_SPAM_COMPLIANCE.md.
 - **Migration:** `20250231000001_email_unsubscribes.sql`.
 
+### [2025-02-22] – Password reset redirect fix
+
+- **Password reset:** Dedicated `/auth/reset-password` route for recovery flow. Supabase redirects here after email link click; exchanges code and redirects to `/settings?recovery=1`. Add this URL to Supabase Redirect URLs.
+
 ### [2025-02-20] – Password change: old password required, email reset fallback
 
 - **Change password:** Users with a password must enter their current password before changing it. Only after successful verification can they set a new password.
