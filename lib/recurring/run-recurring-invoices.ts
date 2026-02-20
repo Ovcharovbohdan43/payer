@@ -17,7 +17,7 @@ type InvoiceTemplate = {
   notes: string | null;
   auto_remind_enabled: boolean;
   auto_remind_days: string;
-  recurring_interval: "minutes" | "days";
+  recurring_interval: "days";
   recurring_interval_value: number;
   last_recurred_at: string | null;
   sent_at: string | null;
@@ -33,15 +33,10 @@ function getAnchorDate(template: InvoiceTemplate): Date {
 
 function isDue(template: InvoiceTemplate, now: Date): boolean {
   const anchor = getAnchorDate(template);
-  const { recurring_interval, recurring_interval_value } = template;
-  let nextDue: Date;
-  if (recurring_interval === "minutes") {
-    nextDue = new Date(anchor.getTime() + recurring_interval_value * 60 * 1000);
-  } else {
-    nextDue = new Date(anchor);
-    nextDue.setDate(nextDue.getDate() + recurring_interval_value);
-    nextDue.setHours(0, 0, 0, 0);
-  }
+  const { recurring_interval_value } = template;
+  const nextDue = new Date(anchor);
+  nextDue.setDate(nextDue.getDate() + recurring_interval_value);
+  nextDue.setHours(0, 0, 0, 0);
   return now >= nextDue;
 }
 
@@ -73,7 +68,7 @@ export async function runRecurringInvoices(): Promise<{
   }
 
   for (const t of templates as InvoiceTemplate[]) {
-    if (t.recurring_interval !== "minutes" && t.recurring_interval !== "days") continue;
+    if (t.recurring_interval !== "days") continue;
     if (!t.client_email) continue;
 
     if (!isDue(t, now)) continue;

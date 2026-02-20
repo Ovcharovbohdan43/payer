@@ -101,7 +101,7 @@ export const invoiceCreateSchema = z.object({
     .optional()
     .transform((v) => v === "true"),
   recurringInterval: z
-    .enum(["minutes", "days"])
+    .enum(["days"])
     .optional()
     .default("days"),
   recurringIntervalValue: z
@@ -109,7 +109,7 @@ export const invoiceCreateSchema = z.object({
     .optional()
     .default("7")
     .transform((s) => parseInt(s || "7", 10))
-    .refine((n) => n > 0 && n <= 365, "Interval must be 1–365"),
+    .refine((n) => [1, 7, 14, 21, 30].includes(n), "Interval must be 1, 7, 14, 21, or 30 days"),
   lineItems: z
     .string()
     .transform((s) => {
