@@ -14,7 +14,7 @@ All notable changes to the Puyer project.
 
 - **Create invoice:** Checkbox "Recurring invoice — auto-generate and send at interval" in More options. Requires client email. Interval: every X minutes (test) or X days.
 - **Form:** Interval selector: minutes (1–60, test mode) or days (1–365). Recurring only works with "Create & send email".
-- **Cron:** `GET /api/cron/recurring` runs every minute. Finds templates (recurring=true, sent) due for next run, creates copy, sends email, updates last_recurred_at.
+- **Cron:** `GET /api/cron/recurring` runs daily at 9:00 UTC. Finds templates (recurring=true, sent) due for next run, creates copy, sends email, updates last_recurred_at.
 - **Migration:** `20250228000001_recurring_invoices.sql` — recurring, recurring_interval, recurring_interval_value, last_recurred_at, recurring_parent_id.
 - **Detail:** Shows "Recurring: every X days/minutes" or "Auto-generated from recurring template".
 

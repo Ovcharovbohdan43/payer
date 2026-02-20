@@ -51,7 +51,6 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
   const [autoRemind, setAutoRemind] = useState(false);
   const [autoRemindDays, setAutoRemindDays] = useState<number[]>([1, 3, 7]);
   const [recurring, setRecurring] = useState(false);
-  const [recurringInterval, setRecurringInterval] = useState<"minutes" | "days">("days");
   const [recurringIntervalValue, setRecurringIntervalValue] = useState(7);
   const [lineItems, setLineItems] = useState<LineItemInput[]>(() => [
     createEmptyLineItem(),
@@ -186,7 +185,7 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
         name="recurringEnabled"
         value={recurring ? "true" : "false"}
       />
-      <input type="hidden" name="recurringInterval" value={recurringInterval} />
+      <input type="hidden" name="recurringInterval" value="days" />
       <input
         type="hidden"
         name="recurringIntervalValue"
@@ -420,53 +419,21 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
                   </div>
                   {recurring && selectedClient?.email && (
                     <div className="flex flex-wrap items-center gap-3 pl-6">
-                      <span className="text-sm text-muted-foreground">
-                        Every
-                      </span>
+                      <span className="text-sm text-muted-foreground">Every</span>
                       <select
-                        value={recurringInterval}
+                        value={recurringIntervalValue}
                         onChange={(e) =>
-                          setRecurringInterval(e.target.value as "minutes" | "days")
+                          setRecurringIntervalValue(parseInt(e.target.value, 10))
                         }
                         disabled={isPending}
                         className="h-9 rounded-md border border-border bg-[#121821] px-2 text-sm"
                       >
-                        <option value="minutes">minutes</option>
-                        <option value="days">days</option>
+                        <option value={1}>1 day</option>
+                        <option value={7}>7 days</option>
+                        <option value={14}>14 days</option>
+                        <option value={21}>21 days</option>
+                        <option value={30}>30 days</option>
                       </select>
-                      <Input
-                        type="number"
-                        min={1}
-                        max={recurringInterval === "minutes" ? 60 : 365}
-                        value={recurringIntervalValue}
-                        onChange={(e) =>
-                          setRecurringIntervalValue(
-                            Math.max(
-                              1,
-                              Math.min(
-                                recurringInterval === "minutes" ? 60 : 365,
-                                parseInt(e.target.value || "1", 10)
-                              )
-                            )
-                          )
-                        }
-                        disabled={isPending}
-                        className="h-9 w-20"
-                      />
-                      <span className="text-sm text-muted-foreground">
-                        {recurringInterval === "minutes"
-                          ? recurringIntervalValue === 1
-                            ? "minute"
-                            : "minutes"
-                          : recurringIntervalValue === 1
-                            ? "day"
-                            : "days"}
-                      </span>
-                      {recurringInterval === "minutes" && (
-                        <span className="text-xs text-amber-500">
-                          (test mode)
-                        </span>
-                      )}
                     </div>
                   )}
                 </div>

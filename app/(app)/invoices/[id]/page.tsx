@@ -66,10 +66,10 @@ export default async function InvoiceDetailPage({
               <p className="mt-1 text-muted-foreground">
                 {invoice.number} · {invoice.client_name}
               </p>
-              {invoice.recurring && invoice.recurring_interval && (
+              {invoice.recurring && invoice.recurring_interval_value && (
                 <p className="mt-1 text-xs text-muted-foreground">
                   Recurring: every {invoice.recurring_interval_value}{" "}
-                  {invoice.recurring_interval === "minutes" ? "minutes" : "days"}
+                  {invoice.recurring_interval_value === 1 ? "day" : "days"}
                 </p>
               )}
               {invoice.recurring_parent_id && (
