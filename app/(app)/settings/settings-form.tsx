@@ -220,9 +220,15 @@ export function SettingsForm({ profile, recovery = false }: { profile: Profile; 
       <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
         <h2 className="mb-2 text-base font-semibold">Support</h2>
         <p className="mb-3 text-sm text-muted-foreground">
-          Need help? Contact us or review our terms.
+          Need help? Check our FAQ or contact us.
         </p>
         <div className="flex flex-wrap gap-4 text-sm">
+          <Link
+            href="/help"
+            className="text-[#3B82F6] underline hover:text-blue-400"
+          >
+            Help & FAQ
+          </Link>
           <a
             href="mailto:support@puyer.org"
             className="text-[#3B82F6] underline hover:text-blue-400"
@@ -233,7 +239,7 @@ export function SettingsForm({ profile, recovery = false }: { profile: Profile; 
             href="/terms"
             className="text-[#3B82F6] underline hover:text-blue-400"
           >
-            Terms of Service
+            Terms
           </Link>
         </div>
       </section>

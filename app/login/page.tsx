@@ -39,8 +39,12 @@ export default async function LoginPage({
             Back to home
           </Link>
           {" · "}
+          <Link href="/help" className="underline hover:text-foreground">
+            Help
+          </Link>
+          {" · "}
           <Link href="/terms" className="underline hover:text-foreground">
-            Terms of Service
+            Terms
           </Link>
           {" · "}
           <a href="mailto:support@puyer.org" className="underline hover:text-foreground">
