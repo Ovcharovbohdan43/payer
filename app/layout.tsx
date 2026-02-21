@@ -17,12 +17,52 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.puyer.org";
+
 export const metadata: Metadata = {
-  title: "Puyer — Invoice in 15 seconds",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Puyer — Invoice in 15 seconds",
+    template: "%s | Puyer",
+  },
   description:
-    "Create invoices in seconds, send payment links, track payments, and get paid faster.",
+    "Create invoices in seconds, send payment links, track payments, and get paid faster. Built for trades and freelancers. Free to start.",
+  keywords: [
+    "invoice",
+    "invoicing",
+    "get paid",
+    "freelancer",
+    "trades",
+    "payment link",
+    "stripe",
+  ],
+  authors: [{ name: "Puyer", url: SITE_URL }],
+  creator: "Puyer",
   icons: {
     icon: "/favicon.ico",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: SITE_URL,
+    siteName: "Puyer",
+    title: "Puyer — Invoice in 15 seconds",
+    description:
+      "Create invoices in seconds, send payment links, track payments, and get paid faster. Built for trades and freelancers.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Puyer — Invoice in 15 seconds",
+    description:
+      "Create invoices in seconds, send payment links, track payments, and get paid faster.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
   },
 };
 
@@ -30,6 +70,22 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "Puyer",
+  description:
+    "Create invoices in seconds, send payment links, track payments, and get paid faster. Built for trades and freelancers.",
+  url: SITE_URL,
+  applicationCategory: "FinanceApplication",
+  operatingSystem: "Web",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+  },
 };
 
 export default function RootLayout({
@@ -42,6 +98,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased min-h-screen`}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <ThemeProvider>
           {children}
           <Toaster richColors position="top-center" />
