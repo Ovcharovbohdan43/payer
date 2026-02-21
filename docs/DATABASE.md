@@ -16,6 +16,7 @@ Run in order (Supabase SQL Editor or `supabase db push`):
 10. `supabase/migrations/20250232000001_business_contact_logo.sql` — profiles: address, phone, company_number, vat_number, logo_url (contact & legal info for invoices)
 11. `supabase/migrations/20250232000002_get_public_invoice_contact_logo.sql` — get_public_invoice returns logo_url, address, phone, company_number, vat_number
 12. `supabase/migrations/20250232000003_storage_logos_bucket.sql` — storage bucket `logos` (public, 1MB, PNG/JPEG/WebP); RLS for authenticated upload/delete in own folder
+13. `supabase/migrations/20250232000004_storage_logos_policies_fix.sql` — fix logos RLS (path prefix check + SELECT for upsert)
 
 ## Public invoice access
 
