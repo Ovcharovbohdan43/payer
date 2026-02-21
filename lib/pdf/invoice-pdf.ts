@@ -558,6 +558,9 @@ export async function generateInvoicePdf(
     thickness: 0.5,
     color: rgb(0.9, 0.9, 0.9),
   });
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
+  const termsUrl = appUrl.replace(/\/$/, "") + "/terms";
+
   page.drawText("Thank you for your business.", {
     x: MARGIN,
     y: footerY + 6,
@@ -567,10 +570,17 @@ export async function generateInvoicePdf(
   });
   page.drawText("Powered by Puyer", {
     x: MARGIN,
-    y: footerY - 6,
+    y: footerY - 2,
     size: 8,
     font,
     color: rgb(0.7, 0.7, 0.7),
+  });
+  page.drawText(`Terms of service: ${termsUrl.replace(/^https?:\/\//, "")}`, {
+    x: MARGIN,
+    y: footerY - 12,
+    size: 6,
+    font,
+    color: rgb(0.6, 0.6, 0.6),
   });
 
   return pdfDoc.save();
