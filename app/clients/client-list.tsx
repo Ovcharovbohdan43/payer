@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -58,14 +59,17 @@ export function ClientList({ clients }: { clients: ClientRow[] }) {
                 key={client.id}
                 className="flex min-h-[52px] min-w-0 items-center justify-between gap-2 px-3 py-2.5 sm:px-4 sm:py-3"
               >
-                <div className="min-w-0 flex-1">
+                <Link
+                  href={`/clients/${client.id}`}
+                  className="min-w-0 flex-1 cursor-pointer transition-colors hover:text-foreground"
+                >
                   <p className="font-medium truncate">{client.name}</p>
                   {(client.email || client.phone) && (
                     <p className="text-sm text-muted-foreground truncate">
                       {[client.email, client.phone].filter(Boolean).join(" · ")}
                     </p>
                   )}
-                </div>
+                </Link>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-10 min-h-10 w-10 shrink-0 touch-manipulation" aria-label="Actions">
