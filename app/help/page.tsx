@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import {
   ChevronDown,
@@ -9,6 +10,7 @@ import {
   Zap,
   Mail,
   ArrowRight,
+  LayoutDashboard,
 } from "lucide-react";
 
 export const metadata = {
@@ -178,7 +180,10 @@ function FaqAccordion({
   );
 }
 
-export default function HelpPage() {
+export default async function HelpPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -204,18 +209,34 @@ export default function HelpPage() {
       <header className="sticky top-0 z-50 border-b border-white/5 bg-[#0B0F14]/95 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-4 sm:h-16 sm:px-6">
           <Link
-            href="/"
+            href={user ? "/dashboard" : "/"}
             className="text-lg font-bold text-white transition-colors hover:text-white/90"
           >
             Puyer
           </Link>
           <div className="flex items-center gap-2">
-            <Button asChild variant="ghost" size="sm" className="rounded-lg">
-              <Link href="/login">Log in</Link>
-            </Button>
-            <Button asChild variant="outline" size="sm" className="rounded-lg">
-              <Link href="/">← Back</Link>
-            </Button>
+            {user ? (
+              <>
+                <Button asChild variant="ghost" size="sm" className="rounded-lg">
+                  <Link href="/dashboard" className="flex items-center gap-2">
+                    <LayoutDashboard className="size-4" />
+                    Dashboard
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="sm" className="rounded-lg">
+                  <Link href="/settings">← Back</Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button asChild variant="ghost" size="sm" className="rounded-lg">
+                  <Link href="/login">Log in</Link>
+                </Button>
+                <Button asChild variant="outline" size="sm" className="rounded-lg">
+                  <Link href="/">← Back</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </header>
