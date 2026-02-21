@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, FileText, Users, Settings, Bell, FileSignature } from "lucide-react";
+import { LayoutDashboard, FileText, Users, Settings, FileSignature } from "lucide-react";
 import { signOut } from "@/app/login/actions";
 import { MobileNav } from "./mobile-nav";
 
@@ -77,15 +77,6 @@ export function AppShell({ children, businessName, logoUrl, isVerified }: AppShe
             </Link>
           </div>
           <div className="flex flex-1 flex-wrap items-center justify-end gap-2 md:justify-end">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-muted-foreground hover:text-foreground"
-              aria-label="Notifications"
-              disabled
-            >
-              <Bell className="size-5" />
-            </Button>
             <div className="flex items-center gap-2">
               <div className="relative shrink-0">
                 {logoUrl ? (
