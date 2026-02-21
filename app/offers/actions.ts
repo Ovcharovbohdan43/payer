@@ -265,7 +265,7 @@ export async function acceptOfferAction(publicId: string): Promise<AcceptOfferRe
 
   const { data: offer, error: offerError } = await supabase
     .from("offers")
-    .select("id, user_id, client_name, client_email, amount_cents, currency, vat_included, payment_processing_fee_included, payment_processing_fee_cents, discount_type, discount_value")
+    .select("id, user_id, client_id, client_name, client_email, amount_cents, currency, vat_included, payment_processing_fee_included, payment_processing_fee_cents, discount_type, discount_value")
     .eq("public_id", publicId)
     .in("status", ["sent", "viewed"])
     .single();
@@ -292,6 +292,7 @@ export async function acceptOfferAction(publicId: string): Promise<AcceptOfferRe
     .from("invoices")
     .insert({
       user_id: offer.user_id,
+      client_id: offer.client_id ?? null,
       client_name: offer.client_name,
       client_email: offer.client_email,
       number: invNumber,
