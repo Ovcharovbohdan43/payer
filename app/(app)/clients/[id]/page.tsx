@@ -27,12 +27,12 @@ export default async function ClientDetailPage({
   if (!client) notFound();
   if (!stats) notFound();
 
-  const profile = await supabase
+  const { data: profileRow } = await supabase
     .from("profiles")
-    .select("default_currency")
+    .select("default_currency, business_name, address, phone, company_number, vat_number")
     .eq("id", user.id)
     .single();
-  const currency = profile?.data?.default_currency ?? "USD";
+  const currency = profileRow?.default_currency ?? "USD";
 
   const total = stats.totalPaidCents + stats.totalUnpaidCents;
   const paidPercent = total > 0 ? (stats.totalPaidCents / total) * 100 : 0;
@@ -52,50 +52,89 @@ export default async function ClientDetailPage({
           </Button>
         </div>
 
-        <div className="mb-8">
+        <div className="mb-8 space-y-4">
           <h1 className="text-2xl font-bold sm:text-3xl">{client.name}</h1>
-          {(client.company_name || client.email || client.phone || client.address || client.vat_number) && (
-            <div className="mt-4 rounded-xl border border-white/5 bg-[#121821]/60 p-4 sm:p-5">
+
+          {/* Client contact information */}
+          <div className="rounded-xl border border-white/5 bg-[#121821]/60 p-4 sm:p-5">
+            <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground/80">
+              Client contact information
+            </h2>
+            <dl className="grid gap-3 text-sm sm:grid-cols-2">
+              <div>
+                <dt className="text-muted-foreground">Company</dt>
+                <dd className="font-medium">{client.company_name || "—"}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Address</dt>
+                <dd>{client.address || "—"}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Email</dt>
+                <dd>
+                  {client.email ? (
+                    <a href={`mailto:${client.email}`} className="text-[#3B82F6] hover:underline">
+                      {client.email}
+                    </a>
+                  ) : (
+                    "—"
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Phone</dt>
+                <dd>
+                  {client.phone ? (
+                    <a href={`tel:${client.phone}`} className="text-[#3B82F6] hover:underline">
+                      {client.phone}
+                    </a>
+                  ) : (
+                    "—"
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">VAT number</dt>
+                <dd>{client.vat_number || "—"}</dd>
+              </div>
+            </dl>
+          </div>
+
+          {/* Your business (invoicing from) */}
+          {(profileRow?.business_name || profileRow?.address || profileRow?.phone || profileRow?.company_number || profileRow?.vat_number) && (
+            <div className="rounded-xl border border-white/5 bg-[#121821]/60 p-4 sm:p-5">
               <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground/80">
-                Contact information
+                Your business (invoicing from)
               </h2>
-              <dl className="space-y-2 text-sm">
-                {client.company_name && (
+              <dl className="grid gap-3 text-sm sm:grid-cols-2">
+                {profileRow?.business_name && (
                   <div>
                     <dt className="text-muted-foreground">Company</dt>
-                    <dd className="font-medium">{client.company_name}</dd>
+                    <dd className="font-medium">{profileRow.business_name}</dd>
                   </div>
                 )}
-                {client.address && (
+                {profileRow?.address && (
                   <div>
                     <dt className="text-muted-foreground">Address</dt>
-                    <dd>{client.address}</dd>
+                    <dd>{profileRow.address}</dd>
                   </div>
                 )}
-                {client.email && (
-                  <div>
-                    <dt className="text-muted-foreground">Email</dt>
-                    <dd>
-                      <a href={`mailto:${client.email}`} className="text-[#3B82F6] hover:underline">
-                        {client.email}
-                      </a>
-                    </dd>
-                  </div>
-                )}
-                {client.phone && (
+                {profileRow?.phone && (
                   <div>
                     <dt className="text-muted-foreground">Phone</dt>
-                    <dd>
-                      <a href={`tel:${client.phone}`} className="text-[#3B82F6] hover:underline">
-                        {client.phone}
-                      </a>
-                    </dd>
+                    <dd>{profileRow.phone}</dd>
                   </div>
                 )}
-                {client.vat_number && (
+                {profileRow?.company_number && (
+                  <div>
+                    <dt className="text-muted-foreground">Company number</dt>
+                    <dd>{profileRow.company_number}</dd>
+                  </div>
+                )}
+                {profileRow?.vat_number && (
                   <div>
                     <dt className="text-muted-foreground">VAT number</dt>
-                    <dd>{client.vat_number}</dd>
+                    <dd>{profileRow.vat_number}</dd>
                   </div>
                 )}
               </dl>

@@ -36,6 +36,9 @@ export async function createClientAction(formData: FormData) {
     name: formData.get("name"),
     email: formData.get("email") ?? "",
     phone: formData.get("phone") ?? "",
+    address: formData.get("address") ?? "",
+    company_name: formData.get("company_name") ?? "",
+    vat_number: formData.get("vat_number") ?? "",
   };
   const parsed = clientSchema.safeParse(raw);
   if (!parsed.success) {
@@ -76,6 +79,9 @@ export async function updateClientAction(formData: FormData) {
     name: formData.get("name"),
     email: formData.get("email") ?? "",
     phone: formData.get("phone") ?? "",
+    address: formData.get("address") ?? "",
+    company_name: formData.get("company_name") ?? "",
+    vat_number: formData.get("vat_number") ?? "",
   };
   const parsed = clientSchema.safeParse(raw);
   if (!parsed.success) {
