@@ -22,6 +22,21 @@
 3. User clicks "Manage subscription" → POST `/api/subscription/portal` → Stripe Billing Portal
 4. On cancel/update → `customer.subscription.updated` / `deleted` → profile `subscription_status` updated
 
-## Migration
+## Manual Pro grant (Supabase)
 
-Run `supabase/migrations/20250238000001_subscription_plan.sql`.
+To give someone Pro access without payment, run in **Supabase SQL Editor**:
+
+```sql
+-- Grant Pro
+select grant_pro_subscription('user-uuid-here');
+
+-- Revoke Pro (back to Free)
+select revoke_pro_subscription('user-uuid-here');
+```
+
+Or edit manually: Table Editor → profiles → find user → set `subscription_status` = `active` (Pro) or `free` (Free).
+
+## Migrations
+
+1. `supabase/migrations/20250238000001_subscription_plan.sql`
+2. `supabase/migrations/20250238000002_subscription_manual_grant.sql`
