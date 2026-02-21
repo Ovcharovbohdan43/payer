@@ -149,9 +149,9 @@ export async function generateInvoicePdf(
   let y = PAGE_HEIGHT - MARGIN;
 
   // ─── Header: logo (optional) + business name + contact ───────────────
-  const logoMaxWidth = 80;
-  const logoMaxHeight = 48;
-  const logoToTextGap = 24;
+  const logoMaxWidth = 120;
+  const logoMaxHeight = 72;
+  const logoToTextGap = 28;
   let contentStartX = MARGIN;
   let logoHeightUsed = 0;
 
