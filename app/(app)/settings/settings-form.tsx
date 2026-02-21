@@ -225,6 +225,8 @@ export function SettingsForm({ profile, recovery = false }: { profile: Profile; 
         <div className="flex flex-wrap gap-4 text-sm">
           <Link
             href="/help"
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-[#3B82F6] underline hover:text-blue-400"
           >
             Help & FAQ
