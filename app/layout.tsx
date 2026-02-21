@@ -21,6 +21,9 @@ export const metadata: Metadata = {
   title: "Puyer — Invoice in 15 seconds",
   description:
     "Create invoices in seconds, send payment links, track payments, and get paid faster.",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export const viewport: Viewport = {
