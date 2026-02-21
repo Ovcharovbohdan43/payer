@@ -159,3 +159,42 @@ export const invoiceUpdateSchema = invoiceCreateSchema.omit({
 }).extend({
   invoiceId: z.string().uuid(),
 });
+
+/** Offer (quote/estimate) - simpler than invoice, no payment fee/recurring */
+export const offerCreateSchema = z.object({
+  clientId: z.string().uuid().optional().or(z.literal("")),
+  clientName: z.string().min(1, "Client name is required").max(200),
+  clientEmail: z.string().max(255).optional().or(z.literal("")),
+  currency: z.string().length(3).toUpperCase(),
+  dueDate: z.string().optional().or(z.literal("")),
+  notes: z.string().max(2000).optional().or(z.literal("")),
+  vatIncluded: z
+    .string()
+    .optional()
+    .transform((v) => v === "true"),
+  discountType: z
+    .enum(["percent", "fixed", "none"])
+    .optional()
+    .default("none"),
+  discountPercent: z
+    .string()
+    .optional()
+    .transform((s) => (s ? parseFloat(s) : 0))
+    .pipe(z.number().min(0).max(100)),
+  discountCents: z
+    .string()
+    .optional()
+    .transform((s) => (s ? parseInt(s, 10) : 0))
+    .pipe(z.number().int().min(0)),
+  lineItems: z
+    .string()
+    .transform((s) => {
+      try {
+        const arr = JSON.parse(s || "[]");
+        return Array.isArray(arr) ? arr : [];
+      } catch {
+        return [];
+      }
+    })
+    .pipe(z.array(lineItemSchema).min(1, "Add at least one service")),
+});

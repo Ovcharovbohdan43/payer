@@ -2,9 +2,18 @@ import type { InvoiceRow } from "@/app/invoices/actions";
 import { formatAmount, getDisplayAmountCents } from "@/lib/invoices/utils";
 
 export type ActivityItem = {
-  type: "paid" | "sent" | "viewed" | "overdue" | "currency_changed" | "payout";
+  type:
+    | "paid"
+    | "sent"
+    | "viewed"
+    | "overdue"
+    | "currency_changed"
+    | "payout"
+    | "offer_accepted"
+    | "offer_declined";
   label: string;
   invoiceId?: string;
+  offerId?: string;
   sortAt: string;
   href?: string;
 };
@@ -21,8 +30,15 @@ export type PayoutRow = {
   arrival_date: string | null;
 };
 
+export type OfferAuditRow = {
+  created_at: string;
+  entity_id: string;
+  action: string;
+  meta: { client_name?: string; comment?: string } | null;
+};
+
 /**
- * Build activity feed from invoice events + currency change audits + payouts.
+ * Build activity feed from invoice events + currency change audits + payouts + offer audits.
  * One most-relevant event per invoice: paid > overdue > viewed > sent.
  * Merges with currency_changed events from audit_logs.
  * Sorted by most recent first.
@@ -31,7 +47,8 @@ export function buildActivityFromInvoices(
   invoices: InvoiceRow[],
   _currency: string,
   currencyChanges: CurrencyChangeAudit[] = [],
-  payouts: PayoutRow[] = []
+  payouts: PayoutRow[] = [],
+  offerAudits: OfferAuditRow[] = []
 ): ActivityItem[] {
   const items: ActivityItem[] = [];
   const today = new Date().toISOString().slice(0, 10);
@@ -101,6 +118,27 @@ export function buildActivityFromInvoices(
       sortAt: p.created_at,
       href: "/settings",
     });
+  }
+
+  for (const a of offerAudits) {
+    const clientName = a.meta?.client_name ?? "Client";
+    if (a.action === "accepted") {
+      items.push({
+        type: "offer_accepted",
+        offerId: a.entity_id,
+        label: `${clientName} accepted your offer`,
+        sortAt: a.created_at,
+        href: `/offers/${a.entity_id}`,
+      });
+    } else if (a.action === "declined") {
+      items.push({
+        type: "offer_declined",
+        offerId: a.entity_id,
+        label: `${clientName} declined your offer`,
+        sortAt: a.created_at,
+        href: `/offers/${a.entity_id}`,
+      });
+    }
   }
 
   items.sort((a, b) => new Date(b.sortAt).getTime() - new Date(a.sortAt).getTime());
