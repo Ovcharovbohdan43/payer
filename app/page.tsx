@@ -118,7 +118,7 @@ export default function HomePage() {
                 <FeatureCard
                   icon={<CreditCard className="size-6 text-[#3B82F6]" />}
                   title="Stripe Checkout"
-                  description="Secure payments via Stripe. Stripe Connect for payouts. QR codes on payment pages."
+                  description="Stripe Checkout & Connect. Secure payouts, QR codes on payment page."
                 />
               </AnimateInView>
               <AnimateInView className="[transition-delay:300ms]">
