@@ -15,12 +15,16 @@ export default async function AppLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("business_name, logo_url")
+    .select("business_name, logo_url, stripe_connect_account_id")
     .eq("id", user.id)
     .single();
 
   return (
-    <AppShell businessName={profile?.business_name ?? "Business"} logoUrl={profile?.logo_url ?? null}>
+    <AppShell
+      businessName={profile?.business_name ?? "Business"}
+      logoUrl={profile?.logo_url ?? null}
+      isVerified={!!profile?.stripe_connect_account_id}
+    >
       {children}
     </AppShell>
   );
