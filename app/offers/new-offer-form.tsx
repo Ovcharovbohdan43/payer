@@ -11,6 +11,7 @@ import { useActionState, useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
+import { calcPaymentProcessingFeeCents } from "@/lib/invoices/utils";
 
 const VAT_RATE = 0.2;
 
@@ -48,6 +49,7 @@ export function NewOfferForm({ defaultCurrency, clients }: Props) {
   const [clientsList, setClientsList] = useState(clients);
   const [showMore, setShowMore] = useState(false);
   const [vatIncluded, setVatIncluded] = useState(false);
+  const [paymentProcessingFeeIncluded, setPaymentProcessingFeeIncluded] = useState(false);
   const [lineItems, setLineItems] = useState<LineItemInput[]>(() => [
     createEmptyLineItem(),
   ]);
@@ -127,10 +129,14 @@ export function NewOfferForm({ defaultCurrency, clients }: Props) {
     );
   }
 
-  const totalCents = vatIncluded
+  const enteredCents = vatIncluded
     ? subtotalAfterLineDiscounts
     : subtotalAfterLineDiscounts +
       Math.round(subtotalAfterLineDiscounts * VAT_RATE);
+  const processingFeeCents = paymentProcessingFeeIncluded
+    ? calcPaymentProcessingFeeCents(enteredCents, defaultCurrency)
+    : 0;
+  const totalCents = enteredCents + processingFeeCents;
 
   const [state, formAction, isPending] = useActionState(
     async (_prev: CreateOfferResult | null, formData: FormData) => {
@@ -162,6 +168,11 @@ export function NewOfferForm({ defaultCurrency, clients }: Props) {
       <input type="hidden" name="clientName" value={selectedClient?.name ?? ""} />
       <input type="hidden" name="clientEmail" value={selectedClient?.email ?? ""} />
       <input type="hidden" name="vatIncluded" value={vatIncluded ? "true" : "false"} />
+      <input
+        type="hidden"
+        name="paymentProcessingFeeIncluded"
+        value={paymentProcessingFeeIncluded ? "true" : "false"}
+      />
       <input type="hidden" name="discountType" value={invoiceDiscountType} />
       <input
         type="hidden"
@@ -303,10 +314,34 @@ export function NewOfferForm({ defaultCurrency, clients }: Props) {
               Tax included in amount (20% VAT)
             </Label>
           </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="paymentProcessingFeeIncluded"
+              checked={paymentProcessingFeeIncluded}
+              onChange={(e) => setPaymentProcessingFeeIncluded(e.target.checked)}
+              disabled={isPending}
+              className="h-4 w-4 rounded border-white/20 bg-[#121821] accent-[#3B82F6]"
+            />
+            <Label
+              htmlFor="paymentProcessingFeeIncluded"
+              className="cursor-pointer text-sm font-normal text-muted-foreground"
+            >
+              Include payment processing fee (1.5% + fixed)
+            </Label>
+          </div>
         </div>
         {totalCents > 0 && (
           <p className="text-xs text-muted-foreground">
-            Total: {formatMoney(totalCents, defaultCurrency)}
+            {paymentProcessingFeeIncluded ? (
+              <>
+                Subtotal: {formatMoney(enteredCents, defaultCurrency)}
+                {` + Processing fee: ${formatMoney(processingFeeCents, defaultCurrency)} → `}
+                Total: {formatMoney(totalCents, defaultCurrency)}
+              </>
+            ) : (
+              <>Total: {formatMoney(totalCents, defaultCurrency)}</>
+            )}
           </p>
         )}
       </div>
