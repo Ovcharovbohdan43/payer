@@ -19,6 +19,7 @@ Run in order (Supabase SQL Editor or `supabase db push`):
 13. `supabase/migrations/20250232000004_storage_logos_policies_fix.sql` — fix logos RLS (path prefix check + SELECT for upsert)
 14. `supabase/migrations/20250233000001_invoice_discounts.sql` — invoice_line_items.discount_percent, invoices.discount_type, discount_value
 15. `supabase/migrations/20250233000002_get_public_invoice_discounts.sql` — get_public_invoice returns discount fields
+16. `supabase/migrations/20250238000001_subscription_plan.sql` — profiles: stripe_customer_id, subscription_status (free/active/canceled/past_due/trialing)
 
 ## Public invoice access
 
