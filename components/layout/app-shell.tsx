@@ -4,13 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, FileText, Users, Settings, Bell } from "lucide-react";
+import { LayoutDashboard, FileText, Users, Settings, Bell, FileSignature } from "lucide-react";
 import { signOut } from "@/app/login/actions";
 import { MobileNav } from "./mobile-nav";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/invoices", label: "Invoices", icon: FileText },
+  { href: "/offers", label: "Offers", icon: FileSignature, badge: "New" },
   { href: "/clients", label: "Clients", icon: Users },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
@@ -41,6 +42,7 @@ export function AppShell({ children, businessName, logoUrl, isVerified }: AppShe
               pathname === item.href ||
               (item.href !== "/dashboard" && pathname.startsWith(item.href));
             const Icon = item.icon;
+            const badge = "badge" in item ? (item as { badge?: string }).badge : undefined;
             return (
               <Link
                 key={item.href}
@@ -54,6 +56,11 @@ export function AppShell({ children, businessName, logoUrl, isVerified }: AppShe
               >
                 <Icon className="size-4 shrink-0" />
                 {item.label}
+                {badge && (
+                  <span className="rounded-full bg-[#3B82F6] px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                    {badge}
+                  </span>
+                )}
               </Link>
             );
           })}

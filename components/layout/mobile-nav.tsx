@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, FileText, Plus, Users, Settings } from "lucide-react";
+import { LayoutDashboard, FileText, Plus, Users, Settings, FileSignature } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/invoices", label: "Invoices", icon: FileText },
+  { href: "/offers", label: "Offers", icon: FileSignature, badge: "New" },
   { href: "/invoices/new", label: "Create", icon: Plus },
   { href: "/clients", label: "Clients", icon: Users },
   { href: "/settings", label: "Settings", icon: Settings },
@@ -27,6 +28,7 @@ export function MobileNav() {
               pathname.startsWith(item.href));
           const isCreate = item.href === "/invoices/new";
           const Icon = item.icon;
+          const badge = "badge" in item ? (item as { badge?: string }).badge : undefined;
           return (
             <Link
               key={item.href}
@@ -41,7 +43,12 @@ export function MobileNav() {
               )}
             >
               <Icon className={cn("shrink-0", isCreate ? "size-5 min-[360px]:size-6" : "size-4 min-[360px]:size-5")} />
-              <span className="truncate text-[9px] font-medium min-[360px]:text-[10px]">{item.label}</span>
+              <span className="flex items-center gap-1 truncate text-[9px] font-medium min-[360px]:text-[10px]">
+                {item.label}
+                {badge && (
+                  <span className="rounded bg-[#3B82F6] px-1 text-[8px] font-bold text-white">{badge}</span>
+                )}
+              </span>
             </Link>
           );
         })}

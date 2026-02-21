@@ -35,6 +35,15 @@ export default async function DashboardPage() {
     .order("created_at", { ascending: false })
     .limit(5);
 
+  const { data: offerAudits } = await supabase
+    .from("audit_logs")
+    .select("created_at, entity_id, action, meta")
+    .eq("user_id", user.id)
+    .eq("entity_type", "offer")
+    .in("action", ["accepted", "declined"])
+    .order("created_at", { ascending: false })
+    .limit(20);
+
   const { data: payouts } = await supabase
     .from("payouts")
     .select("amount_cents, currency, created_at, arrival_date")
@@ -57,7 +66,8 @@ export default async function DashboardPage() {
     invoices,
     currency,
     currencyChanges ?? [],
-    payouts ?? []
+    payouts ?? [],
+    offerAudits ?? []
   );
   const hasInvoices = invoices.length > 0;
 

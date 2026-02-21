@@ -4,6 +4,16 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2025-02-20] – Offers (quotes/estimates)
+
+- **Offers tab:** New "Offers" section in nav with "New" badge. Create offers (quotes/estimates) for clients.
+- **Flow:** Create offer → share link → client views → Accept (→ invoice + payment) or Decline (with optional comment).
+- **Accept:** Creates invoice from offer, shows Pay button, activity: "Client accepted your offer".
+- **Decline:** Client can add reason; activity: "Client declined your offer". Decline reason visible in offer detail.
+- **Pages:** `/offers` (list), `/offers/new`, `/offers/[id]` (detail, decline reason), `/o/[publicId]` (public view).
+- **Activity feed:** Offer accepted/declined events with links to offer detail.
+- **Migrations:** `20250235000001_offers.sql` (offers, offer_line_items), `20250235000002_offers_rpc.sql` (get_public_offer, record_viewed, next_offer_number).
+
 ### [2025-02-20] – Invoice discounts
 
 - **Per-line discount:** Each service can have a discount % (0–100). Amount after discount is used for subtotal.
