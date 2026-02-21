@@ -22,6 +22,7 @@ const REMINDER_RATE_LIMIT_HOURS = parseInt(
 export type InvoiceLineItem = {
   description: string;
   amount_cents: number;
+  discount_percent?: number;
 };
 
 export type InvoiceRow = {
@@ -50,6 +51,8 @@ export type InvoiceRow = {
   recurring_interval?: string | null;
   recurring_interval_value?: number | null;
   recurring_parent_id?: string | null;
+  discount_type?: string | null;
+  discount_value?: number | null;
   line_items?: InvoiceLineItem[];
 };
 
@@ -75,6 +78,9 @@ export async function createInvoiceAction(
     recurringEnabled: formData.get("recurringEnabled") ?? "",
     recurringInterval: formData.get("recurringInterval") ?? "days",
     recurringIntervalValue: formData.get("recurringIntervalValue") ?? "7",
+    discountType: formData.get("discountType") ?? "none",
+    discountPercent: formData.get("discountPercent") ?? "",
+    discountCents: formData.get("discountCents") ?? "",
     lineItems: formData.get("lineItems") ?? "[]",
   };
   const parsed = invoiceCreateSchema.safeParse(raw);
@@ -91,14 +97,31 @@ export async function createInvoiceAction(
   const paymentProcessingFeeIncluded = parsed.data.paymentProcessingFeeIncluded ?? false;
   const lineItems = parsed.data.lineItems;
   const currency = parsed.data.currency;
+  const discountType = parsed.data.discountType ?? "none";
+  const discountPercent = parsed.data.discountPercent ?? 0;
+  const discountCents = parsed.data.discountCents ?? 0;
+
+  // 1. Apply per-line discounts
+  const lineTotalsAfterDiscount = lineItems.map((i) => {
+    const rawCents = Math.round(i.amount * 100);
+    const dp = (i.discountPercent ?? 0);
+    return Math.round(rawCents * (1 - dp / 100));
+  });
+  let subtotalAfterLineDiscounts = lineTotalsAfterDiscount.reduce((s, c) => s + c, 0);
+
+  // 2. Apply invoice-level discount
+  if (discountType === "percent" && discountPercent > 0) {
+    subtotalAfterLineDiscounts = Math.round(subtotalAfterLineDiscounts * (1 - discountPercent / 100));
+  } else if (discountType === "fixed" && discountCents > 0) {
+    subtotalAfterLineDiscounts = Math.max(0, subtotalAfterLineDiscounts - discountCents);
+  }
 
   let amountBeforeFeeCents: number;
   if (vatIncluded) {
-    amountBeforeFeeCents = lineItems.reduce((s, i) => s + Math.round(i.amount * 100), 0);
+    amountBeforeFeeCents = subtotalAfterLineDiscounts;
   } else {
-    const subtotalCents = lineItems.reduce((s, i) => s + Math.round(i.amount * 100), 0);
-    const vatCents = Math.round(subtotalCents * 0.2);
-    amountBeforeFeeCents = subtotalCents + vatCents;
+    const vatCents = Math.round(subtotalAfterLineDiscounts * 0.2);
+    amountBeforeFeeCents = subtotalAfterLineDiscounts + vatCents;
   }
 
   let amountCents = amountBeforeFeeCents;
@@ -149,6 +172,8 @@ export async function createInvoiceAction(
       vat_included: vatIncluded,
       payment_processing_fee_included: paymentProcessingFeeIncluded,
       payment_processing_fee_cents: paymentProcessingFeeCents,
+      discount_type: discountType !== "none" ? discountType : null,
+      discount_value: discountType === "percent" ? discountPercent : discountType === "fixed" ? discountCents : null,
       auto_remind_enabled: options.markSent && autoRemindEnabled,
       auto_remind_days: autoRemindDays,
       recurring: recurringEnabled && options.markSent,
@@ -166,6 +191,7 @@ export async function createInvoiceAction(
     invoice_id: invoice.id,
     description: item.description,
     amount_cents: Math.round(item.amount * 100),
+    discount_percent: Math.min(100, Math.max(0, item.discountPercent ?? 0)),
     sort_order: idx,
   }));
 
@@ -244,7 +270,7 @@ export async function getInvoiceById(id: string): Promise<InvoiceRow | null> {
   const { data: invoice } = await supabase
     .from("invoices")
     .select(
-      "id, number, public_id, status, client_name, client_email, amount_cents, currency, description, created_at, sent_at, viewed_at, paid_at, voided_at, due_date, notes, stripe_payment_intent_id, vat_included, payment_processing_fee_cents, auto_remind_enabled, auto_remind_days, recurring, recurring_interval, recurring_interval_value, recurring_parent_id"
+      "id, number, public_id, status, client_name, client_email, amount_cents, currency, description, created_at, sent_at, viewed_at, paid_at, voided_at, due_date, notes, stripe_payment_intent_id, vat_included, payment_processing_fee_cents, discount_type, discount_value, auto_remind_enabled, auto_remind_days, recurring, recurring_interval, recurring_interval_value, recurring_parent_id"
     )
     .eq("id", id)
     .eq("user_id", user.id)
@@ -254,16 +280,22 @@ export async function getInvoiceById(id: string): Promise<InvoiceRow | null> {
 
   const { data: items } = await supabase
     .from("invoice_line_items")
-    .select("description, amount_cents")
+    .select("description, amount_cents, discount_percent")
     .eq("invoice_id", id)
     .order("sort_order", { ascending: true });
 
   return {
     ...invoice,
-    line_items: (items ?? []).map((i) => ({
-      description: i.description,
-      amount_cents: Number(i.amount_cents),
-    })),
+    line_items: (items ?? []).map((i) => {
+      const raw = Number(i.amount_cents);
+      const dp = Number(i.discount_percent ?? 0);
+      const afterDiscount = Math.round(raw * (1 - dp / 100));
+      return {
+        description: i.description,
+        amount_cents: afterDiscount,
+        discount_percent: dp,
+      };
+    }),
   } as InvoiceRow;
 }
 

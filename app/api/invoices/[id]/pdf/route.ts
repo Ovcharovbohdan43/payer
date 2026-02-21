@@ -30,7 +30,7 @@ export async function GET(
   const lineItems =
     invoice.line_items?.map((i) => ({
       description: i.description,
-      amountCents: i.amount_cents,
+      amountCents: Number(i.amount_cents),
     })) ?? [];
 
   const pdfBytes = await generateInvoicePdf({
@@ -52,6 +52,12 @@ export async function GET(
     phone: profile?.phone ?? undefined,
     companyNumber: profile?.company_number ?? undefined,
     vatNumber: profile?.vat_number ?? undefined,
+    discountType:
+      (invoice as { discount_type?: string }).discount_type as "percent" | "fixed" | undefined,
+    discountValue:
+      (invoice as { discount_value?: number }).discount_value != null
+        ? Number((invoice as { discount_value?: number }).discount_value)
+        : undefined,
   });
 
   return new NextResponse(Buffer.from(pdfBytes), {

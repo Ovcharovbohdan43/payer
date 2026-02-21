@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendInvoiceEmail } from "@/lib/email/send";
-import { formatAmount, getDisplayAmountCents, calcPaymentProcessingFeeCents } from "@/lib/invoices/utils";
+import { formatAmount, getDisplayAmountCents } from "@/lib/invoices/utils";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
 
@@ -14,6 +14,9 @@ type InvoiceTemplate = {
   currency: string;
   vat_included: boolean | null;
   payment_processing_fee_included: boolean;
+  payment_processing_fee_cents: number | null;
+  discount_type: string | null;
+  discount_value: number | null;
   notes: string | null;
   auto_remind_enabled: boolean;
   auto_remind_days: string;
@@ -23,7 +26,7 @@ type InvoiceTemplate = {
   sent_at: string | null;
 };
 
-type LineItem = { description: string; amount_cents: number; sort_order: number };
+type LineItem = { description: string; amount_cents: number; discount_percent?: number; sort_order: number };
 
 function getAnchorDate(template: InvoiceTemplate): Date {
   const ts = template.last_recurred_at ?? template.sent_at;
@@ -52,7 +55,7 @@ export async function runRecurringInvoices(): Promise<{
   const { data: templates, error: fetchError } = await supabase
     .from("invoices")
     .select(
-      "id, user_id, client_id, client_name, client_email, amount_cents, currency, vat_included, payment_processing_fee_included, notes, auto_remind_enabled, auto_remind_days, recurring_interval, recurring_interval_value, last_recurred_at, sent_at"
+      "id, user_id, client_id, client_name, client_email, amount_cents, currency, vat_included, payment_processing_fee_included, payment_processing_fee_cents, discount_type, discount_value, notes, auto_remind_enabled, auto_remind_days, recurring_interval, recurring_interval_value, last_recurred_at, sent_at"
     )
     .eq("recurring", true)
     .is("recurring_parent_id", null)
@@ -75,7 +78,7 @@ export async function runRecurringInvoices(): Promise<{
 
     const { data: items } = await supabase
       .from("invoice_line_items")
-      .select("description, amount_cents, sort_order")
+      .select("description, amount_cents, discount_percent, sort_order")
       .eq("invoice_id", t.id)
       .order("sort_order", { ascending: true });
 
@@ -96,26 +99,11 @@ export async function runRecurringInvoices(): Promise<{
     }
 
     const publicId = crypto.randomUUID();
-    const amountCents = Number(t.amount_cents);
     const currency = t.currency;
     const vatIncluded = t.vat_included ?? false;
     const paymentProcessingFeeIncluded = t.payment_processing_fee_included ?? false;
-
-    let amountBeforeFeeCents: number;
-    if (vatIncluded) {
-      amountBeforeFeeCents = lineItems.reduce((s, i) => s + Number(i.amount_cents), 0);
-    } else {
-      const subtotalCents = lineItems.reduce((s, i) => s + Number(i.amount_cents), 0);
-      const vatCents = Math.round(subtotalCents * 0.2);
-      amountBeforeFeeCents = subtotalCents + vatCents;
-    }
-
-    let finalAmountCents = amountBeforeFeeCents;
-    let paymentProcessingFeeCents: number | null = null;
-    if (paymentProcessingFeeIncluded) {
-      paymentProcessingFeeCents = calcPaymentProcessingFeeCents(amountBeforeFeeCents, currency);
-      finalAmountCents = amountBeforeFeeCents + paymentProcessingFeeCents;
-    }
+    const paymentProcessingFeeCents = t.payment_processing_fee_cents ?? null;
+    const finalAmountCents = Number(t.amount_cents);
 
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + 14);
@@ -136,6 +124,8 @@ export async function runRecurringInvoices(): Promise<{
         vat_included: vatIncluded,
         payment_processing_fee_included: paymentProcessingFeeIncluded,
         payment_processing_fee_cents: paymentProcessingFeeCents,
+        discount_type: t.discount_type,
+        discount_value: t.discount_value,
         notes: t.notes,
         due_date: dueDateStr,
         sent_at: now.toISOString(),
@@ -157,6 +147,7 @@ export async function runRecurringInvoices(): Promise<{
       invoice_id: newInvoice.id,
       description: item.description,
       amount_cents: item.amount_cents,
+      discount_percent: Math.min(100, Math.max(0, item.discount_percent ?? 0)),
       sort_order: idx,
     }));
 

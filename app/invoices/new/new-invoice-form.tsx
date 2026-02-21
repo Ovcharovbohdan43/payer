@@ -19,6 +19,7 @@ export type LineItemInput = {
   id: string;
   description: string;
   amount: string;
+  discountPercent: string;
 };
 
 function formatMoney(cents: number, currency: string): string {
@@ -38,6 +39,7 @@ function createEmptyLineItem(): LineItemInput {
     id: crypto.randomUUID(),
     description: "",
     amount: "",
+    discountPercent: "",
   };
 }
 
@@ -69,7 +71,7 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
   }, []);
 
   const updateLineItem = useCallback(
-    (id: string, field: "description" | "amount", value: string) => {
+    (id: string, field: "description" | "amount" | "discountPercent", value: string) => {
       setLineItems((prev) =>
         prev.map((item) =>
           item.id === id ? { ...item, [field]: value } : item
@@ -82,16 +84,38 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
   const lineItemsJson = JSON.stringify(
     lineItems
       .filter((item) => item.description.trim() && item.amount.trim())
-      .map((item) => ({
-        description: item.description.trim(),
-        amount: parseFloat(item.amount) || 0,
-      }))
+      .map((item) => {
+        const amt = parseFloat(item.amount) || 0;
+        const dp = Math.min(100, Math.max(0, parseFloat(item.discountPercent) || 0));
+        return {
+          description: item.description.trim(),
+          amount: amt,
+          discountPercent: dp,
+        };
+      })
   );
 
-  const enteredCents = lineItems.reduce((sum, item) => {
+  const [invoiceDiscountType, setInvoiceDiscountType] = useState<"percent" | "fixed" | "none">("none");
+  const [invoiceDiscountPercent, setInvoiceDiscountPercent] = useState("");
+  const [invoiceDiscountCents, setInvoiceDiscountCents] = useState("");
+
+  let subtotalAfterLineDiscounts = lineItems.reduce((sum, item) => {
     const amt = parseFloat(item.amount);
-    return sum + (isNaN(amt) || amt < 0 ? 0 : Math.round(amt * 100));
+    const dp = Math.min(100, Math.max(0, parseFloat(item.discountPercent) || 0));
+    const rawCents = isNaN(amt) || amt < 0 ? 0 : Math.round(amt * 100);
+    const afterDiscount = Math.round(rawCents * (1 - dp / 100));
+    return sum + afterDiscount;
   }, 0);
+
+  const invDiscPct = invoiceDiscountType === "percent" ? Math.min(100, Math.max(0, parseFloat(invoiceDiscountPercent) || 0)) : 0;
+  const invDiscCts = invoiceDiscountType === "fixed" ? Math.max(0, Math.round(parseFloat(invoiceDiscountCents) * 100) || 0) : 0;
+  if (invoiceDiscountType === "percent" && invDiscPct > 0) {
+    subtotalAfterLineDiscounts = Math.round(subtotalAfterLineDiscounts * (1 - invDiscPct / 100));
+  } else if (invoiceDiscountType === "fixed" && invDiscCts > 0) {
+    subtotalAfterLineDiscounts = Math.max(0, subtotalAfterLineDiscounts - invDiscCts);
+  }
+
+  const enteredCents = subtotalAfterLineDiscounts;
   // vatIncluded: entered amount is gross (incl. VAT) → no extra VAT
   // !vatIncluded: entered amount is net → add 20% VAT on top
   const vatCents = vatIncluded ? 0 : Math.round(enteredCents * VAT_RATE);
@@ -192,6 +216,17 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
         name="recurringIntervalValue"
         value={String(recurringIntervalValue)}
       />
+      <input type="hidden" name="discountType" value={invoiceDiscountType} />
+      <input type="hidden" name="discountPercent" value={invoiceDiscountType === "percent" ? invoiceDiscountPercent : ""} />
+      <input
+        type="hidden"
+        name="discountCents"
+        value={
+          invoiceDiscountType === "fixed"
+            ? String(Math.round((parseFloat(invoiceDiscountCents) || 0) * 100))
+            : ""
+        }
+      />
       <input type="hidden" name="lineItems" value={lineItemsJson} />
 
       <div className="space-y-2">
@@ -245,8 +280,8 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
                   className="h-10"
                 />
               </div>
-              <div className="flex gap-2">
-                <div className="w-28 flex-shrink-0 space-y-1">
+              <div className="flex flex-wrap gap-2">
+                <div className="w-24 flex-shrink-0 space-y-1">
                   <Label htmlFor={`amt-${item.id}`} className="text-xs">
                     Amount
                   </Label>
@@ -260,6 +295,25 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
                     value={item.amount}
                     onChange={(e) =>
                       updateLineItem(item.id, "amount", e.target.value)
+                    }
+                    className="h-10"
+                  />
+                </div>
+                <div className="w-20 flex-shrink-0 space-y-1">
+                  <Label htmlFor={`disc-${item.id}`} className="text-xs text-muted-foreground">
+                    Disc. %
+                  </Label>
+                  <Input
+                    id={`disc-${item.id}`}
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="1"
+                    placeholder="0"
+                    disabled={isPending}
+                    value={item.discountPercent}
+                    onChange={(e) =>
+                      updateLineItem(item.id, "discountPercent", e.target.value)
                     }
                     className="h-10"
                   />
@@ -358,6 +412,48 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
                 disabled={isPending}
                 className="h-10"
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Invoice discount (optional)</Label>
+              <div className="flex flex-wrap items-center gap-3">
+                <select
+                  value={invoiceDiscountType}
+                  onChange={(e) =>
+                    setInvoiceDiscountType(e.target.value as "percent" | "fixed" | "none")
+                  }
+                  disabled={isPending}
+                  className="h-10 rounded-md border border-border bg-[#121821] px-3 text-sm"
+                >
+                  <option value="none">None</option>
+                  <option value="percent">Percent %</option>
+                  <option value="fixed">Fixed amount</option>
+                </select>
+                {invoiceDiscountType === "percent" && (
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="1"
+                    placeholder="10"
+                    disabled={isPending}
+                    value={invoiceDiscountPercent}
+                    onChange={(e) => setInvoiceDiscountPercent(e.target.value)}
+                    className="h-10 w-24"
+                  />
+                )}
+                {invoiceDiscountType === "fixed" && (
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    disabled={isPending}
+                    value={invoiceDiscountCents}
+                    onChange={(e) => setInvoiceDiscountCents(e.target.value)}
+                    className="h-10 w-28"
+                  />
+                )}
+              </div>
             </div>
             {selectedClient?.email && (
               <div className="space-y-2">

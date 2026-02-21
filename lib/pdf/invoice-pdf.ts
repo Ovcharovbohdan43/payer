@@ -45,6 +45,9 @@ export type InvoicePdfData = {
   phone?: string | null;
   companyNumber?: string | null;
   vatNumber?: string | null;
+  /** Invoice-level discount */
+  discountType?: "percent" | "fixed" | null;
+  discountValue?: number | null;
 };
 
 const VAT_RATE = 0.2; // 20%
@@ -305,6 +308,17 @@ export async function generateInvoicePdf(
       ? data.lineItems
       : [{ description: "Invoice payment", amountCents: data.amountCents }];
 
+  let subtotalFromLines = items.reduce((s, i) => s + i.amountCents, 0);
+  let invoiceDiscountCents = 0;
+  if (data.discountType && data.discountValue != null && data.discountValue > 0) {
+    if (data.discountType === "percent") {
+      invoiceDiscountCents = Math.round(subtotalFromLines * (data.discountValue / 100));
+    } else {
+      invoiceDiscountCents = Math.round(data.discountValue);
+    }
+  }
+  const subtotalAfterDiscount = Math.max(0, subtotalFromLines - invoiceDiscountCents);
+
   let subtotalCents: number;
   let vatCents: number;
   let totalCents: number;
@@ -313,7 +327,7 @@ export async function generateInvoicePdf(
     subtotalCents = Math.round(totalCents / (1 + VAT_RATE));
     vatCents = totalCents - subtotalCents;
   } else if (vatIncluded === false) {
-    subtotalCents = items.reduce((s, i) => s + i.amountCents, 0);
+    subtotalCents = subtotalAfterDiscount;
     vatCents = Math.round(subtotalCents * VAT_RATE);
     totalCents = subtotalCents + vatCents;
   } else {
@@ -364,6 +378,40 @@ export async function generateInvoicePdf(
     y -= rowSpan + 2;
   }
   y -= 6;
+
+  // Invoice discount row (when set)
+  if (invoiceDiscountCents > 0) {
+    const discountLabel =
+      data.discountType === "percent"
+        ? `Discount (${data.discountValue}%)`
+        : "Discount";
+    const discountText = "-" + formatAmount(invoiceDiscountCents, data.currency);
+
+    page.drawRectangle({
+      x: MARGIN,
+      y: y - rowHeight,
+      width: CONTENT_WIDTH,
+      height: rowHeight,
+      borderColor: rgb(0.9, 0.9, 0.9),
+      borderWidth: 0.5,
+    });
+    page.drawText(discountLabel, {
+      x: MARGIN + cellPadding,
+      y: y - rowHeight + textBaselineY,
+      size: descFontSize,
+      font,
+      color: c,
+    });
+    const discountTextWidth = fontBold.widthOfTextAtSize(discountText, amountFontSize);
+    page.drawText(discountText, {
+      x: PAGE_WIDTH - MARGIN - discountTextWidth - cellPadding,
+      y: y - rowHeight + textBaselineY,
+      size: amountFontSize,
+      font: fontBold,
+      color: rgb(0.2, 0.6, 0.3),
+    });
+    y -= rowHeight;
+  }
 
   // Payment processing fee row (when set)
   if (data.paymentProcessingFeeCents != null && data.paymentProcessingFeeCents > 0) {

@@ -76,6 +76,14 @@ export const amountMajorSchema = z
 export const lineItemSchema = z.object({
   description: z.string().min(1, "Description is required").max(1000),
   amount: amountMajorSchema,
+  discountPercent: z
+    .union([z.number(), z.string()])
+    .optional()
+    .transform((v) => {
+      if (v === undefined || v === null || v === "") return 0;
+      const n = typeof v === "string" ? parseFloat(v) : v;
+      return Math.min(100, Math.max(0, Math.round(n)));
+    }),
 });
 
 export const invoiceCreateSchema = z.object({
@@ -117,6 +125,20 @@ export const invoiceCreateSchema = z.object({
     .default("7")
     .transform((s) => parseInt(s || "7", 10))
     .refine((n) => [1, 7, 14, 21, 30].includes(n), "Interval must be 1, 7, 14, 21, or 30 days"),
+  discountType: z
+    .enum(["percent", "fixed", "none"])
+    .optional()
+    .default("none"),
+  discountPercent: z
+    .string()
+    .optional()
+    .transform((s) => (s ? parseFloat(s) : 0))
+    .pipe(z.number().min(0).max(100)),
+  discountCents: z
+    .string()
+    .optional()
+    .transform((s) => (s ? parseInt(s, 10) : 0))
+    .pipe(z.number().int().min(0)),
   lineItems: z
     .string()
     .transform((s) => {

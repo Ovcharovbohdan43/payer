@@ -4,6 +4,15 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2025-02-20] – Invoice discounts
+
+- **Per-line discount:** Each service can have a discount % (0–100). Amount after discount is used for subtotal.
+- **Invoice-level discount:** In More options — Percent or Fixed amount. Applied after line discounts, before VAT and fee.
+- **Form:** "Disc. %" field per line; "Invoice discount" (Percent / Fixed) in More options.
+- **PDF:** Discount row when invoice discount is set; line amounts shown after line discounts.
+- **Recurring:** Discount fields copied to recurring copies.
+- **Migrations:** `20250233000001_invoice_discounts.sql`, `20250233000002_get_public_invoice_discounts.sql`.
+
 ### [2025-02-20] – Help & FAQ page
 
 - **Help page:** `/help` — professional FAQ with categories (Getting started, Invoices, Payments, Account & security, Troubleshooting). Native accordion (`details`/`summary`), JSON-LD schema for SEO, category nav, contact CTA.
