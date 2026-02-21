@@ -19,9 +19,11 @@ type AppShellProps = {
   children: React.ReactNode;
   businessName: string;
   logoUrl?: string | null;
+  /** Stripe connected = verified (ID verification required by Stripe) */
+  isVerified?: boolean;
 };
 
-export function AppShell({ children, businessName, logoUrl }: AppShellProps) {
+export function AppShell({ children, businessName, logoUrl, isVerified }: AppShellProps) {
   const pathname = usePathname();
 
   return (
@@ -78,17 +80,25 @@ export function AppShell({ children, businessName, logoUrl }: AppShellProps) {
               <Bell className="size-5" />
             </Button>
             <div className="flex items-center gap-2">
-              {logoUrl ? (
-                <img
-                  src={logoUrl}
-                  alt=""
-                  className="h-8 w-8 shrink-0 rounded-full object-cover ring-1 ring-white/10"
-                />
-              ) : (
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#3B82F6]/20 text-sm font-medium text-[#3B82F6]">
-                  {businessName.charAt(0).toUpperCase() || "B"}
-                </div>
-              )}
+              <div className="relative shrink-0">
+                {logoUrl ? (
+                  <img
+                    src={logoUrl}
+                    alt=""
+                    className="h-8 w-8 rounded-full object-cover ring-1 ring-white/10"
+                  />
+                ) : (
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#3B82F6]/20 text-sm font-medium text-[#3B82F6]">
+                    {businessName.charAt(0).toUpperCase() || "B"}
+                  </div>
+                )}
+                {isVerified && (
+                  <span
+                    className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-[#0B0F14] bg-emerald-500"
+                    aria-label="Verified account"
+                  />
+                )}
+              </div>
               <span className="hidden max-w-[120px] truncate text-sm text-muted-foreground sm:inline sm:leading-9">
                 {businessName}
               </span>
