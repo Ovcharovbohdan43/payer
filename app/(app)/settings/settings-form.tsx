@@ -306,16 +306,18 @@ function SubscriptionSection({
           ? "You're on Pro — unlimited invoices."
           : "Free plan: 3 invoices. Upgrade to Pro for unlimited."}
       </p>
-      {isPro && hasStripeCustomer ? (
-        <Button
-          type="button"
-          variant="outline"
-          disabled={loading}
-          onClick={handleManage}
-          className="h-10 rounded-xl"
-        >
-          {loading ? "Opening…" : "Manage subscription"}
-        </Button>
+      {isPro ? (
+        hasStripeCustomer ? (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={loading}
+            onClick={handleManage}
+            className="h-10 rounded-xl"
+          >
+            {loading ? "Opening…" : "Cancel subscription"}
+          </Button>
+        ) : null
       ) : (
         <Button
           type="button"
