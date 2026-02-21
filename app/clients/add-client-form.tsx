@@ -15,8 +15,8 @@ export function AddClientForm() {
   );
 
   return (
-    <form action={formAction} className="flex min-w-0 flex-col gap-3 overflow-hidden rounded-[14px] border border-white/5 bg-[#121821]/80 p-3 sm:rounded-[20px] sm:flex-row sm:items-end sm:gap-4 sm:p-6">
-      <div className="grid min-w-0 flex-1 grid-cols-1 gap-2 sm:grid-cols-3">
+    <form action={formAction} className="min-w-0 space-y-3 overflow-hidden rounded-[14px] border border-white/5 bg-[#121821]/80 p-3 sm:rounded-[20px] sm:p-6">
+      <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="space-y-1.5">
           <Label htmlFor="name">Name</Label>
           <Input id="name" name="name" placeholder="Client name" required disabled={isPending} className="h-10 min-h-10 max-w-full" />
@@ -30,10 +30,26 @@ export function AddClientForm() {
           <Input id="phone" name="phone" type="tel" placeholder="+1 234 567 8900" disabled={isPending} className="h-10 max-w-full" />
         </div>
       </div>
-        <Button type="submit" disabled={isPending} className="min-h-10 h-10 w-full min-w-0 sm:min-w-[120px] sm:w-auto touch-manipulation">
-        {isPending ? "Adding…" : "Add client"}
-      </Button>
-      {state?.error && <p className="text-sm text-destructive sm:col-span-2">{state.error}</p>}
+      <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="space-y-1.5 sm:col-span-3">
+          <Label htmlFor="address">Address (optional)</Label>
+          <Input id="address" name="address" placeholder="Street, city, postcode" disabled={isPending} className="h-10 max-w-full" />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="company_name">Company name (optional)</Label>
+          <Input id="company_name" name="company_name" placeholder="Company Ltd" disabled={isPending} className="h-10 max-w-full" />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="vat_number">VAT number (optional)</Label>
+          <Input id="vat_number" name="vat_number" placeholder="GB123456789" disabled={isPending} className="h-10 max-w-full" />
+        </div>
+      </div>
+      <div className="flex justify-end">
+        <Button type="submit" disabled={isPending} className="min-h-10 h-10 min-w-[120px] touch-manipulation">
+          {isPending ? "Adding…" : "Add client"}
+        </Button>
+      </div>
+      {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
     </form>
   );
 }

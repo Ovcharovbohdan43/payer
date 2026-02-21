@@ -9,6 +9,9 @@ export type ClientRow = {
   name: string;
   email: string | null;
   phone: string | null;
+  address: string | null;
+  company_name: string | null;
+  vat_number: string | null;
   created_at: string;
 };
 
@@ -21,7 +24,7 @@ export async function listClients(): Promise<ClientRow[]> {
 
   const { data } = await supabase
     .from("clients")
-    .select("id, name, email, phone, created_at")
+    .select("id, name, email, phone, address, company_name, vat_number, created_at")
     .eq("user_id", user.id)
     .order("name", { ascending: true });
 
@@ -53,8 +56,11 @@ export async function createClientAction(formData: FormData) {
       name: parsed.data.name,
       email: parsed.data.email || null,
       phone: parsed.data.phone || null,
+      address: parsed.data.address?.trim() || null,
+      company_name: parsed.data.company_name?.trim() || null,
+      vat_number: parsed.data.vat_number?.trim() || null,
     })
-    .select("id, name, email, phone, created_at")
+    .select("id, name, email, phone, address, company_name, vat_number, created_at")
     .single();
 
   if (error) return { error: error.message };
@@ -109,7 +115,7 @@ export async function getClientById(id: string): Promise<ClientRow | null> {
 
   const { data } = await supabase
     .from("clients")
-    .select("id, name, email, phone, created_at")
+    .select("id, name, email, phone, address, company_name, vat_number, created_at")
     .eq("id", id)
     .eq("user_id", user.id)
     .single();

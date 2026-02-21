@@ -27,6 +27,23 @@ export async function GET(
     .eq("id", user.id)
     .single();
 
+  let clientData: {
+    address?: string | null;
+    phone?: string | null;
+    company_name?: string | null;
+    vat_number?: string | null;
+  } = {};
+  const clientId = (invoice as { client_id?: string }).client_id;
+  if (clientId) {
+    const { data: client } = await supabase
+      .from("clients")
+      .select("address, phone, company_name, vat_number")
+      .eq("id", clientId)
+      .eq("user_id", user.id)
+      .single();
+    if (client) clientData = client;
+  }
+
   const lineItems =
     invoice.line_items?.map((i) => ({
       description: i.description,
@@ -42,6 +59,10 @@ export async function GET(
     dueDate: invoice.due_date,
     clientName: invoice.client_name,
     clientEmail: invoice.client_email,
+    clientAddress: clientData.address ?? undefined,
+    clientPhone: clientData.phone ?? undefined,
+    clientCompanyName: clientData.company_name ?? undefined,
+    clientVatNumber: clientData.vat_number ?? undefined,
     status: invoice.status,
     createdAt: invoice.created_at,
     notes: invoice.notes,
