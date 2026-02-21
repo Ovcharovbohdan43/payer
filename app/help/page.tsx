@@ -327,17 +327,19 @@ export default async function HelpPage() {
             Terms of Service
           </Link>
           <Link
-            href="/"
+            href={user ? "/dashboard" : "/"}
             className="text-white/50 transition-colors hover:text-white/80"
           >
-            Home
+            {user ? "Dashboard" : "Home"}
           </Link>
-          <Link
-            href="/login"
-            className="text-white/50 transition-colors hover:text-white/80"
-          >
-            Log in
-          </Link>
+          {!user && (
+            <Link
+              href="/login"
+              className="text-white/50 transition-colors hover:text-white/80"
+            >
+              Log in
+            </Link>
+          )}
         </div>
       </main>
     </div>
