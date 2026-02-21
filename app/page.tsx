@@ -223,8 +223,11 @@ export default function HomePage() {
             >
               support@puyer.org
             </a>
+            <Link href="/help" className="text-white/50 hover:text-white/80">
+              Help
+            </Link>
             <Link href="/terms" className="text-white/50 hover:text-white/80">
-              Terms of Service
+              Terms
             </Link>
             <Link href="/login" className="text-white/50 hover:text-white/80">
               Log in

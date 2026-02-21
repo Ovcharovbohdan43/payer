@@ -4,6 +4,11 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2025-02-20] – Help & FAQ page
+
+- **Help page:** `/help` — professional FAQ with categories (Getting started, Invoices, Payments, Account & security, Troubleshooting). Native accordion (`details`/`summary`), JSON-LD schema for SEO, category nav, contact CTA.
+- **Links:** Help added to landing footer, login page, settings Support section, Terms footer.
+
 ### [2025-02-20] – Business contact & logo (invoices, PDF, public page)
 
 - **Settings:** "Business contact" — address, phone, company number, VAT number; "Company logo" — upload PNG/JPEG/WebP (max 1MB), preview, remove.
