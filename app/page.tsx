@@ -164,7 +164,7 @@ export default function HomePage() {
               Start free. Upgrade when you need more.
             </p>
             <div className="mt-10 grid gap-6 sm:grid-cols-2 sm:mt-12 lg:max-w-3xl lg:mx-auto">
-              <div className="rounded-[16px] border border-white/10 bg-[#121821]/80 p-6 backdrop-blur min-[375px]:rounded-[20px] min-[375px]:p-8 sm:p-10">
+              <div className="flex flex-col rounded-[16px] border border-white/10 bg-[#121821]/80 p-6 backdrop-blur min-[375px]:rounded-[20px] min-[375px]:p-8 sm:p-10">
                 <div className="flex items-baseline gap-2">
                   <span className="text-4xl font-bold text-white">Free</span>
                   <span className="text-white/60">to start</span>
@@ -172,7 +172,7 @@ export default function HomePage() {
                 <p className="mt-2 text-white/70">
                   3 invoices with all features. Stripe fees apply per transaction.
                 </p>
-                <ul className="mt-6 space-y-3">
+                <ul className="mt-6 flex-1 space-y-3">
                   {[
                     "3 invoices (all features)",
                     "Magic link sign-in",
@@ -195,7 +195,7 @@ export default function HomePage() {
                   <Link href="/login">Start free</Link>
                 </Button>
               </div>
-              <div className="rounded-[16px] border border-[#3B82F6]/30 bg-[#121821]/80 p-6 backdrop-blur min-[375px]:rounded-[20px] min-[375px]:p-8 sm:p-10">
+              <div className="flex flex-col rounded-[16px] border border-[#3B82F6]/30 bg-[#121821]/80 p-6 backdrop-blur min-[375px]:rounded-[20px] min-[375px]:p-8 sm:p-10">
                 <div className="flex items-baseline gap-2">
                   <span className="text-4xl font-bold text-white">Pro</span>
                   <span className="text-white/60">$3/month</span>
@@ -203,7 +203,7 @@ export default function HomePage() {
                 <p className="mt-2 text-white/70">
                   Unlimited invoices. Everything in Free, no limits.
                 </p>
-                <ul className="mt-6 space-y-3">
+                <ul className="mt-6 flex-1 space-y-3">
                   {[
                     "Unlimited invoices",
                     "All Free features",
