@@ -282,16 +282,26 @@ function SubscriptionSection({
     }
   }
 
-  async function handleManage() {
+  async function handleCancel() {
     setLoading(true);
     try {
-      const res = await fetch("/api/subscription/portal", { method: "POST" });
-      const data = await res.json();
-      if (data?.url) {
-        window.location.href = data.url;
-        return;
+      if (hasStripeCustomer) {
+        const res = await fetch("/api/subscription/portal", { method: "POST" });
+        const data = await res.json();
+        if (data?.url) {
+          window.location.href = data.url;
+          return;
+        }
+        throw new Error(data?.error ?? "Failed to open billing portal");
+      } else {
+        const res = await fetch("/api/subscription/cancel", { method: "POST" });
+        const data = await res.json();
+        if (data?.success) {
+          window.location.reload();
+          return;
+        }
+        throw new Error(data?.error ?? "Failed to cancel");
       }
-      throw new Error(data?.error ?? "Failed to open billing portal");
     } catch (err) {
       console.error(err);
       setLoading(false);
@@ -307,17 +317,15 @@ function SubscriptionSection({
           : "Free plan: 3 invoices. Upgrade to Pro for unlimited."}
       </p>
       {isPro ? (
-        hasStripeCustomer ? (
-          <Button
-            type="button"
-            variant="outline"
-            disabled={loading}
-            onClick={handleManage}
-            className="h-10 rounded-xl"
-          >
-            {loading ? "Opening…" : "Cancel subscription"}
-          </Button>
-        ) : null
+        <Button
+          type="button"
+          variant="outline"
+          disabled={loading}
+          onClick={handleCancel}
+          className="h-10 rounded-xl"
+        >
+          {loading ? "Opening…" : "Cancel subscription"}
+        </Button>
       ) : (
         <Button
           type="button"
