@@ -11,7 +11,7 @@ All notable changes to the Puyer project.
 - **Invoice PDF:** Header includes logo + business name + contact block (address, phone, Company no, VAT). Logo fetched and embedded; WebP skipped (pdf-lib doesn't support).
 - **Public invoice page:** Logo and contact info shown in header; branded payment page for clients.
 - **Storage:** Bucket `logos` (public, 1MB, image/png, image/jpeg, image/webp); RLS: authenticated users can upload/update/delete only in `{user_id}/*`.
-- **Migrations:** `20250232000001_business_contact_logo.sql`, `20250232000002_get_public_invoice_contact_logo.sql`, `20250232000003_storage_logos_bucket.sql`.
+- **Migrations:** `20250232000001_business_contact_logo.sql`, `20250232000002_get_public_invoice_contact_logo.sql`, `20250232000003_storage_logos_bucket.sql`, `20250232000004_storage_logos_policies_fix.sql` (RLS fix for logo upload).
 
 ### [2025-02-21] – Email: password reset template, unsubscribe, spam compliance
 

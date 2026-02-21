@@ -83,13 +83,15 @@ export default async function PublicInvoicePage({
         <div className="rounded-[20px] border border-white/5 bg-[#121821] p-8 backdrop-blur">
           {/* Header: logo + business name + contact info */}
           <div className="mb-8 flex flex-col gap-3">
-            <div className="flex items-start gap-4">
+            <div className="flex items-center gap-4">
               {invoice.logo_url ? (
-                <img
-                  src={invoice.logo_url}
-                  alt=""
-                  className="h-12 w-12 shrink-0 rounded-lg object-contain"
-                />
+                <div className="flex h-12 w-12 shrink-0 overflow-hidden rounded-full">
+                  <img
+                    src={invoice.logo_url}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                </div>
               ) : null}
               <div className="min-w-0 flex-1">
                 <p className="text-base font-semibold text-white">

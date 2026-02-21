@@ -131,9 +131,11 @@ export async function generateInvoicePdf(
   let y = PAGE_HEIGHT - MARGIN;
 
   // ─── Header: logo (optional) + business name + contact ───────────────
-  let headerStartY = y;
-  const logoSize = 48;
+  const logoMaxWidth = 80;
+  const logoMaxHeight = 48;
+  const logoToTextGap = 24;
   let contentStartX = MARGIN;
+  let logoHeightUsed = 0;
 
   if (data.logoUrl) {
     try {
@@ -150,11 +152,16 @@ export async function generateInvoicePdf(
         }
         // pdf-lib does not support WebP; skip logo for WebP
         if (img) {
-          const scale = Math.min(logoSize / img.width, logoSize / img.height, 1);
+          const scale = Math.min(
+            logoMaxWidth / img.width,
+            logoMaxHeight / img.height,
+            1
+          );
           const w = img.width * scale;
           const h = img.height * scale;
           page.drawImage(img, { x: MARGIN, y: y - h, width: w, height: h });
-          contentStartX = MARGIN + w + 12;
+          contentStartX = MARGIN + w + logoToTextGap;
+          logoHeightUsed = h;
         }
       }
     } catch {
@@ -189,7 +196,7 @@ export async function generateInvoicePdf(
     headerY -= lineHeight(9);
   }
 
-  y = Math.min(headerY, y - (data.logoUrl ? logoSize : 0)) - 4;
+  y = Math.min(headerY, y - logoHeightUsed) - 12;
 
   page.drawText("INVOICE", {
     x: MARGIN,
