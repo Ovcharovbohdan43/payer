@@ -74,37 +74,42 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen min-w-0 overflow-x-hidden bg-[#0B0F14]">
       <div className="mx-auto max-w-4xl px-3 py-3 sm:px-6 sm:py-8 min-[375px]:px-4 min-[375px]:py-4">
-        {/* KPI Cards */}
+        {/* KPI Cards - link to Financial overview */}
         <div className="mb-4 grid grid-cols-2 gap-2 sm:mb-8 sm:grid-cols-4 sm:gap-4">
           <KpiCard
             label="Revenue this month"
             value={formatAmount(stats.paidThisMonthCents, currency)}
-            href="/invoices?status=paid"
+            href="/dashboard/analytics#revenue"
             gradient="from-emerald-500/10 via-[#121821] to-[#121821]"
             glow="emerald"
           />
           <KpiCard
             label="Money owed"
             value={formatAmount(stats.unpaidSumCents, currency)}
-            href="/invoices?status=unpaid"
+            href="/dashboard/analytics#invoices"
             gradient="from-blue-500/10 via-[#121821] to-[#121821]"
             glow="blue"
           />
           <KpiCard
             label="Overdue"
             value={formatAmount(stats.overdueSumCents, currency)}
-            href="/invoices?status=overdue"
+            href="/dashboard/analytics#invoices"
             gradient="from-red-500/10 via-[#121821] to-[#121821]"
             glow="red"
           />
           <KpiCard
             label="Paid out"
             value={formatAmount(totalPaidOutCents, currency)}
-            href="/settings"
+            href="/dashboard/analytics#payouts"
             gradient="from-violet-500/10 via-[#121821] to-[#121821]"
             glow="violet"
           />
         </div>
+        <p className="mb-4 text-center text-xs text-muted-foreground sm:mb-6">
+          <Link href="/dashboard/analytics" className="hover:text-foreground">
+            View full financial overview →
+          </Link>
+        </p>
 
         {/* Create Invoice CTA */}
         <div className="mb-4 sm:mb-8">
