@@ -201,7 +201,8 @@ export async function uploadLogoAction(formData: FormData): Promise<{ error?: st
   }
 
   const { data: urlData } = supabase.storage.from(LOGO_BUCKET).getPublicUrl(path);
-  const publicUrl = urlData.publicUrl;
+  // Cache-bust: same path overwritten → new URL forces browser/CDN to fetch new image
+  const publicUrl = `${urlData.publicUrl}?v=${Date.now()}`;
 
   const { error: updateError } = await supabase
     .from("profiles")
