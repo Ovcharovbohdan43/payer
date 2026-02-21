@@ -6,7 +6,7 @@ import type { ActivityItem } from "@/lib/dashboard/activity";
 import { Check, Send, Eye, AlertCircle, Settings, Banknote, ChevronDown, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const INITIAL_COUNT = 6;
+const INITIAL_COUNT = 4;
 
 const ICONS: Record<ActivityItem["type"], React.ReactNode> = {
   paid: <Check className="size-4 text-emerald-400" />,
