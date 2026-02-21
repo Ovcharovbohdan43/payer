@@ -54,8 +54,23 @@ const VAT_RATE = 0.2; // 20%
 
 const PAGE_WIDTH = 595;
 const PAGE_HEIGHT = 842;
-const MARGIN = 50;
+const MARGIN = 52;
 const CONTENT_WIDTH = PAGE_WIDTH - MARGIN * 2;
+
+// Typography
+const FS_BRAND = 22;
+const FS_HEADING = 16;
+const FS_SUBHEADING = 11;
+const FS_BODY = 10;
+const FS_LABEL = 8;
+const FS_TABLE_AMOUNT = 11;
+const FS_TOTAL = 14;
+const FS_FOOTER = 8;
+
+// Spacing (vertical rhythm)
+const SECTION_GAP = 28;
+const BLOCK_GAP = 16;
+const LINE_GAP = 6;
 
 function formatAmount(cents: number, currency: string): string {
   return new Intl.NumberFormat("en-US", {
@@ -125,12 +140,12 @@ export async function generateInvoicePdf(
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-  const c = rgb(0.2, 0.2, 0.2);
-  const cLight = rgb(0.45, 0.45, 0.45);
-  const cMuted = rgb(0.55, 0.55, 0.55);
+  const c = rgb(0.15, 0.15, 0.15);
+  const cBody = rgb(0.35, 0.35, 0.35);
+  const cMuted = rgb(0.5, 0.5, 0.5);
+  const cLabel = rgb(0.6, 0.6, 0.6);
 
-  const lineHeight = (fontSize: number) => fontSize + 8;
-
+  const line = (size: number) => size + LINE_GAP;
   let y = PAGE_HEIGHT - MARGIN;
 
   // ─── Header: logo (optional) + business name + contact ───────────────
@@ -176,11 +191,11 @@ export async function generateInvoicePdf(
   page.drawText(toAsciiSafe(data.businessName), {
     x: contentStartX,
     y: headerY,
-    size: 20,
+    size: FS_BRAND,
     font: fontBold,
     color: c,
   });
-  headerY -= lineHeight(20);
+  headerY -= line(FS_BRAND);
 
   const contactLines: string[] = [];
   if (data.address?.trim()) contactLines.push(toAsciiSafe(data.address.trim()));
@@ -188,91 +203,88 @@ export async function generateInvoicePdf(
   if (data.companyNumber?.trim()) contactLines.push(`Company no: ${toAsciiSafe(data.companyNumber.trim())}`);
   if (data.vatNumber?.trim()) contactLines.push(`VAT: ${toAsciiSafe(data.vatNumber.trim())}`);
 
-  for (const line of contactLines) {
-    page.drawText(line, {
+  for (const contactLine of contactLines) {
+    page.drawText(contactLine, {
       x: contentStartX,
       y: headerY,
-      size: 9,
+      size: FS_LABEL,
       font,
-      color: cMuted,
+      color: cLabel,
     });
-    headerY -= lineHeight(9);
+    headerY -= line(FS_LABEL);
   }
 
-  y = Math.min(headerY, y - logoHeightUsed) - 12;
+  y = Math.min(headerY, y - logoHeightUsed) - SECTION_GAP;
 
+  // Invoice title + number (same row)
   page.drawText("INVOICE", {
     x: MARGIN,
     y,
-    size: 12,
-    font: font,
+    size: FS_LABEL,
+    font: fontBold,
     color: cMuted,
   });
-
-  // Invoice number and date (right-aligned, same row as INVOICE)
   const invNumText = `#${data.invoiceNumber}`;
-  const invNumWidth = fontBold.widthOfTextAtSize(invNumText, 14);
+  const invNumWidth = fontBold.widthOfTextAtSize(invNumText, FS_HEADING);
   page.drawText(invNumText, {
     x: PAGE_WIDTH - MARGIN - invNumWidth,
     y,
-    size: 14,
+    size: FS_HEADING,
     font: fontBold,
     color: c,
   });
-  y -= lineHeight(12);
+  y -= line(FS_HEADING);
 
   if (data.createdAt) {
     const dateText = `Date: ${formatDate(data.createdAt)}`;
-    const dateWidth = font.widthOfTextAtSize(dateText, 9);
+    const dateWidth = font.widthOfTextAtSize(dateText, FS_LABEL);
     page.drawText(dateText, {
       x: PAGE_WIDTH - MARGIN - dateWidth,
       y,
-      size: 9,
+      size: FS_LABEL,
       font,
-      color: cMuted,
+      color: cLabel,
     });
   }
-  y -= lineHeight(9) + 8;
+  y -= line(FS_LABEL) + BLOCK_GAP;
 
   // ─── Bill To ────────────────────────────────────────────────────────
   page.drawText("Bill to", {
     x: MARGIN,
     y,
-    size: 9,
-    font,
-    color: cMuted,
+    size: FS_LABEL,
+    font: fontBold,
+    color: cLabel,
   });
-  y -= lineHeight(9);
+  y -= line(FS_LABEL);
 
   page.drawText(toAsciiSafe(data.clientName), {
     x: MARGIN,
     y,
-    size: 11,
+    size: FS_SUBHEADING,
     font: fontBold,
     color: c,
   });
-  y -= lineHeight(11);
+  y -= line(FS_SUBHEADING);
 
   if (data.clientEmail) {
     page.drawText(toAsciiSafe(data.clientEmail), {
       x: MARGIN,
       y,
-      size: 10,
+      size: FS_BODY,
       font,
-      color: cLight,
+      color: cBody,
     });
-    y -= lineHeight(10);
+    y -= line(FS_BODY);
   }
-  y -= 16;
+  y -= SECTION_GAP;
 
   // ─── Items table ────────────────────────────────────────────────────
-  const rowHeight = 24;
-  const col1Width = CONTENT_WIDTH - 120;
-  const col2Width = 120;
-  const cellPadding = 10;
-  const descFontSize = 10;
-  const amountFontSize = 12;
-  const textBaselineY = 14; // from row bottom
+  const rowHeight = 28;
+  const col1Width = CONTENT_WIDTH - 110;
+  const col2Width = 110;
+  const cellPadding = 12;
+  const textBaselineY = 16;
 
   // Table header
   page.drawRectangle({
@@ -280,28 +292,28 @@ export async function generateInvoicePdf(
     y: y - rowHeight,
     width: CONTENT_WIDTH,
     height: rowHeight,
-    color: rgb(0.96, 0.96, 0.96),
-    borderColor: rgb(0.85, 0.85, 0.85),
+    color: rgb(0.94, 0.94, 0.94),
+    borderColor: rgb(0.82, 0.82, 0.82),
     borderWidth: 0.5,
   });
   page.drawText("Description", {
     x: MARGIN + cellPadding,
     y: y - rowHeight + textBaselineY,
-    size: descFontSize,
+    size: FS_BODY,
     font: fontBold,
-    color: cMuted,
+    color: cLabel,
   });
   page.drawText("Amount", {
     x: PAGE_WIDTH - MARGIN - col2Width + cellPadding,
     y: y - rowHeight + textBaselineY,
-    size: descFontSize,
+    size: FS_BODY,
     font: fontBold,
-    color: cMuted,
+    color: cLabel,
   });
   y -= rowHeight;
 
   const vatIncluded = data.vatIncluded;
-  const lineH = descFontSize + 6;
+  const lineH = FS_BODY + 6;
 
   const items =
     data.lineItems?.length > 0
@@ -340,7 +352,7 @@ export async function generateInvoicePdf(
     const descLines = wrapText(
       font,
       item.description,
-      descFontSize,
+      FS_BODY,
       col1Width - cellPadding * 2
     );
     const amountText = formatAmount(item.amountCents, data.currency);
@@ -356,22 +368,22 @@ export async function generateInvoicePdf(
     });
 
     let lineY = y - textBaselineY;
-    for (const line of descLines) {
-      page.drawText(line, {
+    for (const descLine of descLines) {
+      page.drawText(descLine, {
         x: MARGIN + cellPadding,
         y: lineY,
-        size: descFontSize,
+        size: FS_BODY,
         font,
         color: c,
       });
       lineY -= lineH;
     }
 
-    const amountWidth = fontBold.widthOfTextAtSize(amountText, amountFontSize);
+    const amountWidth = fontBold.widthOfTextAtSize(amountText, FS_TABLE_AMOUNT);
     page.drawText(amountText, {
       x: PAGE_WIDTH - MARGIN - amountWidth - cellPadding,
       y: y - textBaselineY,
-      size: amountFontSize,
+      size: FS_TABLE_AMOUNT,
       font: fontBold,
       color: c,
     });
@@ -398,15 +410,15 @@ export async function generateInvoicePdf(
     page.drawText(discountLabel, {
       x: MARGIN + cellPadding,
       y: y - rowHeight + textBaselineY,
-      size: descFontSize,
+      size: FS_BODY,
       font,
       color: c,
     });
-    const discountTextWidth = fontBold.widthOfTextAtSize(discountText, amountFontSize);
+    const discountTextWidth = fontBold.widthOfTextAtSize(discountText, FS_TABLE_AMOUNT);
     page.drawText(discountText, {
       x: PAGE_WIDTH - MARGIN - discountTextWidth - cellPadding,
       y: y - rowHeight + textBaselineY,
-      size: amountFontSize,
+      size: FS_TABLE_AMOUNT,
       font: fontBold,
       color: rgb(0.2, 0.6, 0.3),
     });
@@ -429,15 +441,15 @@ export async function generateInvoicePdf(
     page.drawText(feeLabel, {
       x: MARGIN + cellPadding,
       y: y - rowHeight + textBaselineY,
-      size: descFontSize,
+      size: FS_BODY,
       font,
       color: c,
     });
-    const feeTextWidth = fontBold.widthOfTextAtSize(feeText, amountFontSize);
+    const feeTextWidth = fontBold.widthOfTextAtSize(feeText, FS_TABLE_AMOUNT);
     page.drawText(feeText, {
       x: PAGE_WIDTH - MARGIN - feeTextWidth - cellPadding,
       y: y - rowHeight + textBaselineY,
-      size: amountFontSize,
+      size: FS_TABLE_AMOUNT,
       font: fontBold,
       color: c,
     });
@@ -461,126 +473,120 @@ export async function generateInvoicePdf(
     page.drawText(vatLabel, {
       x: MARGIN + cellPadding,
       y: y - rowHeight + textBaselineY,
-      size: descFontSize,
+      size: FS_BODY,
       font,
       color: c,
     });
-    const vatTextWidth = fontBold.widthOfTextAtSize(vatText, amountFontSize);
+    const vatTextWidth = fontBold.widthOfTextAtSize(vatText, FS_TABLE_AMOUNT);
     page.drawText(vatText, {
       x: PAGE_WIDTH - MARGIN - vatTextWidth - cellPadding,
       y: y - rowHeight + textBaselineY,
-      size: amountFontSize,
+      size: FS_TABLE_AMOUNT,
       font: fontBold,
       color: c,
     });
     y -= rowHeight;
   }
 
-  // Total row (always; uses data.amountCents as canonical total, incl. payment fee when present)
+  // Total row — prominent
+  const totalRowHeight = 36;
   const displayTotalCents = data.amountCents;
   const totalText = formatAmount(displayTotalCents, data.currency);
   page.drawRectangle({
     x: MARGIN,
-    y: y - rowHeight,
+    y: y - totalRowHeight,
     width: CONTENT_WIDTH,
-    height: rowHeight,
-    borderColor: rgb(0.85, 0.85, 0.85),
+    height: totalRowHeight,
+    color: rgb(0.96, 0.96, 0.96),
+    borderColor: rgb(0.8, 0.8, 0.8),
     borderWidth: 0.5,
   });
   page.drawText("Total", {
     x: MARGIN + cellPadding,
-    y: y - rowHeight + textBaselineY,
-    size: descFontSize,
+    y: y - totalRowHeight + 18,
+    size: FS_SUBHEADING,
     font: fontBold,
     color: c,
   });
-  const totalTextWidth = fontBold.widthOfTextAtSize(totalText, amountFontSize);
+  const totalTextWidth = fontBold.widthOfTextAtSize(totalText, FS_TOTAL);
   page.drawText(totalText, {
     x: PAGE_WIDTH - MARGIN - totalTextWidth - cellPadding,
-    y: y - rowHeight + textBaselineY,
-    size: amountFontSize,
+    y: y - totalRowHeight + 18,
+    size: FS_TOTAL,
     font: fontBold,
     color: c,
   });
-  y -= rowHeight + 8;
+  y -= totalRowHeight + SECTION_GAP;
 
   // ─── Due date & Status ──────────────────────────────────────────────
-  if (data.dueDate) {
-    page.drawText(`Due: ${formatDate(data.dueDate)}`, {
-      x: MARGIN,
-      y,
-      size: 10,
-      font,
-      color: cMuted,
-    });
-    y -= lineHeight(10);
-  }
-
-  page.drawText(`Status: ${data.status.charAt(0).toUpperCase() + data.status.slice(1)}`, {
+  const metaParts: string[] = [];
+  if (data.dueDate) metaParts.push(`Due: ${formatDate(data.dueDate)}`);
+  metaParts.push(`Status: ${data.status.charAt(0).toUpperCase() + data.status.slice(1)}`);
+  page.drawText(metaParts.join("  ·  "), {
     x: MARGIN,
     y,
-    size: 10,
+    size: FS_BODY,
     font,
-    color: cMuted,
+    color: cLabel,
   });
-  y -= lineHeight(10) + 16;
+  y -= line(FS_BODY) + BLOCK_GAP;
 
   // ─── Notes (optional) ───────────────────────────────────────────────
   if (data.notes && data.notes.trim()) {
     page.drawText("Notes", {
       x: MARGIN,
       y,
-      size: 9,
+      size: FS_LABEL,
       font: fontBold,
-      color: cMuted,
+      color: cLabel,
     });
-    y -= lineHeight(9);
+    y -= line(FS_LABEL);
 
-    const notesLines = wrapText(font, toAsciiSafe(data.notes), 10, CONTENT_WIDTH);
-    for (const line of notesLines) {
-      page.drawText(line, {
+    const notesLines = wrapText(font, toAsciiSafe(data.notes), FS_BODY, CONTENT_WIDTH);
+    for (const notesLine of notesLines) {
+      page.drawText(notesLine, {
         x: MARGIN,
         y,
-        size: 10,
+        size: FS_BODY,
         font,
-        color: cLight,
+        color: cBody,
       });
-      y -= lineH;
+      y -= line(FS_BODY);
     }
-    y -= 12;
+    y -= BLOCK_GAP;
   }
 
   // ─── Footer ─────────────────────────────────────────────────────────
-  const footerY = 50;
+  const footerY = 48;
   page.drawLine({
-    start: { x: MARGIN, y: footerY + 20 },
-    end: { x: PAGE_WIDTH - MARGIN, y: footerY + 20 },
+    start: { x: MARGIN, y: footerY + 22 },
+    end: { x: PAGE_WIDTH - MARGIN, y: footerY + 22 },
     thickness: 0.5,
-    color: rgb(0.9, 0.9, 0.9),
+    color: rgb(0.88, 0.88, 0.88),
   });
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
   const termsUrl = appUrl.replace(/\/$/, "") + "/terms";
 
   page.drawText("Thank you for your business.", {
     x: MARGIN,
-    y: footerY + 6,
-    size: 9,
+    y: footerY + 8,
+    size: FS_FOOTER,
     font,
-    color: cMuted,
+    color: cLabel,
   });
   page.drawText("Powered by Puyer", {
     x: MARGIN,
-    y: footerY - 2,
-    size: 8,
+    y: footerY,
+    size: 7,
     font,
-    color: rgb(0.7, 0.7, 0.7),
+    color: rgb(0.65, 0.65, 0.65),
   });
   page.drawText(`Terms of service: ${termsUrl.replace(/^https?:\/\//, "")}`, {
     x: MARGIN,
-    y: footerY - 12,
+    y: footerY - 10,
     size: 6,
     font,
-    color: rgb(0.6, 0.6, 0.6),
+    color: rgb(0.55, 0.55, 0.55),
   });
 
   return pdfDoc.save();
