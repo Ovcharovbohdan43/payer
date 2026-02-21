@@ -54,19 +54,52 @@ export default async function ClientDetailPage({
 
         <div className="mb-8">
           <h1 className="text-2xl font-bold sm:text-3xl">{client.name}</h1>
-          {client.company_name && (
-            <p className="mt-1 text-muted-foreground">{client.company_name}</p>
-          )}
-          {(client.email || client.phone) && (
-            <p className="mt-1 text-sm text-muted-foreground">
-              {[client.email, client.phone].filter(Boolean).join(" · ")}
-            </p>
-          )}
-          {client.address && (
-            <p className="mt-1 text-sm text-muted-foreground">{client.address}</p>
-          )}
-          {client.vat_number && (
-            <p className="mt-1 text-xs text-muted-foreground">VAT: {client.vat_number}</p>
+          {(client.company_name || client.email || client.phone || client.address || client.vat_number) && (
+            <div className="mt-4 rounded-xl border border-white/5 bg-[#121821]/60 p-4 sm:p-5">
+              <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground/80">
+                Contact information
+              </h2>
+              <dl className="space-y-2 text-sm">
+                {client.company_name && (
+                  <div>
+                    <dt className="text-muted-foreground">Company</dt>
+                    <dd className="font-medium">{client.company_name}</dd>
+                  </div>
+                )}
+                {client.address && (
+                  <div>
+                    <dt className="text-muted-foreground">Address</dt>
+                    <dd>{client.address}</dd>
+                  </div>
+                )}
+                {client.email && (
+                  <div>
+                    <dt className="text-muted-foreground">Email</dt>
+                    <dd>
+                      <a href={`mailto:${client.email}`} className="text-[#3B82F6] hover:underline">
+                        {client.email}
+                      </a>
+                    </dd>
+                  </div>
+                )}
+                {client.phone && (
+                  <div>
+                    <dt className="text-muted-foreground">Phone</dt>
+                    <dd>
+                      <a href={`tel:${client.phone}`} className="text-[#3B82F6] hover:underline">
+                        {client.phone}
+                      </a>
+                    </dd>
+                  </div>
+                )}
+                {client.vat_number && (
+                  <div>
+                    <dt className="text-muted-foreground">VAT number</dt>
+                    <dd>{client.vat_number}</dd>
+                  </div>
+                )}
+              </dl>
+            </div>
           )}
         </div>
 

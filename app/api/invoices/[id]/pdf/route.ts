@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getInvoiceById } from "@/app/invoices/actions";
 import { generateInvoicePdf } from "@/lib/pdf/invoice-pdf";
 import { NextResponse } from "next/server";
@@ -21,7 +22,8 @@ export async function GET(
     return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
   }
 
-  const { data: profile } = await supabase
+  const admin = createAdminClient();
+  const { data: profile } = await admin
     .from("profiles")
     .select("business_name, logo_url, address, phone, company_number, vat_number")
     .eq("id", user.id)
@@ -37,7 +39,7 @@ export async function GET(
   const clientEmail = (invoice.client_email ?? "").trim();
 
   if (clientId) {
-    const { data: client } = await supabase
+    const { data: client } = await admin
       .from("clients")
       .select("address, phone, company_name, vat_number")
       .eq("id", clientId)
@@ -45,8 +47,7 @@ export async function GET(
       .single();
     if (client) clientData = client;
   } else if (clientEmail) {
-    // Fallback: match by email when invoice has no client_id (e.g. from offer, manual)
-    const { data: client } = await supabase
+    const { data: client } = await admin
       .from("clients")
       .select("address, phone, company_name, vat_number")
       .eq("user_id", user.id)
