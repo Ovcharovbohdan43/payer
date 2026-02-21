@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { Pencil, Building2, ImagePlus, Trash2 } from "lucide-react";
 import { updateProfileAction, setPasswordAction, sendPasswordResetEmailAction, uploadLogoAction, removeLogoAction } from "./actions";
 import { maskEmail } from "@/lib/utils";
@@ -243,6 +243,7 @@ export function SettingsForm({ profile, recovery = false }: { profile: Profile; 
 
 function LogoSection({ profile }: { profile: Profile }) {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [logoState, setLogoState] = useState<{ error?: string } | null>(null);
   const [logoPending, setLogoPending] = useState(false);
   const [removePending, setRemovePending] = useState(false);
@@ -272,52 +273,74 @@ function LogoSection({ profile }: { profile: Profile }) {
   }
 
   return (
-    <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
-      <h2 className="mb-2 flex items-center gap-2 text-base font-semibold">
-        <ImagePlus className="size-4" />
-        Company logo
-      </h2>
-      <p className="mb-4 text-sm text-muted-foreground">
-        Used in the app header, on invoices (PDF), and the public payment page. PNG, JPEG, or WebP, max 1MB.
-      </p>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-        {profile.logo_url && (
-          <div className="flex items-center gap-3">
-            <img
-              src={profile.logo_url}
-              alt="Company logo"
-              className="h-16 w-16 rounded-lg border border-white/10 object-contain bg-white/5"
+    <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-5">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white/5">
+            {profile.logo_url ? (
+              <img
+                src={profile.logo_url}
+                alt=""
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                <ImagePlus className="size-5" />
+              </div>
+            )}
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold">Company logo</h2>
+            <p className="text-xs text-muted-foreground">
+              Header, invoices, payment page · PNG, JPEG, WebP, max 1MB
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <>
+            <input
+              ref={fileInputRef}
+              type="file"
+              name="logo"
+              accept="image/png,image/jpeg,image/webp"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) {
+                  const fd = new FormData();
+                  fd.set("logo", f);
+                  handleUpload(fd);
+                  e.target.value = "";
+                }
+              }}
             />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={logoPending}
+              onClick={() => fileInputRef.current?.click()}
+              className="h-9 rounded-lg px-3 text-xs"
+            >
+              {logoPending ? "Uploading…" : profile.logo_url ? "Change" : "Upload"}
+            </Button>
+          </>
+          {profile.logo_url && (
             <Button
               type="button"
               variant="ghost"
               size="sm"
               onClick={handleRemove}
               disabled={removePending}
-              className="text-destructive hover:text-destructive"
+              className="h-9 rounded-lg px-3 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              aria-label="Remove logo"
             >
-              <Trash2 className="size-4" />
+              <Trash2 className="size-3.5" />
             </Button>
-          </div>
-        )}
-        <form action={handleUpload} className="flex flex-col gap-2">
-          <input
-            type="file"
-            name="logo"
-            accept="image/png,image/jpeg,image/webp"
-            className="text-sm file:mr-2 file:rounded-lg file:border-0 file:bg-[#3B82F6] file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white hover:file:bg-[#2563EB]"
-          />
-          <Button
-            type="submit"
-            variant="outline"
-            size="sm"
-            disabled={logoPending}
-          >
-            {logoPending ? "Uploading…" : profile.logo_url ? "Replace logo" : "Upload logo"}
-          </Button>
-        </form>
+          )}
+        </div>
       </div>
-      {logoState?.error && <p className="mt-2 text-sm text-destructive">{logoState.error}</p>}
+      {logoState?.error && <p className="mt-2 text-xs text-destructive">{logoState.error}</p>}
     </section>
   );
 }
