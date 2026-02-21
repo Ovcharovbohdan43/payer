@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { generateInvoicePdf } from "@/lib/pdf/invoice-pdf";
 import { NextResponse } from "next/server";
 
@@ -29,7 +29,7 @@ type PublicInvoiceRpc = {
 };
 
 async function getPublicInvoice(publicId: string): Promise<PublicInvoiceRpc | null> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data, error } = await supabase
     .rpc("get_public_invoice", { p_public_id: publicId })
     .maybeSingle();
