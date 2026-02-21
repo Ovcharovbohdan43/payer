@@ -22,9 +22,10 @@ type AppShellProps = {
   logoUrl?: string | null;
   /** Stripe connected = verified (ID verification required by Stripe) */
   isVerified?: boolean;
+  isPro?: boolean;
 };
 
-export function AppShell({ children, businessName, logoUrl, isVerified }: AppShellProps) {
+export function AppShell({ children, businessName, logoUrl, isVerified, isPro }: AppShellProps) {
   const pathname = usePathname();
 
   return (
@@ -32,8 +33,9 @@ export function AppShell({ children, businessName, logoUrl, isVerified }: AppShe
       {/* Sidebar */}
       <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-white/5 bg-[#0B0F14]/95 backdrop-blur-xl lg:flex">
         <div className="flex h-16 items-center border-b border-white/5 px-6">
-          <Link href="/dashboard" className="font-semibold text-white">
+          <Link href="/dashboard" className="flex items-center gap-1.5 font-semibold text-white">
             Puyer
+            {isPro && <span className="text-[#3B82F6]">Pro</span>}
           </Link>
         </div>
         <nav className="flex-1 space-y-0.5 p-4">
@@ -72,8 +74,9 @@ export function AppShell({ children, businessName, logoUrl, isVerified }: AppShe
         {/* Header */}
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-white/5 bg-[#0B0F14]/80 px-4 backdrop-blur-xl sm:px-6">
           <div className="lg:hidden">
-            <Link href="/dashboard" className="font-semibold text-white">
+            <Link href="/dashboard" className="flex items-center gap-1.5 font-semibold text-white">
               Puyer
+              {isPro && <span className="text-[#3B82F6]">Pro</span>}
             </Link>
           </div>
           <div className="flex flex-1 flex-wrap items-center justify-end gap-2 md:justify-end">
