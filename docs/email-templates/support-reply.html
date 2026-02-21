@@ -1,18 +1,20 @@
 <!--
-  Puyer Support Reply — шаблон ответа службы поддержки.
-  Используйте в Resend для ручной отправки писем (Broadcasts или API).
+  Puyer Support Reply — template for support team replies.
+  Use in Resend for manual sends (Broadcasts or API).
 
-  Замените перед отправкой:
-    {{recipientName}} — имя получателя (например, John)
-    {{messageBody}} — текст ответа (HTML: <p>...</p> для абзацев, <strong> для выделения)
+  Replace before sending:
+    {{recipientName}} — recipient name (e.g. John)
+    {{messageBody}} — reply text (HTML: <p>...</p> for paragraphs, <strong> for emphasis)
 
-  Пример {{messageBody}}:
+  Resend Broadcasts: {{{RESEND_UNSUBSCRIBE_URL}}} is auto-replaced by Resend with the per-recipient unsubscribe link. Do not change it — Resend detects this placeholder for compliance.
+
+  Example {{messageBody}}:
     <p>Thank you for reaching out. We've looked into your question about invoice reminders.</p>
     <p>Auto-reminders are sent 1, 3, and 7 days after the invoice is sent. You can enable them in "More options" when creating an invoice, or toggle them in the invoice detail page.</p>
     <p>If you need a different schedule, let us know.</p>
 
-  Рекомендуемый From: Puyer Support <support@puyer.org>
-  Subject: задаётся в Resend при отправке
+  Recommended From: Puyer Support <support@puyer.org>
+  Subject: set in Resend when sending
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -49,7 +51,8 @@
           <tr>
             <td style="padding: 24px 40px 32px 40px; border-top: 1px solid #e4e4e7; background-color: #fafafa; border-radius: 0 0 12px 12px;">
               <p style="margin: 0 0 8px 0; font-size: 12px; color: #a1a1aa;">Puyer · <a href="https://puyer.org" style="color: #3b82f6; text-decoration: none;">puyer.org</a></p>
-              <p style="margin: 0; font-size: 12px; color: #a1a1aa;"><a href="mailto:support@puyer.org" style="color: #3b82f6; text-decoration: none;">support@puyer.org</a></p>
+              <p style="margin: 0 0 8px 0; font-size: 12px; color: #a1a1aa;"><a href="mailto:support@puyer.org" style="color: #3b82f6; text-decoration: none;">support@puyer.org</a></p>
+              <p style="margin: 0; font-size: 12px; color: #a1a1aa;"><a href="{{{RESEND_UNSUBSCRIBE_URL}}}" style="color: #3b82f6; text-decoration: none;">Unsubscribe</a> from invoice and reminder emails.</p>
             </td>
           </tr>
         </table>
