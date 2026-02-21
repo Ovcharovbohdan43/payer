@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { AnimateInView } from "@/components/animate-in-view";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -45,6 +46,7 @@ export default function HomePage() {
       <main>
         {/* Hero */}
         <section className="relative overflow-hidden px-4 py-12 sm:px-6 sm:py-24 min-[375px]:px-4 min-[375px]:py-16 lg:py-32">
+          <FallingStars />
           <div className="absolute inset-0 bg-gradient-to-b from-[#3B82F6]/5 via-transparent to-transparent" />
           <div className="relative mx-auto max-w-4xl text-center">
             <h1 className="text-3xl font-bold tracking-tight text-white min-[375px]:text-4xl sm:text-5xl lg:text-6xl">
@@ -91,36 +93,48 @@ export default function HomePage() {
               One link, one dashboard. No spreadsheets, no chasing clients.
             </p>
             <div className="mt-10 grid gap-4 min-[375px]:gap-6 sm:grid-cols-2 sm:mt-12 lg:grid-cols-3">
-              <FeatureCard
-                icon={<Link2 className="size-6 text-[#3B82F6]" />}
-                title="Pay link + tracking"
-                description="One link to view and pay. We track when it's sent, viewed, and paid — so you always know the status."
-              />
-              <FeatureCard
-                icon={<Bell className="size-6 text-[#3B82F6]" />}
-                title="Email & reminders"
-                description="Send invoices by email. Manual reminders with rate limiting. No more chasing clients."
-              />
-              <FeatureCard
-                icon={<FileText className="size-6 text-[#3B82F6]" />}
-                title="Professional PDFs"
-                description="Auto-generated invoice PDFs. Line items, VAT, due dates — everything your clients expect."
-              />
-              <FeatureCard
-                icon={<CreditCard className="size-6 text-[#3B82F6]" />}
-                title="Stripe Checkout"
-                description="Secure payments via Stripe. Stripe Connect for payouts. QR codes on payment pages."
-              />
-              <FeatureCard
-                icon={<Smartphone className="size-6 text-[#3B82F6]" />}
-                title="Mobile-first"
-                description="Designed for phones first. Create invoices on the go. Works everywhere."
-              />
-              <FeatureCard
-                icon={<Zap className="size-6 text-[#3B82F6]" />}
-                title="Lightning fast"
-                description="Minimal setup. Magic link sign-in. Start invoicing in under a minute."
-              />
+              <AnimateInView>
+                <FeatureCard
+                  icon={<Link2 className="size-6 text-[#3B82F6]" />}
+                  title="Pay link + tracking"
+                  description="One link to view and pay. We track when it's sent, viewed, and paid — so you always know the status."
+                />
+              </AnimateInView>
+              <AnimateInView className="[transition-delay:75ms]">
+                <FeatureCard
+                  icon={<Bell className="size-6 text-[#3B82F6]" />}
+                  title="Email & reminders"
+                  description="Send invoices by email. Manual reminders with rate limiting. No more chasing clients."
+                />
+              </AnimateInView>
+              <AnimateInView className="[transition-delay:150ms]">
+                <FeatureCard
+                  icon={<FileText className="size-6 text-[#3B82F6]" />}
+                  title="Professional PDFs"
+                  description="Auto-generated invoice PDFs. Line items, VAT, due dates — everything your clients expect."
+                />
+              </AnimateInView>
+              <AnimateInView className="[transition-delay:225ms]">
+                <FeatureCard
+                  icon={<CreditCard className="size-6 text-[#3B82F6]" />}
+                  title="Stripe Checkout"
+                  description="Secure payments via Stripe. Stripe Connect for payouts. QR codes on payment pages."
+                />
+              </AnimateInView>
+              <AnimateInView className="[transition-delay:300ms]">
+                <FeatureCard
+                  icon={<Smartphone className="size-6 text-[#3B82F6]" />}
+                  title="Mobile-first"
+                  description="Designed for phones first. Create invoices on the go. Works everywhere."
+                />
+              </AnimateInView>
+              <AnimateInView className="[transition-delay:375ms]">
+                <FeatureCard
+                  icon={<Zap className="size-6 text-[#3B82F6]" />}
+                  title="Lightning fast"
+                  description="Minimal setup. Magic link sign-in. Start invoicing in under a minute."
+                />
+              </AnimateInView>
             </div>
           </div>
         </section>
@@ -164,7 +178,7 @@ export default function HomePage() {
               Start free. Upgrade when you need more.
             </p>
             <div className="mt-10 grid gap-6 sm:grid-cols-2 sm:mt-12 lg:max-w-3xl lg:mx-auto">
-              <div className="flex flex-col rounded-[16px] border border-white/10 bg-[#121821]/80 p-6 backdrop-blur min-[375px]:rounded-[20px] min-[375px]:p-8 sm:p-10">
+              <div className="flex flex-col rounded-[16px] border border-white/10 bg-[#121821]/80 p-6 backdrop-blur transition-all duration-300 hover:scale-[1.02] hover:border-white/20 hover:shadow-[0_0_40px_rgba(59,130,246,0.12)] min-[375px]:rounded-[20px] min-[375px]:p-8 sm:p-10">
                 <div className="flex items-baseline gap-2">
                   <span className="text-4xl font-bold text-white">Free</span>
                   <span className="text-white/60">to start</span>
@@ -195,9 +209,9 @@ export default function HomePage() {
                   <Link href="/login">Start free</Link>
                 </Button>
               </div>
-              <div className="flex flex-col rounded-[16px] border border-[#3B82F6]/30 bg-[#121821]/80 p-6 backdrop-blur min-[375px]:rounded-[20px] min-[375px]:p-8 sm:p-10">
+              <div className="flex flex-col rounded-[16px] border border-[#3B82F6]/30 bg-[#121821]/80 p-6 backdrop-blur transition-all duration-300 hover:scale-[1.02] hover:border-[#3B82F6]/50 hover:shadow-[0_0_40px_rgba(59,130,246,0.15)] min-[375px]:rounded-[20px] min-[375px]:p-8 sm:p-10">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-white">Pro</span>
+                  <span className="text-4xl font-bold text-[#3B82F6]">Pro</span>
                   <span className="text-white/60">$3/month</span>
                 </div>
                 <p className="mt-2 text-white/70">
@@ -271,6 +285,31 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function FallingStars() {
+  const stars = Array.from({ length: 12 }, (_, i) => ({
+    id: i,
+    left: `${5 + i * 8}%`,
+    delay: `${i * 2.5}s`,
+    duration: `${8 + (i % 4) * 2}s`,
+  }));
+
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+      {stars.map((s) => (
+        <div
+          key={s.id}
+          className="absolute h-1 w-1 rounded-full bg-[#3B82F6]/40"
+          style={{
+            left: s.left,
+            top: "-2%",
+            animation: `star-fall ${s.duration} ${s.delay} linear infinite`,
+          }}
+        />
+      ))}
     </div>
   );
 }
