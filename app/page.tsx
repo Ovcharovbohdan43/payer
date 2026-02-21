@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import Link from "next/link";
 import {
   Zap,
@@ -19,8 +20,15 @@ export default function HomePage() {
         <div className="mx-auto flex h-14 min-h-[44px] max-w-6xl items-center justify-between px-4 sm:h-16 sm:px-6 min-[375px]:px-4">
           <Link
             href="/"
-            className="text-xl font-bold tracking-tight text-white"
+            className="flex items-center gap-2 text-xl font-bold tracking-tight text-white"
           >
+            <Image
+              src="/logo.png"
+              alt="Puyer"
+              width={32}
+              height={32}
+              className="h-8 w-8"
+            />
             Puyer
           </Link>
           <div className="flex items-center gap-2">
