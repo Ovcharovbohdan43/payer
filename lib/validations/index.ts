@@ -151,3 +151,11 @@ export const invoiceCreateSchema = z.object({
     })
     .pipe(z.array(lineItemSchema).min(1, "Add at least one service")),
 });
+
+export const invoiceUpdateSchema = invoiceCreateSchema.omit({
+  recurringEnabled: true,
+  recurringInterval: true,
+  recurringIntervalValue: true,
+}).extend({
+  invoiceId: z.string().uuid(),
+});

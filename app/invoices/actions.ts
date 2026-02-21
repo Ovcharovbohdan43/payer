@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { invoiceCreateSchema } from "@/lib/validations";
+import { invoiceCreateSchema, invoiceUpdateSchema } from "@/lib/validations";
 import {
   getPublicInvoiceUrl,
   formatAmount,
@@ -44,6 +44,7 @@ export type InvoiceRow = {
   notes: string | null;
   stripe_payment_intent_id: string | null;
   vat_included: boolean | null;
+  payment_processing_fee_included?: boolean | null;
   payment_processing_fee_cents?: number | null;
   auto_remind_enabled?: boolean;
   auto_remind_days?: string;
@@ -297,6 +298,184 @@ export async function getInvoiceById(id: string): Promise<InvoiceRow | null> {
       };
     }),
   } as InvoiceRow;
+}
+
+/** Raw line items for edit form (amount_cents = original before discount) */
+export async function getInvoiceForEdit(id: string): Promise<InvoiceRow | null> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data: invoice } = await supabase
+    .from("invoices")
+    .select(
+      "id, number, public_id, status, client_name, client_email, amount_cents, currency, description, created_at, sent_at, viewed_at, paid_at, voided_at, due_date, notes, stripe_payment_intent_id, vat_included, payment_processing_fee_included, payment_processing_fee_cents, discount_type, discount_value, auto_remind_enabled, auto_remind_days, recurring, recurring_interval, recurring_interval_value, recurring_parent_id"
+    )
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!invoice) return null;
+
+  const { data: items } = await supabase
+    .from("invoice_line_items")
+    .select("description, amount_cents, discount_percent")
+    .eq("invoice_id", id)
+    .order("sort_order", { ascending: true });
+
+  return {
+    ...invoice,
+    line_items: (items ?? []).map((i) => ({
+      description: i.description,
+      amount_cents: Number(i.amount_cents),
+      discount_percent: Number(i.discount_percent ?? 0),
+    })),
+  } as InvoiceRow;
+}
+
+export type UpdateResult = { error: string } | { success: true };
+
+export async function updateInvoiceAction(formData: FormData): Promise<UpdateResult> {
+  const invoiceId = formData.get("invoiceId") as string | null;
+  if (!invoiceId) return { error: "Invalid request" };
+
+  const raw = {
+    invoiceId,
+    clientId: formData.get("clientId") ?? "",
+    clientName: formData.get("clientName"),
+    clientEmail: formData.get("clientEmail") ?? "",
+    currency: formData.get("currency") ?? "USD",
+    dueDate: formData.get("dueDate") ?? "",
+    notes: formData.get("notes") ?? "",
+    vatIncluded: formData.get("vatIncluded") ?? "",
+    paymentProcessingFeeIncluded: formData.get("paymentProcessingFeeIncluded") ?? "",
+    autoRemindEnabled: formData.get("autoRemindEnabled") ?? "",
+    autoRemindDays: formData.get("autoRemindDays") ?? "1,3,7",
+    discountType: formData.get("discountType") ?? "none",
+    discountPercent: formData.get("discountPercent") ?? "",
+    discountCents: formData.get("discountCents") ?? "",
+    lineItems: formData.get("lineItems") ?? "[]",
+  };
+
+  const parsed = invoiceUpdateSchema.safeParse(raw);
+  if (!parsed.success) {
+    const first = parsed.error.flatten().fieldErrors;
+    const msg =
+      first.clientName?.[0] ??
+      first.lineItems?.[0] ??
+      "Add at least one service with description and amount";
+    return { error: msg };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not signed in" };
+
+  const { data: existing } = await supabase
+    .from("invoices")
+    .select("id, status")
+    .eq("id", invoiceId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!existing) return { error: "Invoice not found" };
+  if (existing.status === "paid" || existing.status === "void") {
+    return { error: "Cannot edit a paid or voided invoice" };
+  }
+
+  const vatIncluded = parsed.data.vatIncluded ?? false;
+  const paymentProcessingFeeIncluded = parsed.data.paymentProcessingFeeIncluded ?? false;
+  const lineItems = parsed.data.lineItems;
+  const currency = parsed.data.currency;
+  const discountType = parsed.data.discountType ?? "none";
+  const discountPercent = parsed.data.discountPercent ?? 0;
+  const discountCents = parsed.data.discountCents ?? 0;
+
+  const lineTotalsAfterDiscount = lineItems.map((i) => {
+    const rawCents = Math.round(i.amount * 100);
+    const dp = i.discountPercent ?? 0;
+    return Math.round(rawCents * (1 - dp / 100));
+  });
+  let subtotalAfterLineDiscounts = lineTotalsAfterDiscount.reduce((s, c) => s + c, 0);
+
+  if (discountType === "percent" && discountPercent > 0) {
+    subtotalAfterLineDiscounts = Math.round(subtotalAfterLineDiscounts * (1 - discountPercent / 100));
+  } else if (discountType === "fixed" && discountCents > 0) {
+    subtotalAfterLineDiscounts = Math.max(0, subtotalAfterLineDiscounts - discountCents);
+  }
+
+  let amountBeforeFeeCents: number;
+  if (vatIncluded) {
+    amountBeforeFeeCents = subtotalAfterLineDiscounts;
+  } else {
+    const vatCents = Math.round(subtotalAfterLineDiscounts * 0.2);
+    amountBeforeFeeCents = subtotalAfterLineDiscounts + vatCents;
+  }
+
+  let amountCents = amountBeforeFeeCents;
+  let paymentProcessingFeeCents: number | null = null;
+  if (paymentProcessingFeeIncluded) {
+    paymentProcessingFeeCents = calcPaymentProcessingFeeCents(amountBeforeFeeCents, currency);
+    amountCents = amountBeforeFeeCents + paymentProcessingFeeCents;
+  }
+
+  const MIN_AMOUNT_CENTS = 100;
+  if (amountCents < MIN_AMOUNT_CENTS) {
+    return { error: "Minimum invoice amount is £1 (or equivalent in your currency)" };
+  }
+
+  const { error: updateError } = await supabase
+    .from("invoices")
+    .update({
+      client_name: parsed.data.clientName,
+      client_email: parsed.data.clientEmail || null,
+      amount_cents: amountCents,
+      currency,
+      notes: parsed.data.notes || null,
+      due_date: parsed.data.dueDate || null,
+      vat_included: vatIncluded,
+      payment_processing_fee_included: paymentProcessingFeeIncluded,
+      payment_processing_fee_cents: paymentProcessingFeeCents,
+      discount_type: discountType !== "none" ? discountType : null,
+      discount_value:
+        discountType === "percent" ? discountPercent : discountType === "fixed" ? discountCents : null,
+      auto_remind_enabled: parsed.data.autoRemindEnabled ?? false,
+      auto_remind_days: parsed.data.autoRemindDays ?? "1,3,7",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", invoiceId)
+    .eq("user_id", user.id);
+
+  if (updateError) return { error: updateError.message };
+
+  await supabase
+    .from("invoice_line_items")
+    .delete()
+    .eq("invoice_id", invoiceId);
+
+  const lineItemRows = lineItems.map((item, idx) => ({
+    invoice_id: invoiceId,
+    description: item.description,
+    amount_cents: Math.round(item.amount * 100),
+    discount_percent: Math.min(100, Math.max(0, item.discountPercent ?? 0)),
+    sort_order: idx,
+  }));
+
+  const { error: lineItemsError } = await supabase
+    .from("invoice_line_items")
+    .insert(lineItemRows);
+
+  if (lineItemsError) return { error: lineItemsError.message };
+
+  revalidatePath("/invoices");
+  revalidatePath(`/invoices/${invoiceId}`);
+  revalidatePath("/dashboard");
+
+  return { success: true };
 }
 
 export async function markInvoiceSentAction(invoiceId: string) {

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   voidInvoiceAction,
@@ -86,6 +87,11 @@ export function InvoiceDetailClient({
         >
           {copyDone ? "Copied!" : "Copy link"}
         </Button>
+        {status !== "paid" && status !== "void" && (
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/invoices/${invoiceId}/edit`}>Edit</Link>
+          </Button>
+        )}
         <Button variant="outline" size="sm" asChild>
           <a
             href={`/api/invoices/${invoiceId}/pdf`}
