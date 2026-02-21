@@ -18,7 +18,12 @@ export default async function OffersPage() {
     <div className="min-h-screen min-w-0 overflow-x-hidden bg-[#0B0F14]">
       <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
         <div className="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-lg font-semibold sm:text-xl">Offers</h1>
+          <div>
+            <h1 className="text-lg font-semibold sm:text-xl">Offers</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Quotes and estimates for clients. Share a link — they can accept or decline. Accepted offers become invoices.
+            </p>
+          </div>
           <Button
             asChild
             className="h-10 w-full rounded-xl bg-[#3B82F6] font-semibold sm:h-9 sm:w-auto sm:px-4"
