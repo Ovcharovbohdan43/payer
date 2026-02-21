@@ -26,6 +26,8 @@ type Profile = {
   country: string | null;
   timezone: string | null;
   stripe_connect_account_id: string | null;
+  stripe_customer_id?: string | null;
+  subscription_status?: string | null;
   hasPassword?: boolean;
   email?: string | null;
   address?: string | null;
@@ -202,6 +204,11 @@ export function SettingsForm({ profile, recovery = false }: { profile: Profile; 
         />
       </section>
 
+      <SubscriptionSection
+        subscriptionStatus={profile.subscription_status ?? "free"}
+        hasStripeCustomer={!!profile.stripe_customer_id}
+      />
+
       <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
         <h2 className="mb-2 text-base font-semibold">Payments</h2>
         <p className="mb-3 text-sm text-muted-foreground">
@@ -246,6 +253,80 @@ export function SettingsForm({ profile, recovery = false }: { profile: Profile; 
         </div>
       </section>
     </div>
+  );
+}
+
+function SubscriptionSection({
+  subscriptionStatus,
+  hasStripeCustomer,
+}: {
+  subscriptionStatus: string;
+  hasStripeCustomer: boolean;
+}) {
+  const [loading, setLoading] = useState(false);
+  const isPro = subscriptionStatus === "active" || subscriptionStatus === "trialing";
+
+  async function handleUpgrade() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/subscription/checkout", { method: "POST" });
+      const data = await res.json();
+      if (data?.url) {
+        window.location.href = data.url;
+        return;
+      }
+      throw new Error(data?.error ?? "Failed to start checkout");
+    } catch (err) {
+      console.error(err);
+      setLoading(false);
+    }
+  }
+
+  async function handleManage() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/subscription/portal", { method: "POST" });
+      const data = await res.json();
+      if (data?.url) {
+        window.location.href = data.url;
+        return;
+      }
+      throw new Error(data?.error ?? "Failed to open billing portal");
+    } catch (err) {
+      console.error(err);
+      setLoading(false);
+    }
+  }
+
+  return (
+    <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
+      <h2 className="mb-2 text-base font-semibold">Subscription</h2>
+      <p className="mb-3 text-sm text-muted-foreground">
+        {isPro
+          ? "You're on Pro — unlimited invoices."
+          : "Free plan: 3 invoices. Upgrade to Pro for unlimited."}
+      </p>
+      {isPro && hasStripeCustomer ? (
+        <Button
+          type="button"
+          variant="outline"
+          disabled={loading}
+          onClick={handleManage}
+          className="h-10 rounded-xl"
+        >
+          {loading ? "Opening…" : "Manage subscription"}
+        </Button>
+      ) : (
+        <Button
+          type="button"
+          disabled={loading}
+          onClick={handleUpgrade}
+          className="h-10 rounded-xl bg-[#3B82F6] font-semibold hover:bg-[#2563EB]"
+        >
+          {loading ? "Opening checkout…" : "Upgrade to Pro ($3/month)"}
+        </Button>
+      )}
+    </section>
   );
 }
 

@@ -163,19 +163,18 @@ export default function HomePage() {
             <p className="mx-auto mt-3 max-w-lg text-center text-sm text-white/60 min-[375px]:text-base">
               Start free. Upgrade when you need more.
             </p>
-            <div className="mt-10 flex justify-center sm:mt-12">
-              <div className="w-full max-w-md rounded-[16px] border border-white/10 bg-[#121821]/80 p-6 backdrop-blur min-[375px]:rounded-[20px] min-[375px]:p-8 sm:p-10">
+            <div className="mt-10 grid gap-6 sm:grid-cols-2 sm:mt-12 lg:max-w-3xl lg:mx-auto">
+              <div className="rounded-[16px] border border-white/10 bg-[#121821]/80 p-6 backdrop-blur min-[375px]:rounded-[20px] min-[375px]:p-8 sm:p-10">
                 <div className="flex items-baseline gap-2">
                   <span className="text-4xl font-bold text-white">Free</span>
                   <span className="text-white/60">to start</span>
                 </div>
                 <p className="mt-2 text-white/70">
-                  Create invoices, send links, track payments. Stripe fees apply
-                  per transaction.
+                  3 invoices with all features. Stripe fees apply per transaction.
                 </p>
                 <ul className="mt-6 space-y-3">
                   {[
-                    "Unlimited invoices",
+                    "3 invoices (all features)",
                     "Magic link sign-in",
                     "Payment tracking",
                     "Email invoices & reminders",
@@ -194,6 +193,35 @@ export default function HomePage() {
                   className="mt-8 min-h-12 w-full touch-manipulation rounded-xl bg-[#3B82F6] font-semibold hover:bg-[#2563EB]"
                 >
                   <Link href="/login">Start free</Link>
+                </Button>
+              </div>
+              <div className="rounded-[16px] border border-[#3B82F6]/30 bg-[#121821]/80 p-6 backdrop-blur min-[375px]:rounded-[20px] min-[375px]:p-8 sm:p-10">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-bold text-white">Pro</span>
+                  <span className="text-white/60">$3/month</span>
+                </div>
+                <p className="mt-2 text-white/70">
+                  Unlimited invoices. Everything in Free, no limits.
+                </p>
+                <ul className="mt-6 space-y-3">
+                  {[
+                    "Unlimited invoices",
+                    "All Free features",
+                    "Cancel anytime",
+                  ].map((item) => (
+                    <li key={item} className="flex items-center gap-3 text-white/80">
+                      <Check className="size-5 shrink-0 text-[#3B82F6]" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="mt-8 min-h-12 w-full touch-manipulation rounded-xl border-[#3B82F6]/50 font-semibold hover:bg-[#3B82F6]/10"
+                >
+                  <Link href="/login">Upgrade to Pro</Link>
                 </Button>
               </div>
             </div>

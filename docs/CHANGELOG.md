@@ -4,6 +4,16 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2025-02-20] – Subscription (Pro plan)
+
+- **Free plan:** 3 invoices with all features.
+- **Pro plan:** $3/month — unlimited invoices.
+- **Settings:** Subscription section — "Upgrade to Pro" / "Manage subscription".
+- **Checkout:** POST `/api/subscription/checkout` → Stripe Checkout; POST `/api/subscription/portal` → Billing Portal.
+- **Webhook:** `checkout.session.completed` (subscription mode), `customer.subscription.updated`, `customer.subscription.deleted`.
+- **Migration:** `20250238000001_subscription_plan.sql` — profiles: stripe_customer_id, subscription_status.
+- **Docs:** `docs/SUBSCRIPTION.md`.
+
 ### [2025-02-20] – Offers (quotes/estimates)
 
 - **Offers tab:** New "Offers" section in nav with "New" badge. Create offers (quotes/estimates) for clients.

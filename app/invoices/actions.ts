@@ -8,6 +8,7 @@ import {
   getDisplayAmountCents,
   calcPaymentProcessingFeeCents,
 } from "@/lib/invoices/utils";
+import { canCreateInvoice } from "@/lib/subscription";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { sendInvoiceEmail, sendReminderEmail } from "@/lib/email/send";
@@ -142,6 +143,24 @@ export async function createInvoiceAction(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not signed in" };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("subscription_status")
+    .eq("id", user.id)
+    .single();
+
+  const { count } = await supabase
+    .from("invoices")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id);
+
+  const invoiceCount = count ?? 0;
+  if (!canCreateInvoice(profile?.subscription_status ?? "free", invoiceCount)) {
+    return {
+      error: "Free plan limit: 3 invoices. Upgrade to Pro ($3/month) for unlimited invoices.",
+    };
+  }
 
   const { data: number } = await supabase.rpc("next_invoice_number", { p_user_id: user.id });
   if (!number || typeof number !== "string") return { error: "Could not generate invoice number" };
