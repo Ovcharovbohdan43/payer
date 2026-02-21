@@ -11,6 +11,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
 export type PublicInvoiceLineItem = {
   description: string;
   amount_cents: number;
+  discount_percent?: number;
 };
 
 export type PublicInvoice = {
@@ -164,14 +165,19 @@ export default async function PublicInvoicePage({
               </div>
               {invoice.line_items?.length > 0 && (
                 <ul className="mt-3 space-y-1 text-sm text-muted-foreground">
-                  {invoice.line_items.map((item, idx) => (
-                    <li key={idx} className="flex justify-between gap-2">
-                      <span>{item.description}</span>
-                      <span className="tabular-nums">
-                        {formatAmount(Number(item.amount_cents), invoice.currency)}
-                      </span>
-                    </li>
-                  ))}
+                  {invoice.line_items.map((item, idx) => {
+                    const raw = Number(item.amount_cents);
+                    const dp = Number((item as { discount_percent?: number }).discount_percent ?? 0);
+                    const amountAfterDiscount = Math.round(raw * (1 - dp / 100));
+                    return (
+                      <li key={idx} className="flex justify-between gap-2">
+                        <span>{item.description}</span>
+                        <span className="tabular-nums">
+                          {formatAmount(amountAfterDiscount, invoice.currency)}
+                        </span>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
               {invoice.due_date && (

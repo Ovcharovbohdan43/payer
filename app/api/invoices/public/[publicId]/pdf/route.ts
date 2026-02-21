@@ -13,12 +13,14 @@ type PublicInvoiceRpc = {
   vat_included: boolean | null;
   payment_processing_fee_included: boolean;
   payment_processing_fee_cents: number | null;
-  line_items: { description: string; amount_cents: number }[];
+  line_items: { description: string; amount_cents: number; discount_percent?: number }[];
   logo_url: string | null;
   address: string | null;
   phone: string | null;
   company_number: string | null;
   vat_number: string | null;
+  discount_type: string | null;
+  discount_value: number | null;
 };
 
 async function getPublicInvoice(publicId: string): Promise<PublicInvoiceRpc | null> {
@@ -40,10 +42,14 @@ export async function GET(
     return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
   }
 
-  const lineItems = (invoice.line_items ?? []).map((i: { description: string; amount_cents: number }) => ({
-    description: i.description,
-    amountCents: Number(i.amount_cents),
-  }));
+  const lineItems = (invoice.line_items ?? []).map(
+    (i: { description: string; amount_cents: number; discount_percent?: number }) => {
+      const raw = Number(i.amount_cents);
+      const dp = Number(i.discount_percent ?? 0);
+      const afterDiscount = Math.round(raw * (1 - dp / 100));
+      return { description: i.description, amountCents: afterDiscount };
+    }
+  );
 
   const pdfBytes = await generateInvoicePdf({
     businessName: invoice.business_name,
@@ -61,6 +67,12 @@ export async function GET(
     phone: invoice.phone ?? undefined,
     companyNumber: invoice.company_number ?? undefined,
     vatNumber: invoice.vat_number ?? undefined,
+    discountType:
+      invoice.discount_type === "percent" || invoice.discount_type === "fixed"
+        ? invoice.discount_type
+        : undefined,
+    discountValue:
+      invoice.discount_value != null ? Number(invoice.discount_value) : undefined,
   });
 
   return new NextResponse(Buffer.from(pdfBytes), {
