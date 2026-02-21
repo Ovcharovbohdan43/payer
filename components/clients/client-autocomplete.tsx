@@ -159,13 +159,29 @@ function AddClientDialog({
               <Label htmlFor="ac-name">Name</Label>
               <Input id="ac-name" name="name" placeholder="Client name" required disabled={isPending} className="h-10" />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="ac-email">Email (optional)</Label>
-              <Input id="ac-email" name="email" type="email" placeholder="email@example.com" disabled={isPending} className="h-10" />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="ac-email">Email (optional)</Label>
+                <Input id="ac-email" name="email" type="email" placeholder="email@example.com" disabled={isPending} className="h-10" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="ac-phone">Phone (optional)</Label>
+                <Input id="ac-phone" name="phone" type="tel" placeholder="+1 234 567 8900" disabled={isPending} className="h-10" />
+              </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="ac-phone">Phone (optional)</Label>
-              <Input id="ac-phone" name="phone" type="tel" placeholder="+1 234 567 8900" disabled={isPending} className="h-10" />
+              <Label htmlFor="ac-address">Address (optional)</Label>
+              <Input id="ac-address" name="address" placeholder="Street, city, postcode" disabled={isPending} className="h-10" />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="ac-company_name">Company (optional)</Label>
+                <Input id="ac-company_name" name="company_name" placeholder="Company Ltd" disabled={isPending} className="h-10" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="ac-vat_number">VAT (optional)</Label>
+                <Input id="ac-vat_number" name="vat_number" placeholder="GB123456789" disabled={isPending} className="h-10" />
+              </div>
             </div>
             {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
           </div>

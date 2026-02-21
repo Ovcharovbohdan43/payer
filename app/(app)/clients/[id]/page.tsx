@@ -54,10 +54,19 @@ export default async function ClientDetailPage({
 
         <div className="mb-8">
           <h1 className="text-2xl font-bold sm:text-3xl">{client.name}</h1>
+          {client.company_name && (
+            <p className="mt-1 text-muted-foreground">{client.company_name}</p>
+          )}
           {(client.email || client.phone) && (
-            <p className="mt-1 text-muted-foreground">
+            <p className="mt-1 text-sm text-muted-foreground">
               {[client.email, client.phone].filter(Boolean).join(" · ")}
             </p>
+          )}
+          {client.address && (
+            <p className="mt-1 text-sm text-muted-foreground">{client.address}</p>
+          )}
+          {client.vat_number && (
+            <p className="mt-1 text-xs text-muted-foreground">VAT: {client.vat_number}</p>
           )}
         </div>
 

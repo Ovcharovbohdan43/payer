@@ -31,6 +31,14 @@ export type InvoicePdfData = {
   dueDate: string | null;
   clientName: string;
   clientEmail?: string | null;
+  /** Client address (from client profile when linked) */
+  clientAddress?: string | null;
+  /** Client phone (from client profile when linked) */
+  clientPhone?: string | null;
+  /** Client company name (from client profile when linked) */
+  clientCompanyName?: string | null;
+  /** Client VAT number (from client profile when linked) */
+  clientVatNumber?: string | null;
   status: string;
   createdAt?: string | null;
   notes?: string | null;
@@ -258,17 +266,34 @@ export async function generateInvoicePdf(
   });
   y -= line(FS_LABEL);
 
+  if (data.clientCompanyName?.trim()) {
+    page.drawText(toAsciiSafe(data.clientCompanyName.trim()), {
+      x: MARGIN,
+      y,
+      size: FS_SUBHEADING,
+      font: fontBold,
+      color: c,
+    });
+    y -= line(FS_SUBHEADING);
+  }
+
   page.drawText(toAsciiSafe(data.clientName), {
     x: MARGIN,
     y,
-    size: FS_SUBHEADING,
+    size: data.clientCompanyName?.trim() ? FS_BODY : FS_SUBHEADING,
     font: fontBold,
     color: c,
   });
-  y -= line(FS_SUBHEADING);
+  y -= line(data.clientCompanyName?.trim() ? FS_BODY : FS_SUBHEADING);
 
-  if (data.clientEmail) {
-    page.drawText(toAsciiSafe(data.clientEmail), {
+  const clientContactLines: string[] = [];
+  if (data.clientAddress?.trim()) clientContactLines.push(toAsciiSafe(data.clientAddress.trim()));
+  if (data.clientEmail?.trim()) clientContactLines.push(toAsciiSafe(data.clientEmail.trim()));
+  if (data.clientPhone?.trim()) clientContactLines.push(toAsciiSafe(data.clientPhone.trim()));
+  if (data.clientVatNumber?.trim()) clientContactLines.push(`VAT: ${toAsciiSafe(data.clientVatNumber.trim())}`);
+
+  for (const clientLine of clientContactLines) {
+    page.drawText(clientLine, {
       x: MARGIN,
       y,
       size: FS_BODY,

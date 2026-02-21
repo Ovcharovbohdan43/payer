@@ -65,6 +65,9 @@ export const clientSchema = z.object({
   name: z.string().min(1, "Name is required").max(200),
   email: optionalEmailSchema.or(z.literal("")),
   phone: z.string().max(50).optional().or(z.literal("")),
+  address: z.string().max(500).optional().or(z.literal("")),
+  company_name: z.string().max(200).optional().or(z.literal("")),
+  vat_number: z.string().max(50).optional().or(z.literal("")),
 });
 
 /** Amount in major units (e.g. 99.99). Convert to cents in action. */

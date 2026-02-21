@@ -10,6 +10,11 @@ type PublicInvoiceRpc = {
   due_date: string | null;
   status: string;
   client_name: string;
+  client_email: string | null;
+  client_address: string | null;
+  client_phone: string | null;
+  client_company_name: string | null;
+  client_vat_number: string | null;
   vat_included: boolean | null;
   payment_processing_fee_included: boolean;
   payment_processing_fee_cents: number | null;
@@ -59,6 +64,11 @@ export async function GET(
     lineItems,
     dueDate: invoice.due_date,
     clientName: invoice.client_name,
+    clientEmail: invoice.client_email ?? undefined,
+    clientAddress: invoice.client_address ?? undefined,
+    clientPhone: invoice.client_phone ?? undefined,
+    clientCompanyName: invoice.client_company_name ?? undefined,
+    clientVatNumber: invoice.client_vat_number ?? undefined,
     status: invoice.status,
     vatIncluded: invoice.vat_included ?? undefined,
     paymentProcessingFeeCents: invoice.payment_processing_fee_cents ?? undefined,

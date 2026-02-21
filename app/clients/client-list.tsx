@@ -30,7 +30,8 @@ export function ClientList({ clients }: { clients: ClientRow[] }) {
     ? clients.filter(
         (c) =>
           c.name.toLowerCase().includes(search.toLowerCase()) ||
-          (c.email ?? "").toLowerCase().includes(search.toLowerCase())
+          (c.email ?? "").toLowerCase().includes(search.toLowerCase()) ||
+          (c.company_name ?? "").toLowerCase().includes(search.toLowerCase())
       )
     : clients;
 
@@ -64,9 +65,9 @@ export function ClientList({ clients }: { clients: ClientRow[] }) {
                   className="min-w-0 flex-1 cursor-pointer transition-colors hover:text-foreground"
                 >
                   <p className="font-medium truncate">{client.name}</p>
-                  {(client.email || client.phone) && (
+                  {(client.company_name || client.email || client.phone) && (
                     <p className="text-sm text-muted-foreground truncate">
-                      {[client.email, client.phone].filter(Boolean).join(" · ")}
+                      {[client.company_name, client.email, client.phone].filter(Boolean).join(" · ")}
                     </p>
                   )}
                 </Link>
@@ -139,27 +140,62 @@ function EditClientDialog({ client, onClose }: { client: ClientRow | null; onClo
                 className="h-10"
               />
             </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="edit-email">Email (optional)</Label>
+                <Input
+                  id="edit-email"
+                  name="email"
+                  type="email"
+                  defaultValue={client.email ?? ""}
+                  disabled={isPending}
+                  className="h-10"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-phone">Phone (optional)</Label>
+                <Input
+                  id="edit-phone"
+                  name="phone"
+                  type="tel"
+                  defaultValue={client.phone ?? ""}
+                  disabled={isPending}
+                  className="h-10"
+                />
+              </div>
+            </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-email">Email (optional)</Label>
+              <Label htmlFor="edit-address">Address (optional)</Label>
               <Input
-                id="edit-email"
-                name="email"
-                type="email"
-                defaultValue={client.email ?? ""}
+                id="edit-address"
+                name="address"
+                placeholder="Street, city, postcode"
+                defaultValue={client.address ?? ""}
                 disabled={isPending}
                 className="h-10"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-phone">Phone (optional)</Label>
-              <Input
-                id="edit-phone"
-                name="phone"
-                type="tel"
-                defaultValue={client.phone ?? ""}
-                disabled={isPending}
-                className="h-10"
-              />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="edit-company_name">Company name (optional)</Label>
+                <Input
+                  id="edit-company_name"
+                  name="company_name"
+                  defaultValue={client.company_name ?? ""}
+                  disabled={isPending}
+                  className="h-10"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-vat_number">VAT number (optional)</Label>
+                <Input
+                  id="edit-vat_number"
+                  name="vat_number"
+                  defaultValue={client.vat_number ?? ""}
+                  disabled={isPending}
+                  className="h-10"
+                />
+              </div>
             </div>
             {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
           </div>

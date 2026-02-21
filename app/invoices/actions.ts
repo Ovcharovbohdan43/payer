@@ -271,7 +271,7 @@ export async function getInvoiceById(id: string): Promise<InvoiceRow | null> {
   const { data: invoice } = await supabase
     .from("invoices")
     .select(
-      "id, number, public_id, status, client_name, client_email, amount_cents, currency, description, created_at, sent_at, viewed_at, paid_at, voided_at, due_date, notes, stripe_payment_intent_id, vat_included, payment_processing_fee_cents, discount_type, discount_value, auto_remind_enabled, auto_remind_days, recurring, recurring_interval, recurring_interval_value, recurring_parent_id"
+      "id, number, public_id, status, client_id, client_name, client_email, amount_cents, currency, description, created_at, sent_at, viewed_at, paid_at, voided_at, due_date, notes, stripe_payment_intent_id, vat_included, payment_processing_fee_cents, discount_type, discount_value, auto_remind_enabled, auto_remind_days, recurring, recurring_interval, recurring_interval_value, recurring_parent_id"
     )
     .eq("id", id)
     .eq("user_id", user.id)

@@ -57,6 +57,9 @@ function invoiceToSyntheticClient(invoice: InvoiceRow): ClientRow | null {
     name: invoice.client_name,
     email: invoice.client_email ?? null,
     phone: null,
+    address: null,
+    company_name: null,
+    vat_number: null,
     created_at: "",
   };
 }
