@@ -34,6 +34,8 @@ export async function GET(
     vat_number?: string | null;
   } = {};
   const clientId = (invoice as { client_id?: string }).client_id;
+  const clientEmail = (invoice.client_email ?? "").trim();
+
   if (clientId) {
     const { data: client } = await supabase
       .from("clients")
@@ -41,6 +43,16 @@ export async function GET(
       .eq("id", clientId)
       .eq("user_id", user.id)
       .single();
+    if (client) clientData = client;
+  } else if (clientEmail) {
+    // Fallback: match by email when invoice has no client_id (e.g. from offer, manual)
+    const { data: client } = await supabase
+      .from("clients")
+      .select("address, phone, company_name, vat_number")
+      .eq("user_id", user.id)
+      .eq("email", clientEmail)
+      .limit(1)
+      .maybeSingle();
     if (client) clientData = client;
   }
 
