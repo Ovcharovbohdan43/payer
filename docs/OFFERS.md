@@ -4,7 +4,7 @@ Offers allow you to send a price quote or estimate to a client before creating a
 
 ## Flow
 
-1. **Create offer** — Add client, line items (services), amounts, discounts, VAT. Same structure as invoices but simpler (no payment processing fee, no recurring).
+1. **Create offer** — Add client, line items (services), amounts, discounts, VAT, payment processing fee (optional). Same structure as invoices.
 2. **Share link** — Copy the public URL (`/o/[publicId]`) and send it to the client (email, messaging, etc.).
 3. **Client views** — Public page shows the offer total, line items, business info.
 4. **Client action:**
@@ -39,3 +39,4 @@ Apply in Supabase SQL Editor or via `supabase db push`:
 
 1. `20250235000001_offers.sql` — Tables offers, offer_line_items.
 2. `20250235000002_offers_rpc.sql` — RPCs get_public_offer, record_public_offer_viewed, next_offer_number.
+3. `20250236000001_offers_payment_processing_fee.sql` — payment_processing_fee_included, payment_processing_fee_cents on offers.

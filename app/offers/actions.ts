@@ -2,7 +2,11 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { offerCreateSchema } from "@/lib/validations";
-import { formatAmount, getDisplayAmountCents } from "@/lib/invoices/utils";
+import {
+  formatAmount,
+  getDisplayAmountCents,
+  calcPaymentProcessingFeeCents,
+} from "@/lib/invoices/utils";
 import { getPublicOfferUrl } from "@/lib/offers/utils";
 import { revalidatePath } from "next/cache";
 
@@ -55,6 +59,7 @@ export async function createOfferAction(
     dueDate: formData.get("dueDate") ?? "",
     notes: formData.get("notes") ?? "",
     vatIncluded: formData.get("vatIncluded") ?? "",
+    paymentProcessingFeeIncluded: formData.get("paymentProcessingFeeIncluded") ?? "",
     discountType: formData.get("discountType") ?? "none",
     discountPercent: formData.get("discountPercent") ?? "",
     discountCents: formData.get("discountCents") ?? "",
@@ -92,9 +97,21 @@ export async function createOfferAction(
     subtotalAfterLineDiscounts = Math.max(0, subtotalAfterLineDiscounts - discountCents);
   }
 
-  const amountCents = vatIncluded
+  let amountBeforeFeeCents = vatIncluded
     ? subtotalAfterLineDiscounts
-    : subtotalAfterLineDiscounts + Math.round(subtotalAfterLineDiscounts * VAT_RATE);
+    : subtotalAfterLineDiscounts +
+      Math.round(subtotalAfterLineDiscounts * VAT_RATE);
+
+  const paymentProcessingFeeIncluded = parsed.data.paymentProcessingFeeIncluded ?? false;
+  let amountCents = amountBeforeFeeCents;
+  let paymentProcessingFeeCents: number | null = null;
+  if (paymentProcessingFeeIncluded) {
+    paymentProcessingFeeCents = calcPaymentProcessingFeeCents(
+      amountBeforeFeeCents,
+      currency
+    );
+    amountCents = amountBeforeFeeCents + paymentProcessingFeeCents;
+  }
 
   const MIN_AMOUNT_CENTS = 100;
   if (amountCents < MIN_AMOUNT_CENTS) {
@@ -131,6 +148,8 @@ export async function createOfferAction(
       discount_type: discountType !== "none" ? discountType : null,
       discount_value:
         discountType === "percent" ? discountPercent : discountType === "fixed" ? discountCents : null,
+      payment_processing_fee_included: paymentProcessingFeeIncluded,
+      payment_processing_fee_cents: paymentProcessingFeeCents,
       sent_at: options.markSent ? new Date().toISOString() : null,
     })
     .select("id, number, public_id")
@@ -246,7 +265,7 @@ export async function acceptOfferAction(publicId: string): Promise<AcceptOfferRe
 
   const { data: offer, error: offerError } = await supabase
     .from("offers")
-    .select("id, user_id, client_name, client_email, amount_cents, currency, vat_included, discount_type, discount_value")
+    .select("id, user_id, client_name, client_email, amount_cents, currency, vat_included, payment_processing_fee_included, payment_processing_fee_cents, discount_type, discount_value")
     .eq("public_id", publicId)
     .in("status", ["sent", "viewed"])
     .single();
@@ -281,6 +300,8 @@ export async function acceptOfferAction(publicId: string): Promise<AcceptOfferRe
       amount_cents: offer.amount_cents,
       currency: offer.currency,
       vat_included: offer.vat_included,
+      payment_processing_fee_included: offer.payment_processing_fee_included ?? false,
+      payment_processing_fee_cents: offer.payment_processing_fee_cents ?? null,
       discount_type: offer.discount_type,
       discount_value: offer.discount_value,
       sent_at: new Date().toISOString(),

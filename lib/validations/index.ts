@@ -160,7 +160,7 @@ export const invoiceUpdateSchema = invoiceCreateSchema.omit({
   invoiceId: z.string().uuid(),
 });
 
-/** Offer (quote/estimate) - simpler than invoice, no payment fee/recurring */
+/** Offer (quote/estimate) - includes payment processing fee option */
 export const offerCreateSchema = z.object({
   clientId: z.string().uuid().optional().or(z.literal("")),
   clientName: z.string().min(1, "Client name is required").max(200),
@@ -169,6 +169,10 @@ export const offerCreateSchema = z.object({
   dueDate: z.string().optional().or(z.literal("")),
   notes: z.string().max(2000).optional().or(z.literal("")),
   vatIncluded: z
+    .string()
+    .optional()
+    .transform((v) => v === "true"),
+  paymentProcessingFeeIncluded: z
     .string()
     .optional()
     .transform((v) => v === "true"),
