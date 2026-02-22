@@ -17,7 +17,9 @@ export function RegisterForm() {
   return (
     <form action={formAction} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">
+          Email <span className="text-muted-foreground">(required)</span>
+        </Label>
         <Input
           id="email"
           name="email"
@@ -30,7 +32,9 @@ export function RegisterForm() {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="name">Your name</Label>
+        <Label htmlFor="name">
+          Your name <span className="text-muted-foreground">(required)</span>
+        </Label>
         <Input
           id="name"
           name="name"
@@ -43,7 +47,9 @@ export function RegisterForm() {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="business_name">Business name</Label>
+        <Label htmlFor="business_name">
+          Company name <span className="text-muted-foreground">(required)</span>
+        </Label>
         <Input
           id="business_name"
           name="business_name"
@@ -56,7 +62,9 @@ export function RegisterForm() {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">
+          Password <span className="text-muted-foreground">(required)</span>
+        </Label>
         <Input
           id="password"
           name="password"
@@ -68,17 +76,35 @@ export function RegisterForm() {
           className="h-11"
         />
       </div>
-      <div className="flex items-start gap-3">
-        <input
-          type="checkbox"
-          id="termsAccepted"
-          name="termsAccepted"
-          value="true"
-          required
+      <div className="space-y-2">
+        <Label htmlFor="country">
+          Country <span className="text-muted-foreground">(optional)</span>
+        </Label>
+        <Input
+          id="country"
+          name="country"
+          type="text"
+          placeholder="e.g. United Kingdom"
+          autoComplete="country-name"
           disabled={isPending}
-          className="mt-1 h-4 w-4 shrink-0 rounded border-white/20 accent-[#3B82F6]"
+          className="h-11"
         />
-        <Label htmlFor="termsAccepted" className="cursor-pointer text-sm font-normal leading-relaxed">
+      </div>
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">
+          Terms <span className="text-muted-foreground">(required)</span>
+        </Label>
+        <div className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            id="termsAccepted"
+            name="termsAccepted"
+            value="true"
+            required
+            disabled={isPending}
+            className="mt-1 h-4 w-4 shrink-0 rounded border-white/20 accent-[#3B82F6]"
+          />
+          <Label htmlFor="termsAccepted" className="cursor-pointer text-sm font-normal leading-relaxed">
           I agree to the{" "}
           <a
             href="/terms"
@@ -89,7 +115,8 @@ export function RegisterForm() {
             Terms of Service
           </a>
           . By clicking Create account, you accept these terms.
-        </Label>
+          </Label>
+        </div>
       </div>
       <Button
         type="submit"

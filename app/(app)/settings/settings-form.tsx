@@ -60,16 +60,19 @@ export function SettingsForm({ profile, recovery = false }: { profile: Profile; 
           <h2 className="mb-4 text-base font-semibold">Business profile</h2>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="business_name">Business name</Label>
-            <Input
-              id="business_name"
-              name="business_name"
-              placeholder="My Business"
-              required
-              disabled={isPending}
-              defaultValue={profile.business_name ?? ""}
-              className="h-10"
-            />
+            <Label>Company name</Label>
+            <div className="rounded-lg border border-white/10 bg-[#121821]/50 px-3 py-2.5 text-sm text-foreground">
+              {profile.business_name || "—"}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              To change your company name, contact support at{" "}
+              <a
+                href="mailto:support@puyer.org"
+                className="text-[#3B82F6] underline hover:text-blue-400"
+              >
+                support@puyer.org
+              </a>
+            </p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="default_currency">Default currency</Label>

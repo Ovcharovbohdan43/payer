@@ -10,6 +10,7 @@ export async function signUpAction(formData: FormData) {
     name: formData.get("name"),
     business_name: formData.get("business_name"),
     password: formData.get("password"),
+    country: formData.get("country") ?? "",
     termsAccepted: formData.get("termsAccepted"),
   };
   const parsed = registerSchema.safeParse(raw);
@@ -59,6 +60,7 @@ export async function signUpAction(formData: FormData) {
       .from("profiles")
       .update({
         business_name: parsed.data.business_name,
+        country: parsed.data.country?.trim() || null,
         updated_at: new Date().toISOString(),
       })
       .eq("id", data.user.id);

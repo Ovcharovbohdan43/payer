@@ -18,8 +18,9 @@ export const passwordSchema = z
 export const registerSchema = z.object({
   email: emailSchema,
   name: z.string().min(1, "Name is required").max(100),
-  business_name: z.string().min(1, "Business name is required").max(200),
+  business_name: z.string().min(1, "Company name is required").max(200),
   password: passwordSchema,
+  country: z.string().max(100).optional().or(z.literal("")),
   termsAccepted: z
     .string()
     .optional()
@@ -51,6 +52,13 @@ export const onboardingSchema = z.object({
   business_name: z.string().min(1, "Business name is required").max(200),
   default_currency: z.string().length(3).toUpperCase(),
   country: z.string().max(100).optional(),
+  timezone: z.string().max(50).optional(),
+});
+
+/** Profile update (settings) — business_name is read-only, excluded. */
+export const profileUpdateSchema = z.object({
+  default_currency: z.string().length(3).toUpperCase(),
+  country: z.string().max(100).optional().or(z.literal("")),
   timezone: z.string().max(50).optional(),
 });
 

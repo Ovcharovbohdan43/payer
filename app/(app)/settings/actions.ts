@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { onboardingSchema, passwordSchema, profileContactSchema } from "@/lib/validations";
+import { profileUpdateSchema, passwordSchema, profileContactSchema } from "@/lib/validations";
 import { revalidatePath } from "next/cache";
 
 const LOGO_BUCKET = "logos";
@@ -10,18 +10,14 @@ const LOGO_ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp"];
 
 export async function updateProfileAction(formData: FormData) {
   const raw = {
-    business_name: formData.get("business_name"),
     default_currency: formData.get("default_currency"),
     country: formData.get("country") ?? "",
     timezone: formData.get("timezone") ?? "UTC",
   };
-  const parsed = onboardingSchema.safeParse(raw);
+  const parsed = profileUpdateSchema.safeParse(raw);
   if (!parsed.success) {
     const first = parsed.error.flatten().fieldErrors;
-    const msg =
-      first.business_name?.[0] ??
-      first.default_currency?.[0] ??
-      "Invalid fields";
+    const msg = first.default_currency?.[0] ?? "Invalid fields";
     return { error: msg };
   }
 
@@ -61,7 +57,6 @@ export async function updateProfileAction(formData: FormData) {
   const { error } = await supabase
     .from("profiles")
     .update({
-      business_name: parsed.data.business_name,
       default_currency: parsed.data.default_currency,
       country: parsed.data.country || null,
       timezone: parsed.data.timezone || "UTC",
