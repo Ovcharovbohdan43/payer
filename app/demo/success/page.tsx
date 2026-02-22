@@ -9,12 +9,7 @@ export default async function DemoSuccessPage({
   searchParams: Promise<{ publicId?: string }>;
 }) {
   const { publicId } = await searchParams;
-  const publicUrl = publicId
-    ? `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/i/${publicId}`.replace(
-        /\/+/g,
-        "/"
-      )
-    : null;
+  const invoicePath = publicId ? `/i/${publicId}` : null;
 
   return (
     <div className="min-h-screen bg-[#0B0F14]">
@@ -48,10 +43,10 @@ export default async function DemoSuccessPage({
             See how your clients would view and pay the invoice.
           </p>
 
-          {publicUrl && (
+          {invoicePath && (
             <div className="mt-8">
               <Button asChild size="lg" className="h-12 rounded-xl">
-                <Link href={publicUrl} className="flex items-center gap-2">
+                <Link href={invoicePath} className="flex items-center gap-2">
                   View invoice page
                   <ArrowRight className="h-4 w-4" />
                 </Link>

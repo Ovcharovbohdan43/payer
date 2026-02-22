@@ -6,13 +6,17 @@ import { Button } from "@/components/ui/button";
 import { CreditCard, ArrowRight, Link2, Home } from "lucide-react";
 import { InvoiceQrCode } from "@/components/invoice-qr-code";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
+function getBaseUrl(): string {
+  if (typeof window !== "undefined") return window.location.origin;
+  const url = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
+  return url.startsWith("http") ? url.replace(/\/$/, "") : `https://${url.replace(/^\/+/, "")}`;
+}
 
 type Props = { publicId: string };
 
 export function DemoPayArea({ publicId }: Props) {
   const [copyDone, setCopyDone] = useState(false);
-  const pageUrl = `${BASE_URL.replace(/\/$/, "")}/i/${publicId}`;
+  const pageUrl = `${getBaseUrl().replace(/\/$/, "")}/i/${publicId}`;
 
   const handleCopyLink = async () => {
     try {
