@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { PayButton } from "./pay-button";
 import { DownloadPdfLink } from "./download-pdf-placeholder";
 import { InvoiceQrCode } from "@/components/invoice-qr-code";
+import { DemoPayArea } from "./demo-pay-area";
 import { CheckCircle2 } from "lucide-react";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
@@ -42,6 +43,17 @@ async function getPublicInvoice(publicId: string): Promise<PublicInvoice | null>
   return data as PublicInvoice;
 }
 
+async function getDemoPublicInvoice(
+  publicId: string
+): Promise<PublicInvoice | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .rpc("get_demo_public_invoice", { p_public_id: publicId })
+    .maybeSingle();
+  if (error || !data) return null;
+  return data as PublicInvoice;
+}
+
 /** Record first view (sets viewed_at, status → viewed) when status is sent. Idempotent. */
 async function recordViewed(publicId: string): Promise<void> {
   const supabase = await createClient();
@@ -58,17 +70,22 @@ export default async function PublicInvoicePage({
   const { publicId } = await params;
   const { paid: paidParam } = await searchParams;
   let invoice = await getPublicInvoice(publicId);
+  let isDemo = false;
+  if (!invoice) {
+    invoice = await getDemoPublicInvoice(publicId);
+    isDemo = !!invoice;
+  }
   if (!invoice) notFound();
 
-  // On first load when status is sent: set viewed_at and status to viewed, then re-fetch for display
-  if (invoice.status === "sent") {
+  // On first load when status is sent: set viewed_at and status to viewed (real invoices only)
+  if (!isDemo && invoice.status === "sent") {
     await recordViewed(publicId);
     const updated = await getPublicInvoice(publicId);
     if (updated) invoice = updated;
   }
 
   const isPaid = invoice.status === "paid";
-  const showSuccessScreen = paidParam === "1" || isPaid;
+  const showSuccessScreen = !isDemo && (paidParam === "1" || isPaid);
 
   const contactLines: string[] = [];
     if (invoice.address?.trim()) contactLines.push(invoice.address.trim());
@@ -138,6 +155,49 @@ export default async function PublicInvoicePage({
                 <div className="mt-8 w-full">
                   <DownloadPdfLink publicId={publicId} fullWidth />
                 </div>
+              </div>
+            </>
+          ) : isDemo ? (
+            <>
+              <div>
+                <h1 className="text-3xl font-bold tabular-nums">
+                  {formatAmount(
+                    getDisplayAmountCents(
+                      Number(invoice.amount_cents),
+                      invoice.vat_included
+                    ),
+                    invoice.currency
+                  )}
+                </h1>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Invoice {invoice.invoice_number}
+                </p>
+              </div>
+              {invoice.line_items?.length > 0 && (
+                <ul className="mt-3 space-y-1 text-sm text-muted-foreground">
+                  {invoice.line_items.map((item, idx) => {
+                    const raw = Number(item.amount_cents);
+                    const dp = Number((item as { discount_percent?: number }).discount_percent ?? 0);
+                    const amountAfterDiscount = Math.round(raw * (1 - dp / 100));
+                    return (
+                      <li key={idx} className="flex justify-between gap-2">
+                        <span>{item.description}</span>
+                        <span className="tabular-nums">
+                          {formatAmount(amountAfterDiscount, invoice.currency)}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+              {invoice.due_date && (
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Due: {new Date(invoice.due_date).toLocaleDateString("en-US")}
+                </p>
+              )}
+
+              <div className="mt-8">
+                <DemoPayArea publicId={publicId} />
               </div>
             </>
           ) : (

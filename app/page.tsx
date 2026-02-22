@@ -61,13 +61,13 @@ export default function HomePage() {
               Built for trades and freelancers. Create an invoice, send a link,
               track payment — no hassle. Mobile-first, simple, secure.
             </p>
-            <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:justify-center sm:gap-4">
+            <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-4">
               <Button
                 asChild
                 size="lg"
                 className="min-h-12 min-w-0 touch-manipulation rounded-xl bg-[#3B82F6] text-base font-semibold shadow-[0_0_40px_rgba(59,130,246,0.3)] transition-all hover:bg-[#2563EB] sm:h-14 sm:min-w-[200px]"
               >
-                <Link href="/login" className="flex items-center gap-2">
+                <Link href="/register" className="flex items-center gap-2">
                   Start free
                   <ArrowRight className="size-4" />
                 </Link>
@@ -78,7 +78,7 @@ export default function HomePage() {
                 size="lg"
                 className="min-h-12 touch-manipulation rounded-xl border-white/10 bg-white/5 hover:bg-white/10 sm:h-14"
               >
-                <Link href="/login">Log in</Link>
+                <Link href="/demo">Try demo</Link>
               </Button>
             </div>
           </div>
