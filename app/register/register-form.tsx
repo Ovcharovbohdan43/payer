@@ -94,7 +94,7 @@ export function RegisterForm() {
         <Label className="text-sm font-medium">
           Terms <span className="text-muted-foreground">(required)</span>
         </Label>
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-3 rounded-lg border border-white/10 bg-[#121821]/50 px-4 py-3">
           <input
             type="checkbox"
             id="termsAccepted"
@@ -102,19 +102,22 @@ export function RegisterForm() {
             value="true"
             required
             disabled={isPending}
-            className="mt-1 h-4 w-4 shrink-0 rounded border-white/20 accent-[#3B82F6]"
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-white/20 accent-[#3B82F6]"
           />
-          <Label htmlFor="termsAccepted" className="cursor-pointer text-sm font-normal leading-relaxed">
-          I agree to the{" "}
-          <a
-            href="/terms"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:text-foreground"
+          <Label
+            htmlFor="termsAccepted"
+            className="cursor-pointer text-sm font-normal leading-relaxed text-muted-foreground"
           >
-            Terms of Service
-          </a>
-          . By clicking Create account, you accept these terms.
+            I agree to the{" "}
+            <a
+              href="/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#3B82F6] underline hover:text-blue-400"
+            >
+              Terms of Service
+            </a>
+            . By clicking Create account, you accept these terms.
           </Label>
         </div>
       </div>
