@@ -12,6 +12,7 @@ import {
   ArrowRight,
   Check,
 } from "lucide-react";
+import { ScreenshotGallery } from "@/components/screenshot-gallery";
 
 export default function HomePage() {
   return (
@@ -165,6 +166,21 @@ export default function HomePage() {
                 description="Client pays via Stripe. You get notified. Money flows to your account."
               />
             </div>
+          </div>
+        </section>
+
+        {/* Screenshots */}
+        <section className="border-t border-white/5 px-4 py-12 sm:px-6 sm:py-24 min-[375px]:px-4">
+          <div className="mx-auto max-w-4xl">
+            <h2 className="text-center text-xl font-bold text-white min-[375px]:text-2xl sm:text-3xl">
+              See Puyer in action
+            </h2>
+            <p className="mx-auto mt-3 max-w-lg text-center text-sm text-white/60 min-[375px]:text-base">
+              From dashboard to paid — here&apos;s how it works.
+            </p>
+            <AnimateInView className="mt-10 sm:mt-12">
+              <ScreenshotGallery />
+            </AnimateInView>
           </div>
         </section>
 
