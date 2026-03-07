@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -378,12 +379,14 @@ function LogoSection({ profile }: { profile: Profile }) {
     <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white/5">
+          <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white/5">
             {profile.logo_url ? (
-              <img
+              <Image
                 src={profile.logo_url}
                 alt=""
-                className="h-full w-full object-cover"
+                fill
+                className="object-cover"
+                sizes="48px"
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-muted-foreground">

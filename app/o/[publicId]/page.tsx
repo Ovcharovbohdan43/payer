@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { formatAmount, getDisplayAmountCents } from "@/lib/invoices/utils";
 import { notFound } from "next/navigation";
@@ -43,6 +44,25 @@ export type PublicOffer = {
   invoice_public_id?: string | null;
 };
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ publicId: string }>;
+}) {
+  const { publicId } = await params;
+  const offer = await getPublicOffer(publicId);
+  if (!offer) return { title: "Offer" };
+  const amount = formatAmount(
+    getDisplayAmountCents(Number(offer.amount_cents), offer.vat_included),
+    offer.currency
+  );
+  return {
+    title: `Offer ${offer.offer_number} — ${amount}`,
+    description: `${offer.business_name} — Quote for ${offer.client_name}`,
+    robots: { index: false, follow: false },
+  };
+}
+
 export default async function PublicOfferPage({
   params,
 }: {
@@ -76,11 +96,13 @@ export default async function PublicOfferPage({
           <div className="mb-8 flex flex-col gap-3">
             <div className="flex items-center gap-4">
               {typedOffer.logo_url ? (
-                <div className="flex h-12 w-12 shrink-0 overflow-hidden rounded-full">
-                  <img
+                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full">
+                  <Image
                     src={typedOffer.logo_url}
                     alt=""
-                    className="h-full w-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="48px"
                   />
                 </div>
               ) : null}

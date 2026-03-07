@@ -6,6 +6,7 @@ import { DownloadPdfLink } from "./download-pdf-placeholder";
 import { InvoiceQrCode } from "@/components/invoice-qr-code";
 import { DemoPayArea } from "./demo-pay-area";
 import { CheckCircle2 } from "lucide-react";
+import Image from "next/image";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
 
@@ -52,6 +53,26 @@ async function getDemoPublicInvoice(
     .maybeSingle();
   if (error || !data) return null;
   return data as PublicInvoice;
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ publicId: string }>;
+}) {
+  const { publicId } = await params;
+  let invoice = await getPublicInvoice(publicId);
+  if (!invoice) invoice = await getDemoPublicInvoice(publicId);
+  if (!invoice) return { title: "Invoice" };
+  const amount = formatAmount(
+    getDisplayAmountCents(Number(invoice.amount_cents), invoice.vat_included),
+    invoice.currency
+  );
+  return {
+    title: `Invoice ${invoice.invoice_number} — ${amount}`,
+    description: `${invoice.business_name} — Invoice for ${invoice.client_name}`,
+    robots: { index: false, follow: false },
+  };
 }
 
 /** Record first view (sets viewed_at, status → viewed) when status is sent. Idempotent. */
@@ -103,11 +124,13 @@ export default async function PublicInvoicePage({
           <div className="mb-8 flex flex-col gap-3">
             <div className="flex items-center gap-4">
               {invoice.logo_url ? (
-                <div className="flex h-12 w-12 shrink-0 overflow-hidden rounded-full">
-                  <img
+                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full">
+                  <Image
                     src={invoice.logo_url}
                     alt=""
-                    className="h-full w-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="48px"
                   />
                 </div>
               ) : null}

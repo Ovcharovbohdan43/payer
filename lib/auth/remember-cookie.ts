@@ -5,8 +5,11 @@ const COOKIE_NAME = "puyer_remember";
 const REMEMBER_DAYS = 30;
 
 function getSecret(): string {
-  const s = process.env.LOGIN_VERIFY_SECRET ?? process.env.CRON_SECRET ?? "puyer-remember";
-  return s;
+  const s = process.env.LOGIN_VERIFY_SECRET ?? process.env.CRON_SECRET;
+  if (!s && process.env.NODE_ENV === "production") {
+    throw new Error("LOGIN_VERIFY_SECRET or CRON_SECRET must be set in production");
+  }
+  return s ?? "puyer-remember-dev";
 }
 
 export function createRememberToken(userId: string): string {

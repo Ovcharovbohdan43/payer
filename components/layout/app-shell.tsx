@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -83,11 +84,15 @@ export function AppShell({ children, businessName, logoUrl, isVerified, isPro }:
             <div className="flex items-center gap-2">
               <div className="relative shrink-0">
                 {logoUrl ? (
-                  <img
-                    src={logoUrl}
-                    alt=""
-                    className="h-8 w-8 rounded-full object-cover ring-1 ring-white/10"
-                  />
+                  <div className="relative h-8 w-8 overflow-hidden rounded-full ring-1 ring-white/10">
+                    <Image
+                      src={logoUrl}
+                      alt=""
+                      fill
+                      className="object-cover"
+                      sizes="32px"
+                    />
+                  </div>
                 ) : (
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#3B82F6]/20 text-sm font-medium text-[#3B82F6]">
                     {businessName.charAt(0).toUpperCase() || "B"}

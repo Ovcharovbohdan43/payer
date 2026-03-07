@@ -56,6 +56,9 @@ export const metadata: Metadata = {
     description:
       "Create invoices in seconds, send payment links, track payments, and get paid faster.",
   },
+  alternates: {
+    canonical: SITE_URL,
+  },
   robots: {
     index: true,
     follow: true,
@@ -109,6 +112,7 @@ export default function RootLayout({
           {children}
           <Toaster richColors position="top-center" />
           <Analytics />
+          </div>
         </ThemeProvider>
       </body>
     </html>

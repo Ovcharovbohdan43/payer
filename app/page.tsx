@@ -280,24 +280,41 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="border-t border-white/5 px-4 py-6 sm:px-6 sm:py-8 min-[375px]:px-4">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 text-center sm:flex-row sm:gap-4 sm:text-left">
-          <span className="text-sm text-white/50">© Puyer. Invoice in 15 seconds.</span>
-          <div className="flex flex-wrap items-center justify-center gap-4 text-sm sm:gap-6">
-            <a
-              href="mailto:support@puyer.org"
-              className="text-white/50 hover:text-white/80"
-            >
-              support@puyer.org
-            </a>
-            <Link href="/help" className="text-white/50 hover:text-white/80">
-              Help
-            </Link>
-            <Link href="/terms" className="text-white/50 hover:text-white/80">
-              Terms
-            </Link>
-            <Link href="/login" className="text-white/50 hover:text-white/80">
-              Log in
-            </Link>
+        <div className="mx-auto max-w-6xl space-y-4">
+          <div className="flex flex-col items-center justify-between gap-3 text-center sm:flex-row sm:gap-4 sm:text-left">
+            <span className="text-sm text-white/50">© Puyer. Invoice in 15 seconds.</span>
+            <div className="flex flex-wrap items-center justify-center gap-4 text-sm sm:gap-6">
+              <a
+                href="mailto:support@puyer.org"
+                className="text-white/50 hover:text-white/80"
+              >
+                support@puyer.org
+              </a>
+              <Link href="/help" className="text-white/50 hover:text-white/80">
+                Help
+              </Link>
+              <Link href="/terms" className="text-white/50 hover:text-white/80">
+                Terms
+              </Link>
+              <Link href="/login" className="text-white/50 hover:text-white/80">
+                Log in
+              </Link>
+            </div>
+          </div>
+          <div className="border-t border-white/5 pt-4 text-center sm:text-left">
+            <p className="mb-2 text-xs font-medium uppercase tracking-wider text-white/40">
+              Developers
+            </p>
+            <div className="flex flex-wrap justify-center gap-4 text-sm sm:justify-start sm:gap-6">
+              <a
+                href="https://github.com/puyer"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white/50 hover:text-white/80"
+              >
+                GitHub
+              </a>
+            </div>
           </div>
         </div>
       </footer>

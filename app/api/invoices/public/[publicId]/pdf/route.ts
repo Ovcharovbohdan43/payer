@@ -89,6 +89,7 @@ export async function GET(
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename="invoice-${invoice.invoice_number}.pdf"`,
+      "Cache-Control": "private, max-age=3600",
     },
   });
 }
