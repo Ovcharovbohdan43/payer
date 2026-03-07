@@ -258,28 +258,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* About us */}
-        <section className="border-t border-white/5 px-4 py-12 sm:px-6 sm:py-24 min-[375px]:px-4">
-          <div className="mx-auto max-w-4xl">
-            <h2 className="text-center text-xl font-bold text-white min-[375px]:text-2xl sm:text-3xl">
-              About us
-            </h2>
-            <p className="mx-auto mt-3 max-w-lg text-center text-sm text-white/60 min-[375px]:text-base">
-              Built with care for trades and freelancers.
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4 text-sm sm:gap-6">
-              <a
-                href="https://github.com/Ovcharovbohdan43"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white/60 hover:text-white"
-              >
-                GitHub
-              </a>
-            </div>
-          </div>
-        </section>
-
         {/* CTA */}
         <section className="border-t border-white/5 px-4 py-12 sm:px-6 sm:py-24 min-[375px]:px-4">
           <div className="mx-auto max-w-2xl rounded-[16px] border border-white/10 bg-gradient-to-br from-[#121821] to-[#121821]/80 p-6 text-center backdrop-blur min-[375px]:rounded-[20px] min-[375px]:p-8 sm:p-12">
@@ -310,6 +288,14 @@ export default function HomePage() {
               className="text-white/50 hover:text-white/80"
             >
               support@puyer.org
+            </a>
+            <a
+              href="https://github.com/Ovcharovbohdan43"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/50 hover:text-white/80"
+            >
+              About us
             </a>
             <Link href="/help" className="text-white/50 hover:text-white/80">
               Help
