@@ -350,6 +350,10 @@ function LogoSection({ profile }: { profile: Profile }) {
   const [logoState, setLogoState] = useState<{ error?: string } | null>(null);
   const [logoPending, setLogoPending] = useState(false);
   const [removePending, setRemovePending] = useState(false);
+  /** Preview URL after upload — shown immediately until next refresh */
+  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
+
+  const displayLogoUrl = logoPreviewUrl ?? profile.logo_url;
 
   async function handleUpload(formData: FormData) {
     setLogoPending(true);
@@ -364,6 +368,9 @@ function LogoSection({ profile }: { profile: Profile }) {
         setLogoState({ error: data.error ?? "Upload failed" });
         return;
       }
+      if (typeof data.url === "string") {
+        setLogoPreviewUrl(data.url);
+      }
       router.refresh();
     } finally {
       setLogoPending(false);
@@ -373,6 +380,7 @@ function LogoSection({ profile }: { profile: Profile }) {
   async function handleRemove() {
     setRemovePending(true);
     setLogoState(null);
+    setLogoPreviewUrl(null);
     const result = await removeLogoAction();
     setRemovePending(false);
     if (result?.error) {
@@ -387,9 +395,9 @@ function LogoSection({ profile }: { profile: Profile }) {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white/5">
-            {profile.logo_url ? (
+            {displayLogoUrl ? (
               <Image
-                src={profile.logo_url}
+                src={displayLogoUrl}
                 alt=""
                 fill
                 className="object-cover"
@@ -434,10 +442,10 @@ function LogoSection({ profile }: { profile: Profile }) {
               onClick={() => fileInputRef.current?.click()}
               className="h-9 rounded-lg px-3 text-xs"
             >
-              {logoPending ? "Uploading…" : profile.logo_url ? "Change" : "Upload"}
+              {logoPending ? "Uploading…" : displayLogoUrl ? "Change" : "Upload"}
             </Button>
           </>
-          {profile.logo_url && (
+          {displayLogoUrl && (
             <Button
               type="button"
               variant="ghost"

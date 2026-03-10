@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+
+export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { SettingsForm } from "./settings-form";
 
