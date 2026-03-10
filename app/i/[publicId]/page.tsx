@@ -26,6 +26,9 @@ export type PublicInvoice = {
   client_name: string;
   vat_included: boolean | null;
   line_items: PublicInvoiceLineItem[];
+  /** When true, amount_cents includes payment processing fee; show fee row. */
+  payment_processing_fee_included?: boolean | null;
+  payment_processing_fee_cents?: number | null;
   /** Company logo URL; shown in header */
   logo_url?: string | null;
   /** Business address; shown under business name */
@@ -227,6 +230,9 @@ export default async function PublicInvoicePage({
             <>
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
+                  <p className="text-xs font-medium uppercase tracking-wider text-white/50">
+                    Total to pay
+                  </p>
                   <h1 className="text-3xl font-bold tabular-nums">
                     {formatAmount(
                       getDisplayAmountCents(
@@ -263,6 +269,34 @@ export default async function PublicInvoicePage({
                   })}
                 </ul>
               )}
+              {/* Breakdown: fee and total so client sees full amount before checkout */}
+              <div className="mt-3 border-t border-white/10 pt-3 text-sm">
+                {invoice.payment_processing_fee_included &&
+                  typeof invoice.payment_processing_fee_cents === "number" &&
+                  invoice.payment_processing_fee_cents > 0 && (
+                    <div className="flex justify-between gap-2 text-muted-foreground">
+                      <span>Payment processing fee</span>
+                      <span className="tabular-nums">
+                        {formatAmount(
+                          Number(invoice.payment_processing_fee_cents),
+                          invoice.currency
+                        )}
+                      </span>
+                    </div>
+                  )}
+                <div className="mt-2 flex justify-between gap-2 font-semibold text-white">
+                  <span>Total to pay</span>
+                  <span className="tabular-nums">
+                    {formatAmount(
+                      getDisplayAmountCents(
+                        Number(invoice.amount_cents),
+                        invoice.vat_included
+                      ),
+                      invoice.currency
+                    )}
+                  </span>
+                </div>
+              </div>
               {invoice.due_date && (
                 <p className="mt-1 text-sm text-muted-foreground">
                   Due: {new Date(invoice.due_date).toLocaleDateString("en-US")}
