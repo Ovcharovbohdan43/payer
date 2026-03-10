@@ -297,6 +297,9 @@ export default function HomePage() {
             >
               About us
             </a>
+            <Link href="/updates" className="text-white/50 hover:text-white/80">
+              Updates
+            </Link>
             <Link href="/help" className="text-white/50 hover:text-white/80">
               Help
             </Link>
