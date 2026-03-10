@@ -19,6 +19,13 @@ type Update = {
 const UPDATES: Update[] = [
   {
     date: "2025-02-20",
+    badge: "Improvement",
+    title: "Larger logo upload limit (10MB)",
+    description:
+      "Increased the maximum file size for company logo uploads from 1MB to 10MB. Logo upload now uses a dedicated API route to support larger images.",
+  },
+  {
+    date: "2025-02-20",
     badge: "Bug fix",
     title: "Invoice total and payment processing fee display",
     description:

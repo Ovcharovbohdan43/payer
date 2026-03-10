@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { Pencil, Building2, ImagePlus, Trash2 } from "lucide-react";
-import { updateProfileAction, setPasswordAction, sendPasswordResetEmailAction, uploadLogoAction, removeLogoAction } from "./actions";
+import { updateProfileAction, setPasswordAction, sendPasswordResetEmailAction, removeLogoAction } from "./actions";
 import { maskEmail } from "@/lib/utils";
 import { ConnectStripeButton } from "./connect-stripe-button";
 import { useRouter } from "next/navigation";
@@ -354,13 +354,20 @@ function LogoSection({ profile }: { profile: Profile }) {
   async function handleUpload(formData: FormData) {
     setLogoPending(true);
     setLogoState(null);
-    const result = await uploadLogoAction(formData);
-    setLogoPending(false);
-    if ("error" in result) {
-      setLogoState({ error: result.error });
-      return;
+    try {
+      const res = await fetch("/api/upload/logo", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setLogoState({ error: data.error ?? "Upload failed" });
+        return;
+      }
+      router.refresh();
+    } finally {
+      setLogoPending(false);
     }
-    router.refresh();
   }
 
   async function handleRemove() {
@@ -397,7 +404,7 @@ function LogoSection({ profile }: { profile: Profile }) {
           <div>
             <h2 className="text-sm font-semibold">Company logo</h2>
             <p className="text-xs text-muted-foreground">
-              Header, invoices, payment page · PNG, JPEG, WebP, max 1MB
+              Header, invoices, payment page · PNG, JPEG, WebP, max 10MB
             </p>
           </div>
         </div>

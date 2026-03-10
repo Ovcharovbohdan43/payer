@@ -5,8 +5,6 @@ import { profileUpdateSchema, passwordSchema, profileContactSchema } from "@/lib
 import { revalidatePath } from "next/cache";
 
 const LOGO_BUCKET = "logos";
-const LOGO_MAX_BYTES = 1024 * 1024; // 1MB
-const LOGO_ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp"];
 
 export async function updateProfileAction(formData: FormData) {
   const raw = {
@@ -158,59 +156,6 @@ export async function sendPasswordResetEmailAction() {
 
   if (error) return { error: error.message };
   return { success: true };
-}
-
-/**
- * Upload company logo to Supabase Storage, update profile.logo_url.
- * Accepts PNG, JPEG, WebP up to 1MB.
- */
-export async function uploadLogoAction(formData: FormData): Promise<{ error?: string } | { url: string }> {
-  const file = formData.get("logo") as File | null;
-  if (!file || !(file instanceof File) || file.size === 0) {
-    return { error: "Please select an image file" };
-  }
-  if (!LOGO_ALLOWED_TYPES.includes(file.type)) {
-    return { error: "Image must be PNG, JPEG, or WebP" };
-  }
-  if (file.size > LOGO_MAX_BYTES) {
-    return { error: "Image must be under 1MB" };
-  }
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "Not signed in" };
-
-  const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-  const path = `${user.id}/logo.${ext}`;
-  const buffer = Buffer.from(await file.arrayBuffer());
-
-  const { error: uploadError } = await supabase.storage
-    .from(LOGO_BUCKET)
-    .upload(path, buffer, { upsert: true, contentType: file.type });
-
-  if (uploadError) {
-    console.error("[uploadLogo]", uploadError.message);
-    return { error: uploadError.message };
-  }
-
-  const { data: urlData } = supabase.storage.from(LOGO_BUCKET).getPublicUrl(path);
-  // Cache-bust: same path overwritten → new URL forces browser/CDN to fetch new image
-  const publicUrl = `${urlData.publicUrl}?v=${Date.now()}`;
-
-  const { error: updateError } = await supabase
-    .from("profiles")
-    .update({ logo_url: publicUrl, updated_at: new Date().toISOString() })
-    .eq("id", user.id);
-
-  if (updateError) return { error: updateError.message };
-
-  revalidatePath("/settings");
-  revalidatePath("/dashboard");
-  revalidatePath("/invoices");
-  revalidatePath("/invoices/new");
-  return { url: publicUrl };
 }
 
 /**
