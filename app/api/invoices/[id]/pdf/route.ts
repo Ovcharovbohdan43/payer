@@ -112,11 +112,12 @@ export async function GET(
   }
 
   const buffer = Buffer.isBuffer(pdfBytes) ? pdfBytes : Buffer.from(pdfBytes);
-  return new NextResponse(buffer, {
+  const body = new Uint8Array(buffer);
+  return new NextResponse(body, {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename="invoice-${invoice.number}.pdf"`,
-      "Content-Length": String(buffer.length),
+      "Content-Length": String(body.length),
       "Cache-Control": "private, max-age=3600",
     },
   });
