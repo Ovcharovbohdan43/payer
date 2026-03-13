@@ -23,11 +23,13 @@ import {
   Ban,
   BellRing,
 } from "lucide-react";
+import { downloadPdf } from "@/lib/pdf/download-pdf";
 
 const AUTO_REMIND_DAYS = [1, 2, 3, 5, 7, 10, 14] as const;
 
 type Props = {
   invoiceId: string;
+  invoiceNumber: string;
   publicUrl: string;
   status: InvoiceStatus;
   canVoid: boolean;
@@ -49,6 +51,7 @@ function parseDays(s: string): number[] {
 
 export function InvoiceDetailClient({
   invoiceId,
+  invoiceNumber,
   publicUrl,
   status,
   canVoid,
@@ -59,11 +62,28 @@ export function InvoiceDetailClient({
 }: Props) {
   const [pending, startTransition] = useTransition();
   const [copyDone, setCopyDone] = useState(false);
+  const [pdfPending, setPdfPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [autoRemindEnabled, setAutoRemindEnabled] = useState(initialAutoRemind);
   const [selectedDays, setSelectedDays] = useState<number[]>(() =>
     parseDays(autoRemindDays)
   );
+
+  const handleDownloadPdf = async () => {
+    setPdfPending(true);
+    setError(null);
+    const r = await downloadPdf(
+      `/api/invoices/${invoiceId}/pdf`,
+      `invoice-${invoiceNumber}.pdf`
+    );
+    setPdfPending(false);
+    if (!r.ok) {
+      setError(r.error ?? "Download failed");
+      toast.error(r.error ?? "Could not download PDF");
+    } else {
+      toast.success("PDF downloaded");
+    }
+  };
 
   const handleCopyLink = async () => {
     try {
@@ -111,17 +131,15 @@ export function InvoiceDetailClient({
               </Link>
             </Button>
           )}
-          <Button variant="outline" size="sm" className={btnClass} asChild>
-            <a
-              href={`/api/invoices/${invoiceId}/pdf`}
-              target="_blank"
-              rel="noopener noreferrer"
-              download
-              className="inline-flex min-h-10 items-center gap-2"
-            >
-              <FileDown className="size-4 shrink-0" />
-              Download PDF
-            </a>
+          <Button
+            variant="outline"
+            size="sm"
+            className={btnClass}
+            onClick={handleDownloadPdf}
+            disabled={pdfPending}
+          >
+            <FileDown className="size-4 shrink-0" />
+            {pdfPending ? "Downloading…" : "Download PDF"}
           </Button>
           {hasClientEmail && status !== "paid" && status !== "void" && (
             <>

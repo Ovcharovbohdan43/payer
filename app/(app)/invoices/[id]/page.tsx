@@ -112,6 +112,7 @@ export default async function InvoiceDetailPage({
 
           <InvoiceDetailClient
             invoiceId={invoice.id}
+            invoiceNumber={invoice.number}
             publicUrl={getPublicInvoiceUrl(invoice.public_id, BASE_URL)}
             status={status}
             canVoid={status !== "void" && status !== "paid"}
