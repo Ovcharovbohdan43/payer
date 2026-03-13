@@ -9,12 +9,13 @@ Puyer uses **Stripe Connect Express** so that:
 ## Configuration
 
 1. **Stripe Dashboard** → Connect → Get started
-2. Add webhook endpoint: `https://your-domain.com/api/webhooks/stripe`
-   - Events: `checkout.session.completed`, `payout.paid`
-   - Enable **"Events on Connected accounts"** (required for `payout.paid`)
+2. Add **two** webhook endpoints to `https://your-domain.com/api/webhooks/stripe`:
+   - **Platform** (Listen to: your account): `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted` → `STRIPE_WEBHOOK_SECRET`
+   - **Connect** (Listen to: Connected accounts): `payout.paid` → `STRIPE_WEBHOOK_SECRET_CONNECT`
 3. Add to `.env.local`:
    - `STRIPE_SECRET_KEY` — platform account
-   - `STRIPE_WEBHOOK_SECRET` — from webhook endpoint
+   - `STRIPE_WEBHOOK_SECRET` — platform webhook signing secret
+   - `STRIPE_WEBHOOK_SECRET_CONNECT` — Connect webhook signing secret (for payouts)
 
 ## Flow
 

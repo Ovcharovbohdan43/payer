@@ -5,26 +5,46 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(request: Request) {
   const secret = process.env.STRIPE_SECRET_KEY?.trim();
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
-  if (!secret || !webhookSecret) {
+  const platformSecret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
+  const connectSecret = process.env.STRIPE_WEBHOOK_SECRET_CONNECT?.trim();
+  if (!secret) {
     return NextResponse.json(
       { error: "Webhook not configured" },
       { status: 503 }
     );
   }
-
-  let event: Stripe.Event;
-  try {
-    const rawBody = await request.text();
-    const signature = (await headers()).get("stripe-signature");
-    if (!signature) {
-      return NextResponse.json({ error: "Missing signature" }, { status: 400 });
-    }
-    event = await new Stripe(secret).webhooks.constructEventAsync(
-      rawBody,
-      signature,
-      webhookSecret
+  if (!platformSecret && !connectSecret) {
+    return NextResponse.json(
+      { error: "At least one webhook secret required" },
+      { status: 503 }
     );
+  }
+
+  const rawBody = await request.text();
+  const signature = (await headers()).get("stripe-signature");
+  if (!signature) {
+    return NextResponse.json({ error: "Missing signature" }, { status: 400 });
+  }
+
+  let event: Stripe.Event | null = null;
+  try {
+    const secrets = [platformSecret, connectSecret].filter(Boolean) as string[];
+    let lastError: Error | null = null;
+    for (const webhookSecret of secrets) {
+      try {
+        event = await new Stripe(secret).webhooks.constructEventAsync(
+          rawBody,
+          signature,
+          webhookSecret
+        );
+        break;
+      } catch (e) {
+        lastError = e instanceof Error ? e : new Error(String(e));
+      }
+    }
+    if (!event) {
+      throw lastError ?? new Error("Could not verify signature");
+    }
   } catch (err) {
     const message = err instanceof Error ? err.message : "Invalid payload";
     console.error("[webhook stripe]", message);
@@ -32,13 +52,14 @@ export async function POST(request: Request) {
   }
 
   const supabase = createAdminClient();
+  const ev = event as Stripe.Event;
 
-  if (event.type === "payout.paid") {
-    const accountId = event.account;
+  if (ev.type === "payout.paid") {
+    const accountId = ev.account;
     if (!accountId || typeof accountId !== "string") {
       return NextResponse.json({ received: true });
     }
-    const payout = event.data.object as Stripe.Payout;
+    const payout = ev.data.object as Stripe.Payout;
     const { data: profile } = await supabase
       .from("profiles")
       .select("id")
@@ -62,8 +83,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ received: true });
   }
 
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object as Stripe.Checkout.Session;
+  if (ev.type === "checkout.session.completed") {
+    const session = ev.data.object as Stripe.Checkout.Session;
     const sessionId = session.id;
     if (!sessionId) {
       return NextResponse.json({ received: true });
@@ -123,7 +144,7 @@ export async function POST(request: Request) {
       invoice_id: invoice.id,
       amount_cents: amount,
       currency,
-      stripe_event_id: event.id,
+      stripe_event_id: ev.id,
       paid_at: now,
     });
 
@@ -133,13 +154,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ received: true });
   }
 
-  if (event.type === "customer.subscription.updated" || event.type === "customer.subscription.deleted") {
-    const subscription = event.data.object as Stripe.Subscription;
+  if (ev.type === "customer.subscription.updated" || ev.type === "customer.subscription.deleted") {
+    const subscription = ev.data.object as Stripe.Subscription;
     const customerId = typeof subscription.customer === "string" ? subscription.customer : subscription.customer?.id;
     if (!customerId) return NextResponse.json({ received: true });
 
     let status: "free" | "active" | "canceled" | "past_due" | "trialing" = "free";
-    if (event.type === "customer.subscription.deleted") {
+    if (ev.type === "customer.subscription.deleted") {
       status = "free";
     } else {
       const s = subscription.status;
