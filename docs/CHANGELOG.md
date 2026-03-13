@@ -4,6 +4,15 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2025-03-13] – PDF invoice download fix
+
+- **Fixed:** PDF invoices could not be opened after download (corrupted/invalid files).
+- **Cause:** Next.js bundling of `@react-pdf/renderer` incorrectly processed the library, producing invalid PDF output.
+- **Changes:**
+  - `next.config.ts`: Added `serverComponentsExternalPackages: ["@react-pdf/renderer"]` so the library runs as an external Node module.
+  - PDF API routes: `export const dynamic = "force-dynamic"` and `export const runtime = "nodejs"`.
+  - Added `Content-Length` header and robust buffer handling for correct binary delivery.
+
 ### [2025-02-20] – Subscription (Pro plan)
 
 - **Free plan:** 3 invoices with all features.

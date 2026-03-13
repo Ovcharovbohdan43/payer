@@ -157,6 +157,24 @@ Keep `lib/pdf/invoice-pdf-pdflib.ts` (or git) as backup during migration. Switch
 
 ---
 
+## 10. Troubleshooting
+
+### PDF won't open after download (corrupted file)
+
+**Symptom:** Downloaded invoice PDF cannot be opened by Acrobat/Preview/other viewers; file appears invalid or corrupted.
+
+**Cause:** Next.js (especially with Turbopack) can incorrectly bundle `@react-pdf/renderer`, causing it to produce invalid binary output.
+
+**Fix (applied 2025-03-13):**
+- Add `serverComponentsExternalPackages: ["@react-pdf/renderer"]` to `next.config.ts` → `experimental` so the library is loaded as an external Node.js module.
+- Ensure PDF API routes use `runtime = "nodejs"` and `dynamic = "force-dynamic"`.
+- Add `Content-Length` header for correct binary delivery.
+
+**If issue persists:** Use Node.js 22+ (helps with ESM), or try `next dev --no-turbopack` to rule out Turbopack bundling.
+
+---
+
 ## Changelog
 
+- **[2025-03-13]** Fixed PDF download: added `serverComponentsExternalPackages`, `runtime`, `Content-Length`; PDF opens correctly after download.
 - **[2025-02-20]** Implemented: migrated from pdf-lib to @react-pdf/renderer. New components: `InvoiceDocument`, `InvoiceHeader`, `InvoiceTitle`, `BillTo`, `InvoiceTable`, `InvoiceTotals`, `InvoiceFooter`. `generateInvoicePdf` uses `renderToBuffer`. Removed pdf-lib dependency.

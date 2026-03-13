@@ -5,6 +5,9 @@ import { generateInvoicePdf } from "@/lib/pdf/invoice-pdf";
 import { logoUrlToDataUri } from "@/lib/pdf/logo";
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -108,10 +111,12 @@ export async function GET(
     );
   }
 
-  return new NextResponse(Buffer.from(pdfBytes), {
+  const buffer = Buffer.isBuffer(pdfBytes) ? pdfBytes : Buffer.from(pdfBytes);
+  return new NextResponse(buffer, {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename="invoice-${invoice.number}.pdf"`,
+      "Content-Length": String(buffer.length),
       "Cache-Control": "private, max-age=3600",
     },
   });
