@@ -195,6 +195,61 @@ export function buildLoginOtpEmailHtml(params: { code: string }) {
 </html>`;
 }
 
+export type PayoutNotificationParams = {
+  amountFormatted: string;
+  currency: string;
+  arrivalDate: string | null;
+  businessName: string;
+  dashboardUrl: string;
+};
+
+export function buildPayoutNotificationHtml(params: PayoutNotificationParams): string {
+  const { amountFormatted, currency, arrivalDate, businessName, dashboardUrl } = params;
+  const arrivalLine = arrivalDate
+    ? `<p style="margin: 0 0 24px 0; font-size: 15px; color: #52525b;">Expected in your bank by ${escapeHtml(arrivalDate)}.</p>`
+    : `<p style="margin: 0 0 24px 0; font-size: 15px; color: #52525b;">The payout has been sent to your connected bank account.</p>`;
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color:#f4f4f5;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 560px; background:#fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+          <tr>
+            <td style="padding: 32px 40px 24px; border-bottom: 1px solid #e4e4e7;">
+              <span style="font-size: 22px; font-weight: 700; color: #18181b;">Puyer</span>
+              <p style="margin: 4px 0 0 0; font-size: 13px; color: #71717a;">Invoice in 15 seconds. Get paid faster.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 32px 40px;">
+              <h1 style="margin: 0 0 12px 0; font-size: 20px; font-weight: 600; color: #18181b;">Payout successful</h1>
+              <p style="margin: 0 0 8px 0; font-size: 15px; color: #52525b;">Hi${businessName?.trim() ? ` ${escapeHtml(businessName.trim())}` : ""},</p>
+              <p style="margin: 0 0 8px 0; font-size: 15px; color: #52525b;">Your payout of <strong>${escapeHtml(amountFormatted)}</strong> (${escapeHtml(currency)}) has been sent successfully.</p>
+              ${arrivalLine}
+              <table cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td>
+                    <a href="${escapeHtml(dashboardUrl)}" target="_blank" rel="noopener" style="display: inline-block; padding: 14px 28px; background:#18181b; color:#fff; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 8px;">View Dashboard</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 24px 40px 32px; border-top: 1px solid #e4e4e7; background:#fafafa; border-radius: 0 0 12px 12px;">
+              <p style="margin: 0; font-size: 12px; color: #a1a1aa;">This is an automated notification from Puyer.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")

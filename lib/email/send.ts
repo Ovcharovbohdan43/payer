@@ -4,7 +4,9 @@ import {
   buildReminderEmailHtml,
   buildLoginOtpEmailHtml,
   buildPasswordChangeConfirmEmailHtml,
+  buildPayoutNotificationHtml,
   type InvoiceEmailParams,
+  type PayoutNotificationParams,
 } from "./templates";
 import { isEmailUnsubscribed, generateUnsubscribeToken } from "./unsubscribe";
 
@@ -144,6 +146,30 @@ export async function sendPasswordChangeConfirmEmail(params: {
   });
   if (error) {
     console.error("[email] sendPasswordChangeConfirm failed:", error.message);
+    return { ok: false, error: error.message };
+  }
+  return { ok: true };
+}
+
+/**
+ * Send payout success notification to the user who received the payout.
+ */
+export async function sendPayoutNotificationEmail(
+  params: { to: string } & PayoutNotificationParams
+): Promise<SendResult> {
+  const client = getResendClient();
+  if (!client) {
+    return { ok: false, error: "Email is not configured (RESEND_API_KEY)" };
+  }
+  const html = buildPayoutNotificationHtml(params);
+  const { error } = await client.emails.send({
+    from: EMAIL_FROM,
+    to: params.to,
+    subject: "Your payout has been sent — Puyer",
+    html,
+  });
+  if (error) {
+    console.error("[email] sendPayoutNotification failed:", error.message);
     return { ok: false, error: error.message };
   }
   return { ok: true };

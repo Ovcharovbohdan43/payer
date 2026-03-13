@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sendPayoutNotificationEmail } from "@/lib/email/send";
+import { formatAmount } from "@/lib/invoices/utils";
 
 export async function POST(request: Request) {
   const secret = process.env.STRIPE_SECRET_KEY?.trim();
@@ -62,11 +64,12 @@ export async function POST(request: Request) {
     const payout = ev.data.object as Stripe.Payout;
     const { data: profile } = await supabase
       .from("profiles")
-      .select("id")
+      .select("id, business_name")
       .eq("stripe_connect_account_id", accountId)
       .single();
     if (!profile) return NextResponse.json({ received: true });
 
+    const currency = (payout.currency ?? "usd").toUpperCase();
     const arrivalDate = payout.arrival_date
       ? new Date(payout.arrival_date * 1000).toISOString().slice(0, 10)
       : null;
@@ -75,10 +78,28 @@ export async function POST(request: Request) {
       user_id: profile.id,
       stripe_payout_id: payout.id,
       amount_cents: payout.amount,
-      currency: (payout.currency ?? "usd").toUpperCase(),
+      currency,
       status: "paid",
       arrival_date: arrivalDate,
     });
+
+    const { data: authUser } = await supabase.auth.admin.getUserById(profile.id);
+    const toEmail = authUser?.user?.email;
+    if (toEmail) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
+      const dashboardUrl = `${appUrl.replace(/\/$/, "")}/dashboard`;
+      const result = await sendPayoutNotificationEmail({
+        to: toEmail,
+        amountFormatted: formatAmount(Number(payout.amount), currency),
+        currency,
+        arrivalDate,
+        businessName: profile.business_name ?? "",
+        dashboardUrl,
+      });
+      if (!result.ok) {
+        console.error("[webhook stripe] payout notification email:", result.error);
+      }
+    }
 
     return NextResponse.json({ received: true });
   }

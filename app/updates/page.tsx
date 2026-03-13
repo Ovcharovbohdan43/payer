@@ -18,6 +18,20 @@ type Update = {
 
 const UPDATES: Update[] = [
   {
+    date: "2025-03-13",
+    badge: "New",
+    title: "Payout email notifications",
+    description:
+      "When Stripe sends a payout to your bank account, you now receive an email notification with the amount, currency, expected arrival date, and a link to your dashboard. Keeps you informed as soon as the money is on the way.",
+  },
+  {
+    date: "2025-03-13",
+    badge: "Bug fix",
+    title: "Payout webhook not receiving events",
+    description:
+      "Fixed an issue where payout.paid events from Stripe Connect were not reaching our webhook. Payouts are sent from connected accounts, so a separate Connect webhook was needed. Added STRIPE_WEBHOOK_SECRET_CONNECT — payout records and activity now update correctly when funds are sent to your bank.",
+  },
+  {
     date: "2025-02-20",
     badge: "Improvement",
     title: "Larger logo upload limit (10MB)",
