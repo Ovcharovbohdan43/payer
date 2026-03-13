@@ -22,9 +22,12 @@ type Props = {
   createdAt?: string | null;
 };
 
-/** Only PNG and JPG are supported by react-pdf; WebP is skipped */
+/** PNG/JPG URLs or data URIs; WebP skipped */
 function isLogoSupported(url: string): boolean {
   const u = url.toLowerCase();
+  if (u.startsWith("data:image/")) {
+    return u.includes("png") || u.includes("jpeg") || u.includes("jpg");
+  }
   return u.endsWith(".png") || u.endsWith(".jpg") || u.endsWith(".jpeg");
 }
 

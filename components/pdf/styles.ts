@@ -18,7 +18,6 @@ export const styles = StyleSheet.create({
   headerBlock: {
     backgroundColor: BRAND,
     marginHorizontal: -MARGIN,
-    marginTop: -MARGIN,
     marginBottom: 32,
     paddingHorizontal: MARGIN,
     paddingTop: 32,
@@ -48,19 +47,18 @@ export const styles = StyleSheet.create({
   },
   contactLine: {
     fontSize: 9,
-    color: "rgba(255,255,255,0.85)",
+    color: "#e8edf5",
     marginBottom: 2,
   },
   invoiceBadge: {
-    backgroundColor: "rgba(255,255,255,0.2)",
+    backgroundColor: "#93c5fd",
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 6,
   },
   invoiceLabel: {
     fontSize: 9,
     fontFamily: "Helvetica-Bold",
-    color: "rgba(255,255,255,0.9)",
+    color: "#e8edf5",
     marginBottom: 2,
   },
   invoiceNumber: {
@@ -70,7 +68,7 @@ export const styles = StyleSheet.create({
   },
   dateLabel: {
     fontSize: 9,
-    color: "rgba(255,255,255,0.85)",
+    color: "#e8edf5",
     marginTop: 4,
   },
   // Bill to
@@ -147,7 +145,7 @@ export const styles = StyleSheet.create({
   },
   totalRow: {
     flexDirection: "row",
-    backgroundColor: "rgba(59,130,246,0.08)",
+    backgroundColor: "#eff6ff",
     borderWidth: 1,
     borderColor: BRAND,
     paddingHorizontal: 16,
@@ -194,7 +192,6 @@ export const styles = StyleSheet.create({
   footerBlock: {
     backgroundColor: BRAND_DARK,
     marginHorizontal: -MARGIN,
-    marginBottom: -MARGIN,
     paddingHorizontal: MARGIN,
     paddingTop: 20,
     paddingBottom: 24,
@@ -202,12 +199,12 @@ export const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 10,
-    color: "rgba(255,255,255,0.95)",
+    color: "#ffffff",
     marginBottom: 6,
   },
   footerSmall: {
     fontSize: 8,
-    color: "rgba(255,255,255,0.7)",
+    color: "#bfdbfe",
     marginBottom: 2,
   },
 });

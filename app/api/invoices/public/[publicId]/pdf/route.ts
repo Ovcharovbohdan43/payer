@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateInvoicePdf } from "@/lib/pdf/invoice-pdf";
+import { logoUrlToDataUri } from "@/lib/pdf/logo";
 import { NextResponse } from "next/server";
 
 type PublicInvoiceRpc = {
@@ -47,6 +48,10 @@ export async function GET(
     return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
   }
 
+  const logoUrlForPdf = invoice.logo_url
+    ? await logoUrlToDataUri(invoice.logo_url)
+    : undefined;
+
   const lineItems = (invoice.line_items ?? []).map(
     (i: { description: string; amount_cents: number; discount_percent?: number }) => {
       const raw = Number(i.amount_cents);
@@ -56,7 +61,9 @@ export async function GET(
     }
   );
 
-  const pdfBytes = await generateInvoicePdf({
+  let pdfBytes: Uint8Array;
+  try {
+    pdfBytes = await generateInvoicePdf({
     businessName: invoice.business_name,
     invoiceNumber: invoice.invoice_number,
     amountCents: Number(invoice.amount_cents),
@@ -72,7 +79,7 @@ export async function GET(
     status: invoice.status,
     vatIncluded: invoice.vat_included ?? undefined,
     paymentProcessingFeeCents: invoice.payment_processing_fee_cents ?? undefined,
-    logoUrl: invoice.logo_url ?? undefined,
+    logoUrl: logoUrlForPdf,
     address: invoice.address ?? undefined,
     phone: invoice.phone ?? undefined,
     companyNumber: invoice.company_number ?? undefined,
@@ -84,6 +91,13 @@ export async function GET(
     discountValue:
       invoice.discount_value != null ? Number(invoice.discount_value) : undefined,
   });
+  } catch (err) {
+    console.error("[pdf] generateInvoicePdf error:", err);
+    return NextResponse.json(
+      { error: "PDF generation failed", details: String(err) },
+      { status: 500 }
+    );
+  }
 
   return new NextResponse(Buffer.from(pdfBytes), {
     headers: {

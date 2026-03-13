@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getInvoiceById } from "@/app/invoices/actions";
 import { generateInvoicePdf } from "@/lib/pdf/invoice-pdf";
+import { logoUrlToDataUri } from "@/lib/pdf/logo";
 import { NextResponse } from "next/server";
 
 export async function GET(
@@ -57,13 +58,19 @@ export async function GET(
     if (client) clientData = client;
   }
 
+  const logoUrlForPdf = profile?.logo_url
+    ? await logoUrlToDataUri(profile.logo_url)
+    : undefined;
+
   const lineItems =
     invoice.line_items?.map((i) => ({
       description: i.description,
       amountCents: Number(i.amount_cents),
     })) ?? [];
 
-  const pdfBytes = await generateInvoicePdf({
+  let pdfBytes: Uint8Array;
+  try {
+    pdfBytes = await generateInvoicePdf({
     businessName: profile?.business_name ?? "Business",
     invoiceNumber: invoice.number,
     amountCents: Number(invoice.amount_cents),
@@ -81,7 +88,7 @@ export async function GET(
     notes: invoice.notes,
     vatIncluded: invoice.vat_included ?? undefined,
     paymentProcessingFeeCents: invoice.payment_processing_fee_cents ?? undefined,
-    logoUrl: profile?.logo_url ?? undefined,
+    logoUrl: logoUrlForPdf,
     address: profile?.address ?? undefined,
     phone: profile?.phone ?? undefined,
     companyNumber: profile?.company_number ?? undefined,
@@ -93,6 +100,13 @@ export async function GET(
         ? Number((invoice as { discount_value?: number }).discount_value)
         : undefined,
   });
+  } catch (err) {
+    console.error("[pdf] generateInvoicePdf error:", err);
+    return NextResponse.json(
+      { error: "PDF generation failed", details: String(err) },
+      { status: 500 }
+    );
+  }
 
   return new NextResponse(Buffer.from(pdfBytes), {
     headers: {
