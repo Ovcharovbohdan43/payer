@@ -152,19 +152,24 @@ export default function HomePage() {
             <p className="mx-auto mt-3 max-w-lg text-center text-sm text-white/60 min-[375px]:text-base">
               Three steps from sign-up to paid.
             </p>
-            <div className="mt-12 grid gap-10 min-[375px]:gap-12 sm:grid-cols-3 sm:mt-16">
+            <div className="mt-12 flex flex-col items-center gap-10 min-[375px]:gap-12 sm:mt-16 sm:flex-row sm:items-start sm:justify-center sm:gap-4">
               <StepCard
                 step={1}
+                circleDelay={0}
                 title="Create invoice"
                 description="Add client, services, amount. Optional due date and VAT. Done in seconds."
               />
+              <StepConnector delay={0} />
               <StepCard
                 step={2}
+                circleDelay={1000}
                 title="Send link"
                 description="Copy the payment link or send by email. Client opens it on any device."
               />
+              <StepConnector delay={1100} />
               <StepCard
                 step={3}
+                circleDelay={2100}
                 title="Get paid"
                 description="Client pays via Stripe. You get notified. Money flows to your account."
               />
@@ -372,18 +377,41 @@ function FeatureCard({
   );
 }
 
+function StepConnector({ delay }: { delay: number }) {
+  return (
+    <div
+      className="hidden w-12 flex-shrink-0 self-start pt-6 sm:flex sm:w-16"
+      aria-hidden
+    >
+      <div
+        className="h-0.5 w-full origin-left rounded-full bg-[#3B82F6]/50"
+        style={{
+          animation: `step-connector-draw 1s ease-out ${delay}ms both`,
+        }}
+      />
+    </div>
+  );
+}
+
 function StepCard({
   step,
+  circleDelay,
   title,
   description,
 }: {
   step: number;
+  circleDelay: number;
   title: string;
   description: string;
 }) {
   return (
-    <div className="min-w-0 text-center">
-      <div className="mx-auto flex size-12 items-center justify-center rounded-full border border-[#3B82F6]/30 bg-[#3B82F6]/10 text-lg font-bold text-[#3B82F6]">
+    <div className="min-w-0 flex-1 text-center">
+      <div
+        className="mx-auto flex size-12 items-center justify-center rounded-full border border-[#3B82F6]/30 bg-[#3B82F6]/10 text-lg font-bold text-[#3B82F6]"
+        style={{
+          animation: `step-circle-highlight 0.4s ease-out ${circleDelay}ms both`,
+        }}
+      >
         {step}
       </div>
       <h3 className="mt-4 text-base font-semibold text-white min-[375px]:text-lg">{title}</h3>

@@ -1,10 +1,14 @@
 import type { InvoiceRow } from "@/app/invoices/actions";
 import { getDisplayAmountCents } from "@/lib/invoices/utils";
 
+export type RevenueByWeek = { week: string; label: string; revenue: number };
+export type PayoutByPeriod = { period: string; label: string; amount: number };
+
 export type AnalyticsData = {
   revenueThisWeekCents: number;
   revenueThisMonthCents: number;
   revenueAllTimeCents: number;
+  revenueByWeek: RevenueByWeek[];
   paidCount: number;
   unpaidCount: number;
   overdueCount: number;
@@ -17,6 +21,7 @@ export type AnalyticsData = {
   offerDeclinedCount: number;
   paymentSuccessRate: number | null;
   payouts: { amount_cents: number; currency: string; created_at: string; arrival_date: string | null }[];
+  payoutsByPeriod: PayoutByPeriod[];
 };
 
 export function computeAnalytics(
@@ -82,10 +87,72 @@ export function computeAnalytics(
   const paymentSuccessRate =
     totalRelevant > 0 ? Math.round((paidCount / totalRelevant) * 100) : null;
 
+  // Revenue by week (last 8 weeks)
+  const revenueByWeek: RevenueByWeek[] = [];
+  for (let i = 7; i >= 0; i--) {
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - now.getDay() - i * 7);
+    weekStart.setHours(0, 0, 0, 0);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 7);
+    let weekRevenue = 0;
+    for (const inv of invoices) {
+      if (inv.status === "paid" && inv.paid_at && inv.currency === defaultCurrency) {
+        const paidAt = new Date(inv.paid_at);
+        if (paidAt >= weekStart && paidAt < weekEnd) {
+          weekRevenue += getDisplayAmountCents(Number(inv.amount_cents), inv.vat_included);
+        }
+      }
+    }
+    const weekKey = weekStart.toISOString().slice(0, 10);
+    const label =
+      weekStart.getMonth() === weekEnd.getMonth()
+        ? `${weekStart.getDate()}–${weekEnd.getDate()} ${weekStart.toLocaleDateString("en-GB", { month: "short" })}`
+        : `${weekStart.toLocaleDateString("en-GB", { day: "numeric", month: "short" })} – ${weekEnd.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`;
+    revenueByWeek.push({ week: weekKey, label, revenue: weekRevenue / 100 });
+  }
+
+  // Payouts by period (last 8 weeks, same structure)
+  const payoutMap = new Map<string, number>();
+  for (let i = 7; i >= 0; i--) {
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - now.getDay() - i * 7);
+    weekStart.setHours(0, 0, 0, 0);
+    payoutMap.set(weekStart.toISOString().slice(0, 10), 0);
+  }
+  for (const p of payouts) {
+    if (p.currency !== defaultCurrency) continue;
+    const d = new Date(p.created_at);
+    const weekStart = new Date(d);
+    weekStart.setDate(d.getDate() - d.getDay());
+    weekStart.setHours(0, 0, 0, 0);
+    const key = weekStart.toISOString().slice(0, 10);
+    if (payoutMap.has(key)) {
+      payoutMap.set(key, payoutMap.get(key)! + Number(p.amount_cents) / 100);
+    }
+  }
+  const payoutsByPeriod: PayoutByPeriod[] = [];
+  const sortedWeeks = Array.from(payoutMap.keys()).sort();
+  for (const period of sortedWeeks) {
+    const weekStart = new Date(period);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 7);
+    const label =
+      weekStart.getMonth() === weekEnd.getMonth()
+        ? `${weekStart.getDate()}–${weekEnd.getDate()} ${weekStart.toLocaleDateString("en-GB", { month: "short" })}`
+        : `${weekStart.toLocaleDateString("en-GB", { day: "numeric", month: "short" })} – ${weekEnd.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`;
+    payoutsByPeriod.push({
+      period,
+      label,
+      amount: payoutMap.get(period) ?? 0,
+    });
+  }
+
   return {
     revenueThisWeekCents,
     revenueThisMonthCents,
     revenueAllTimeCents,
+    revenueByWeek,
     paidCount,
     unpaidCount,
     overdueCount,
@@ -98,5 +165,6 @@ export function computeAnalytics(
     offerDeclinedCount,
     paymentSuccessRate,
     payouts,
+    payoutsByPeriod,
   };
 }

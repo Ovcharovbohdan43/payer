@@ -116,6 +116,28 @@
   --sidebar-ring: oklch(0.55 0.2 250);
 }
 
+@keyframes step-connector-draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes step-circle-highlight {
+  0% {
+    border-color: rgb(59 130 246 / 0.3);
+    background-color: rgb(59 130 246 / 0.1);
+    box-shadow: 0 0 0 0 rgb(59 130 246 / 0);
+  }
+  100% {
+    border-color: rgb(59 130 246 / 0.6);
+    background-color: rgb(59 130 246 / 0.2);
+    box-shadow: 0 0 12px 2px rgb(59 130 246 / 0.2);
+  }
+}
+
 @keyframes star-fall {
   0% {
     transform: translateY(-10%) translateX(0) rotate(0deg);
