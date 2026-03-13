@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,8 @@ type AppShellProps = {
 
 export function AppShell({ children, businessName, logoUrl, isVerified, isPro }: AppShellProps) {
   const pathname = usePathname();
+  const [logoError, setLogoError] = useState(false);
+  const showLogo = logoUrl && !logoError;
 
   return (
     <div className="flex min-h-screen min-w-0 bg-[#0B0F14]">
@@ -83,7 +86,7 @@ export function AppShell({ children, businessName, logoUrl, isVerified, isPro }:
           <div className="flex flex-1 flex-wrap items-center justify-end gap-2 md:justify-end">
             <div className="flex items-center gap-2">
               <div className="relative shrink-0">
-                {logoUrl ? (
+                {showLogo ? (
                   <div className="relative h-8 w-8 overflow-hidden rounded-full ring-1 ring-white/10">
                     <Image
                       src={logoUrl}
@@ -91,6 +94,8 @@ export function AppShell({ children, businessName, logoUrl, isVerified, isPro }:
                       fill
                       className="object-cover"
                       sizes="32px"
+                      unoptimized
+                      onError={() => setLogoError(true)}
                     />
                   </div>
                 ) : (
