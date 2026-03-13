@@ -154,3 +154,9 @@ Keep `lib/pdf/invoice-pdf-pdflib.ts` (or git) as backup during migration. Switch
 ---
 
 *[2025-02-20] Created — Plan for migrating invoice PDF from pdf-lib to @react-pdf/renderer.*
+
+---
+
+## Changelog
+
+- **[2025-02-20]** Implemented: migrated from pdf-lib to @react-pdf/renderer. New components: `InvoiceDocument`, `InvoiceHeader`, `InvoiceTitle`, `BillTo`, `InvoiceTable`, `InvoiceTotals`, `InvoiceFooter`. `generateInvoicePdf` uses `renderToBuffer`. Removed pdf-lib dependency.
