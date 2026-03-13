@@ -8,10 +8,10 @@ export function InvoiceFooter() {
   const termsHost = termsUrl.replace(/^https?:\/\//, "");
 
   return (
-    <View style={styles.footerLine} fixed>
+    <View style={styles.footerBlock}>
       <Text style={styles.footerText}>Thank you for your business.</Text>
       <Text style={styles.footerSmall}>Powered by Puyer</Text>
-      <Text style={[styles.footerSmall, { fontSize: 6 }]}>
+      <Text style={[styles.footerSmall, { marginTop: 4 }]}>
         Terms of service: {termsHost}
       </Text>
     </View>

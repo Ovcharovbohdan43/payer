@@ -1,61 +1,77 @@
 import { StyleSheet } from "@react-pdf/renderer";
 
-export const MARGIN = 52;
+export const BRAND = "#3B82F6";
+export const BRAND_DARK = "#2563EB";
+export const MARGIN = 48;
 export const CONTENT_WIDTH = 595 - MARGIN * 2;
 export const VAT_RATE = 0.2;
 
 export const styles = StyleSheet.create({
   page: {
-    padding: MARGIN,
     fontFamily: "Helvetica",
     fontSize: 10,
+    paddingHorizontal: MARGIN,
+    paddingTop: MARGIN,
+    paddingBottom: MARGIN,
   },
-  // Header
+  // Header — full-width brand color block
+  headerBlock: {
+    backgroundColor: BRAND,
+    marginHorizontal: -MARGIN,
+    marginTop: -MARGIN,
+    marginBottom: 32,
+    paddingHorizontal: MARGIN,
+    paddingTop: 32,
+    paddingBottom: 24,
+  },
   headerRow: {
     flexDirection: "row",
     alignItems: "flex-start",
-    marginBottom: 28,
+    justifyContent: "space-between",
   },
-  headerText: {
+  headerLeft: {
     flex: 1,
-    marginLeft: 0,
+  },
+  headerRight: {
+    alignItems: "flex-end",
   },
   logo: {
-    width: 120,
-    maxHeight: 72,
-    marginRight: 28,
+    width: 100,
+    maxHeight: 56,
+    marginBottom: 12,
   },
   brandName: {
-    fontSize: 22,
+    fontSize: 24,
     fontFamily: "Helvetica-Bold",
-    color: "#262626",
-    marginBottom: 4,
+    color: "#ffffff",
+    marginBottom: 6,
   },
   contactLine: {
-    fontSize: 8,
-    color: "#999",
+    fontSize: 9,
+    color: "rgba(255,255,255,0.85)",
     marginBottom: 2,
   },
-  // Title
-  titleRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-    marginBottom: 16,
+  invoiceBadge: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
   },
   invoiceLabel: {
-    fontSize: 8,
+    fontSize: 9,
     fontFamily: "Helvetica-Bold",
-    color: "#666",
+    color: "rgba(255,255,255,0.9)",
+    marginBottom: 2,
   },
   invoiceNumber: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: "Helvetica-Bold",
-    color: "#262626",
+    color: "#ffffff",
   },
   dateLabel: {
-    fontSize: 8,
-    color: "#999",
+    fontSize: 9,
+    color: "rgba(255,255,255,0.85)",
+    marginTop: 4,
   },
   // Bill to
   sectionLabel: {
@@ -90,23 +106,22 @@ export const styles = StyleSheet.create({
   },
   tableHeader: {
     flexDirection: "row",
-    backgroundColor: "#f0f0f0",
-    borderWidth: 0.5,
-    borderColor: "#d1d1d1",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    backgroundColor: BRAND,
+    borderWidth: 0,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   tableHeaderDesc: {
     flex: 1,
     fontSize: 10,
     fontFamily: "Helvetica-Bold",
-    color: "#999",
+    color: "#ffffff",
   },
   tableHeaderAmount: {
     width: 110,
     fontSize: 10,
     fontFamily: "Helvetica-Bold",
-    color: "#999",
+    color: "#ffffff",
     textAlign: "right",
   },
   tableRow: {
@@ -132,23 +147,23 @@ export const styles = StyleSheet.create({
   },
   totalRow: {
     flexDirection: "row",
-    backgroundColor: "#f5f5f5",
-    borderWidth: 0.5,
-    borderColor: "#cccccc",
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    backgroundColor: "rgba(59,130,246,0.08)",
+    borderWidth: 1,
+    borderColor: BRAND,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     alignItems: "center",
   },
   totalLabel: {
     flex: 1,
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: "Helvetica-Bold",
     color: "#262626",
   },
   totalAmount: {
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: "Helvetica-Bold",
-    color: "#262626",
+    color: BRAND,
   },
   discountAmount: {
     color: "#339933",
@@ -175,22 +190,24 @@ export const styles = StyleSheet.create({
     color: "#595959",
     marginBottom: 16,
   },
-  // Footer
-  footerLine: {
-    borderTopWidth: 0.5,
-    borderTopColor: "#e0e0e0",
-    marginTop: "auto",
-    paddingTop: 12,
-    marginBottom: 8,
+  // Footer — full-width brand color block
+  footerBlock: {
+    backgroundColor: BRAND_DARK,
+    marginHorizontal: -MARGIN,
+    marginBottom: -MARGIN,
+    paddingHorizontal: MARGIN,
+    paddingTop: 20,
+    paddingBottom: 24,
+    marginTop: 40,
   },
   footerText: {
-    fontSize: 8,
-    color: "#999",
-    marginBottom: 4,
+    fontSize: 10,
+    color: "rgba(255,255,255,0.95)",
+    marginBottom: 6,
   },
   footerSmall: {
-    fontSize: 7,
-    color: "#8c8c8c",
+    fontSize: 8,
+    color: "rgba(255,255,255,0.7)",
     marginBottom: 2,
   },
 });

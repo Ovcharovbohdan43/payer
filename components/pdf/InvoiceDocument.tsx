@@ -2,7 +2,6 @@ import React from "react";
 import { Document, Page, View, Text } from "@react-pdf/renderer";
 import { styles } from "./styles";
 import { InvoiceHeader } from "./InvoiceHeader";
-import { InvoiceTitle } from "./InvoiceTitle";
 import { BillTo } from "./BillTo";
 import { InvoiceTable } from "./InvoiceTable";
 import { InvoiceTotals } from "./InvoiceTotals";
@@ -118,8 +117,6 @@ export function InvoiceDocument({ data }: { data: InvoicePdfData }) {
           companyNumber={data.companyNumber}
           vatNumber={data.vatNumber}
           logoUrl={data.logoUrl}
-        />
-        <InvoiceTitle
           invoiceNumber={data.invoiceNumber}
           createdAt={data.createdAt}
         />
