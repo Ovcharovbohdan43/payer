@@ -38,9 +38,9 @@ export async function POST() {
             currency: "usd",
             product_data: {
               name: "Puyer Pro",
-              description: "Unlimited invoices for $3/month",
+              description: "Unlimited invoices for $9.99/month",
             },
-            unit_amount: 300,
+            unit_amount: 999,
             recurring: {
               interval: "month",
             },

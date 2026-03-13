@@ -3,7 +3,7 @@
 ## Overview
 
 - **Free plan:** 3 invoices, all features
-- **Pro plan:** $3/month, unlimited invoices
+- **Pro plan:** $9.99/month, unlimited invoices
 
 ## Stripe Setup
 

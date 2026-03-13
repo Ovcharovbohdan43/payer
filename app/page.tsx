@@ -54,12 +54,15 @@ export default function HomePage() {
               Invoice in 15 seconds.
               <br />
               <span className="bg-gradient-to-r from-[#3B82F6] to-blue-400 bg-clip-text text-transparent">
-                Get paid faster.
+                Pay with any debit or credit card.
               </span>
             </h1>
             <p className="mt-6 max-w-2xl mx-auto text-base text-white/70 min-[375px]:text-lg sm:text-xl">
               Built for trades and freelancers. Create an invoice, send a link,
               track payment — no hassle. Mobile-first, simple, secure.
+            </p>
+            <p className="mt-4 max-w-xl mx-auto text-sm text-white/50 min-[375px]:text-base">
+              Klarna, Clearpay, Zilch and more. Powered by Stripe.
             </p>
             <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-4">
               <Button
@@ -228,7 +231,7 @@ export default function HomePage() {
               <div className="flex flex-col rounded-[16px] border border-[#3B82F6]/30 bg-[#121821]/80 p-6 backdrop-blur transition-all duration-300 hover:scale-[1.02] hover:border-[#3B82F6]/50 hover:shadow-[0_0_40px_rgba(59,130,246,0.15)] min-[375px]:rounded-[20px] min-[375px]:p-8 sm:p-10">
                 <div className="flex items-baseline gap-2">
                   <span className="text-4xl font-bold text-[#3B82F6]">Pro</span>
-                  <span className="text-white/60">$3/month</span>
+                  <span className="text-white/60">$9.99/month</span>
                 </div>
                 <p className="mt-2 text-white/70">
                   Unlimited invoices. Everything in Free, no limits.
@@ -237,6 +240,7 @@ export default function HomePage() {
                   {[
                     "Unlimited invoices",
                     "All Free features",
+                    "Premium tech support",
                     "Cancel anytime",
                   ].map((item) => (
                     <li key={item} className="flex items-center gap-3 text-white/80">
@@ -281,7 +285,12 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="border-t border-white/5 px-4 py-6 sm:px-6 sm:py-8 min-[375px]:px-4">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 text-center sm:flex-row sm:gap-4 sm:text-left">
-          <span className="text-sm text-white/50">© Puyer. Invoice in 15 seconds.</span>
+          <div className="flex flex-col gap-1">
+            <span className="text-sm text-white/50">© Puyer. Invoice in 15 seconds.</span>
+            <span className="text-xs text-white/40">
+              We do not store or share your banking or card details with third parties.
+            </span>
+          </div>
           <div className="flex flex-wrap items-center justify-center gap-4 text-sm sm:gap-6">
             <a
               href="mailto:support@puyer.org"

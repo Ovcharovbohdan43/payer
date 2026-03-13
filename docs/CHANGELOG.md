@@ -7,7 +7,7 @@ All notable changes to the Puyer project.
 ### [2025-02-20] – Subscription (Pro plan)
 
 - **Free plan:** 3 invoices with all features.
-- **Pro plan:** $3/month — unlimited invoices.
+- **Pro plan:** $9.99/month — unlimited invoices.
 - **Settings:** Subscription section — "Upgrade to Pro" / "Manage subscription".
 - **Checkout:** POST `/api/subscription/checkout` → Stripe Checkout; POST `/api/subscription/portal` → Billing Portal.
 - **Webhook:** `checkout.session.completed` (subscription mode), `customer.subscription.updated`, `customer.subscription.deleted`.

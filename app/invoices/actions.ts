@@ -158,7 +158,7 @@ export async function createInvoiceAction(
   const invoiceCount = count ?? 0;
   if (!canCreateInvoice(profile?.subscription_status ?? "free", invoiceCount)) {
     return {
-      error: "Free plan limit: 3 invoices. Upgrade to Pro ($3/month) for unlimited invoices.",
+      error: "Free plan limit: 3 invoices. Upgrade to Pro ($9.99/month) for unlimited invoices.",
     };
   }
 

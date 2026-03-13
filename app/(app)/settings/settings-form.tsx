@@ -337,7 +337,7 @@ function SubscriptionSection({
           onClick={handleUpgrade}
           className="h-10 rounded-xl bg-[#3B82F6] font-semibold hover:bg-[#2563EB]"
         >
-          {loading ? "Opening checkout…" : "Upgrade to Pro ($3/month)"}
+          {loading ? "Opening checkout…" : "Upgrade to Pro ($9.99/month)"}
         </Button>
       )}
     </section>
@@ -352,8 +352,14 @@ function LogoSection({ profile }: { profile: Profile }) {
   const [removePending, setRemovePending] = useState(false);
   /** Preview URL after upload — shown immediately until next refresh */
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
+  const [logoLoadError, setLogoLoadError] = useState(false);
 
   const displayLogoUrl = logoPreviewUrl ?? profile.logo_url;
+  const showLogo = displayLogoUrl && !logoLoadError;
+
+  useEffect(() => {
+    setLogoLoadError(false);
+  }, [displayLogoUrl]);
 
   async function handleUpload(formData: FormData) {
     setLogoPending(true);
@@ -395,13 +401,15 @@ function LogoSection({ profile }: { profile: Profile }) {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white/5">
-            {displayLogoUrl ? (
+            {showLogo ? (
               <Image
-                src={displayLogoUrl}
+                src={displayLogoUrl!}
                 alt=""
                 fill
                 className="object-cover"
                 sizes="48px"
+                unoptimized
+                onError={() => setLogoLoadError(true)}
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-muted-foreground">
