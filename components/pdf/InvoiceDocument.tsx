@@ -100,8 +100,9 @@ export function InvoiceDocument({ data }: { data: InvoicePdfData }) {
 
   const metaParts: string[] = [];
   if (data.dueDate) metaParts.push(`Due: ${formatDate(data.dueDate)}`);
+  const statusStr = (data.status && String(data.status).trim()) || "Draft";
   metaParts.push(
-    `Status: ${data.status.charAt(0).toUpperCase() + data.status.slice(1)}`
+    `Status: ${statusStr.charAt(0).toUpperCase() + statusStr.slice(1)}`
   );
 
   return (

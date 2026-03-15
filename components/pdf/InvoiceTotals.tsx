@@ -33,21 +33,27 @@ function TotalRow({ label, amount, isDiscount }: Row & { isDiscount?: boolean })
   );
 }
 
+function safeCents(c: number): number {
+  return Number.isFinite(c) ? Math.round(c) : 0;
+}
+
 export function InvoiceTotals({ rows, totalCents, currency }: Props) {
+  const list = Array.isArray(rows) ? rows : [];
+  const curr = typeof currency === "string" && currency.trim() ? currency : "USD";
   return (
     <View style={styles.table}>
-      {rows.map((row, i) => (
+      {list.map((row, i) => (
         <TotalRow
           key={i}
-          label={row.label}
-          amount={row.amount}
-          isDiscount={row.isDiscount}
+          label={row?.label != null ? String(row.label) : ""}
+          amount={row?.amount != null ? String(row.amount) : "—"}
+          isDiscount={row?.isDiscount}
         />
       ))}
       <View style={styles.totalRow}>
         <Text style={styles.totalLabel}>Total</Text>
         <Text style={styles.totalAmount}>
-          {formatAmount(totalCents, currency)}
+          {formatAmount(safeCents(totalCents), curr)}
         </Text>
       </View>
     </View>

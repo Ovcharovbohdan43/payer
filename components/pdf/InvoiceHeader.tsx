@@ -22,9 +22,10 @@ type Props = {
   createdAt?: string | null;
 };
 
-/** PNG/JPG URLs or data URIs; WebP skipped */
-function isLogoSupported(url: string): boolean {
-  const u = url.toLowerCase();
+/** PNG/JPG URLs or data URIs; WebP skipped. Reject empty or invalid. */
+function isLogoSupported(url: unknown): url is string {
+  if (typeof url !== "string" || !url.trim()) return false;
+  const u = url.trim().toLowerCase();
   if (u.startsWith("data:image/")) {
     return u.includes("png") || u.includes("jpeg") || u.includes("jpg");
   }
@@ -54,7 +55,7 @@ export function InvoiceHeader({
     <View style={styles.headerBlock}>
       <View style={styles.headerRow}>
         <View style={styles.headerLeft}>
-          {showLogo && <Image src={logoUrl!} style={styles.logo} />}
+          {showLogo && logoUrl && <Image src={logoUrl} style={styles.logo} />}
           <Text style={styles.brandName}>{businessName}</Text>
           {contactLines.map((line, i) => (
             <Text key={i} style={styles.contactLine}>

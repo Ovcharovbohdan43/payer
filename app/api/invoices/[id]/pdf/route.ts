@@ -104,9 +104,11 @@ export async function GET(
         : undefined,
   });
   } catch (err) {
-    console.error("[pdf] generateInvoicePdf error:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    const stack = err instanceof Error ? err.stack : undefined;
+    console.error("[pdf] generateInvoicePdf error:", message, stack);
     return NextResponse.json(
-      { error: "PDF generation failed", details: String(err) },
+      { error: "PDF generation failed", details: message },
       { status: 500 }
     );
   }

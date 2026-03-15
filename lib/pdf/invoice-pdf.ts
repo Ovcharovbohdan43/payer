@@ -44,12 +44,59 @@ export type InvoicePdfData = {
   discountValue?: number | null;
 };
 
+/** Ensure all required fields are valid (no NaN, null strings) to avoid react-pdf errors. */
+function sanitizeInvoicePdfData(data: InvoicePdfData): InvoicePdfData {
+  const safeNum = (n: unknown): number =>
+    typeof n === "number" && Number.isFinite(n) ? n : 0;
+  const safeStr = (s: unknown): string =>
+    s != null && typeof s === "string" ? s : "";
+
+  const lineItems: InvoiceLineItemPdf[] = (data.lineItems ?? []).map((i) => ({
+    description: safeStr(i?.description).trim() || "Item",
+    amountCents: Math.round(safeNum(i?.amountCents)),
+  })).filter((i) => i.amountCents >= 0);
+
+  return {
+    businessName: safeStr(data.businessName).trim() || "Business",
+    invoiceNumber: safeStr(data.invoiceNumber).trim() || "INV",
+    amountCents: Math.round(safeNum(data.amountCents)),
+    currency: safeStr(data.currency).trim() || "USD",
+    lineItems,
+    dueDate: data.dueDate ?? null,
+    clientName: safeStr(data.clientName).trim() || "Client",
+    clientEmail: data.clientEmail != null ? safeStr(data.clientEmail) : undefined,
+    clientAddress: data.clientAddress != null ? safeStr(data.clientAddress) : undefined,
+    clientPhone: data.clientPhone != null ? safeStr(data.clientPhone) : undefined,
+    clientCompanyName: data.clientCompanyName != null ? safeStr(data.clientCompanyName) : undefined,
+    clientVatNumber: data.clientVatNumber != null ? safeStr(data.clientVatNumber) : undefined,
+    status: safeStr(data.status).trim() || "draft",
+    createdAt: data.createdAt ?? undefined,
+    notes: data.notes != null ? safeStr(data.notes) : undefined,
+    vatIncluded: data.vatIncluded,
+    paymentProcessingFeeCents:
+      data.paymentProcessingFeeCents != null && Number.isFinite(Number(data.paymentProcessingFeeCents))
+        ? Math.round(Number(data.paymentProcessingFeeCents))
+        : undefined,
+    logoUrl: data.logoUrl && typeof data.logoUrl === "string" ? data.logoUrl : undefined,
+    address: data.address != null ? safeStr(data.address) : undefined,
+    phone: data.phone != null ? safeStr(data.phone) : undefined,
+    companyNumber: data.companyNumber != null ? safeStr(data.companyNumber) : undefined,
+    vatNumber: data.vatNumber != null ? safeStr(data.vatNumber) : undefined,
+    discountType: data.discountType === "percent" || data.discountType === "fixed" ? data.discountType : undefined,
+    discountValue:
+      data.discountValue != null && Number.isFinite(Number(data.discountValue))
+        ? Math.round(Number(data.discountValue))
+        : undefined,
+  };
+}
+
 export async function generateInvoicePdf(
   data: InvoicePdfData
 ): Promise<Uint8Array> {
+  const safe = sanitizeInvoicePdfData(data);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const buffer = await renderToBuffer(
-    React.createElement(InvoiceDocument, { data }) as any
+    React.createElement(InvoiceDocument, { data: safe }) as any
   );
   return new Uint8Array(buffer);
 }

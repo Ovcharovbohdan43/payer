@@ -19,18 +19,26 @@ function formatAmount(cents: number, currency: string): string {
   }).format(cents / 100);
 }
 
+function safeAmount(cents: number): number {
+  return Number.isFinite(cents) ? Math.round(cents) : 0;
+}
+
 export function InvoiceTable({ items, currency }: Props) {
+  const list = Array.isArray(items) ? items : [];
+  const curr = typeof currency === "string" && currency.trim() ? currency : "USD";
   return (
     <View style={styles.table}>
       <View style={styles.tableHeader}>
         <Text style={styles.tableHeaderDesc}>Description</Text>
         <Text style={styles.tableHeaderAmount}>Amount</Text>
       </View>
-      {items.map((item, i) => (
+      {list.map((item, i) => (
         <View key={i} style={styles.tableRow}>
-          <Text style={styles.tableRowDesc}>{item.description}</Text>
+          <Text style={styles.tableRowDesc}>
+            {item?.description != null ? String(item.description) : "—"}
+          </Text>
           <Text style={styles.tableRowAmount}>
-            {formatAmount(item.amountCents, currency)}
+            {formatAmount(safeAmount(item?.amountCents), curr)}
           </Text>
         </View>
       ))}
