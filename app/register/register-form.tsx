@@ -218,7 +218,16 @@ export function RegisterForm() {
               >
                 Terms of Service
               </a>
-              . By clicking Create account, you accept these terms.
+              {" "}and{" "}
+              <a
+                href="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#3B82F6] underline hover:text-blue-400"
+              >
+                Privacy Policy
+              </a>
+              . By clicking Create account, you accept them.
             </Label>
           </div>
         </div>

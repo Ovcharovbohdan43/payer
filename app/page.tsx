@@ -320,6 +320,9 @@ export default function HomePage() {
             <Link href="/terms" className="text-white/50 hover:text-white/80">
               Terms
             </Link>
+            <Link href="/privacy" className="text-white/50 hover:text-white/80">
+              Privacy
+            </Link>
             <Link href="/login" className="text-white/50 hover:text-white/80">
               Log in
             </Link>

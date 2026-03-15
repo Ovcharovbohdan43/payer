@@ -4,6 +4,12 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2025-03-15] – Privacy Policy
+
+- **Added:** Production-ready Privacy Policy at `/privacy`.
+- **Content:** Data controller, data we collect (account, profile, invoices, clients; no card/banking storage — Stripe), use of data, legal basis (EEA/UK), third parties (Stripe, Supabase, Resend), international transfers, retention, security, your rights, cookies, children, changes, contact.
+- **Links:** Footer (home, terms), Terms page footer, register form (Terms + Privacy), sitemap.
+
 ### [2025-03-13] – PDF invoice download fix
 
 - **Fixed:** PDF invoices could not be opened after download (corrupted/invalid files).

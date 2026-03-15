@@ -216,6 +216,9 @@ export default function TermsOfServicePage() {
         <div className="mx-auto flex max-w-3xl flex-col items-center gap-3 text-center text-sm text-white/50 sm:flex-row sm:justify-between">
           <span>© Puyer</span>
           <div className="flex gap-6">
+            <Link href="/privacy" className="hover:text-white/80">
+              Privacy
+            </Link>
             <Link href="/updates" className="hover:text-white/80">
               Updates
             </Link>
