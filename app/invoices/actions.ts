@@ -612,7 +612,8 @@ export async function markAsPaidManualAction(invoiceId: string) {
 }
 
 export async function sendInvoiceEmailAction(
-  invoiceId: string
+  invoiceId: string,
+  toEmail?: string | null
 ): Promise<{ error?: string; success?: boolean }> {
   const supabase = await createClient();
   const {
@@ -629,8 +630,10 @@ export async function sendInvoiceEmailAction(
     .eq("user_id", user.id)
     .single();
 
-  if (!invoice || !invoice.client_email)
-    return { error: "Invoice not found or has no client email" };
+  if (!invoice) return { error: "Invoice not found" };
+
+  const recipientEmail = (toEmail?.trim() || invoice.client_email?.trim()) || null;
+  if (!recipientEmail) return { error: "Add client email or enter recipient email" };
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -650,7 +653,7 @@ export async function sendInvoiceEmailAction(
     : null;
 
   const result = await sendInvoiceEmail({
-    to: invoice.client_email,
+    to: recipientEmail,
     businessName: profile?.business_name ?? "Business",
     clientName: invoice.client_name,
     amountFormatted,
@@ -660,12 +663,21 @@ export async function sendInvoiceEmailAction(
   });
 
   if (!result.ok) return { error: result.error };
+
+  if (!invoice.client_email?.trim() && toEmail?.trim()) {
+    await supabase
+      .from("invoices")
+      .update({ client_email: toEmail.trim() })
+      .eq("id", invoiceId)
+      .eq("user_id", user.id);
+  }
   revalidatePath(`/invoices/${invoiceId}`);
   return { success: true };
 }
 
 export async function sendReminderAction(
-  invoiceId: string
+  invoiceId: string,
+  toEmail?: string | null
 ): Promise<{ error?: string; success?: boolean }> {
   const supabase = await createClient();
   const {
@@ -682,8 +694,10 @@ export async function sendReminderAction(
     .eq("user_id", user.id)
     .single();
 
-  if (!invoice || !invoice.client_email)
-    return { error: "Invoice not found or has no client email" };
+  if (!invoice) return { error: "Invoice not found" };
+
+  const recipientEmail = (toEmail?.trim() || invoice.client_email?.trim()) || null;
+  if (!recipientEmail) return { error: "Add client email or enter recipient email" };
   if (invoice.status === "paid" || invoice.status === "void")
     return { error: "Cannot send reminder for paid or void invoice" };
 
@@ -716,7 +730,7 @@ export async function sendReminderAction(
     : null;
 
   const result = await sendReminderEmail({
-    to: invoice.client_email,
+    to: recipientEmail,
     businessName: profile?.business_name ?? "Business",
     clientName: invoice.client_name,
     amountFormatted,
@@ -726,6 +740,14 @@ export async function sendReminderAction(
   });
 
   if (!result.ok) return { error: result.error };
+
+  if (!invoice.client_email?.trim() && toEmail?.trim()) {
+    await supabase
+      .from("invoices")
+      .update({ client_email: toEmail.trim() })
+      .eq("id", invoiceId)
+      .eq("user_id", user.id);
+  }
 
   await supabase
     .from("invoices")

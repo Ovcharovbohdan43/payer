@@ -24,6 +24,16 @@ import {
   BellRing,
 } from "lucide-react";
 import { downloadPdf } from "@/lib/pdf/download-pdf";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const AUTO_REMIND_DAYS = [1, 2, 3, 5, 7, 10, 14] as const;
 
@@ -68,6 +78,8 @@ export function InvoiceDetailClient({
   const [selectedDays, setSelectedDays] = useState<number[]>(() =>
     parseDays(autoRemindDays)
   );
+  const [emailDialogOpen, setEmailDialogOpen] = useState<"email" | "reminder" | null>(null);
+  const [recipientEmail, setRecipientEmail] = useState("");
 
   const handleDownloadPdf = async () => {
     setPdfPending(true);
@@ -148,19 +160,23 @@ export function InvoiceDetailClient({
                 variant="outline"
                 size="sm"
                 className={btnClass}
-                disabled={pending || !hasClientEmail}
-                title={!hasClientEmail ? "Add client email (Edit invoice) to send by email" : undefined}
+                disabled={pending}
                 onClick={() => {
-                  startTransition(async () => {
-                    const r = await sendInvoiceEmailAction(invoiceId);
-                    if (r.error) {
-                      setError(r.error);
-                      toast.error(r.error);
-                    } else {
-                      setError(null);
-                      toast.success("Invoice sent by email");
-                    }
-                  });
+                  if (hasClientEmail) {
+                    startTransition(async () => {
+                      const r = await sendInvoiceEmailAction(invoiceId);
+                      if (r.error) {
+                        setError(r.error);
+                        toast.error(r.error);
+                      } else {
+                        setError(null);
+                        toast.success("Invoice sent by email");
+                      }
+                    });
+                  } else {
+                    setRecipientEmail("");
+                    setEmailDialogOpen("email");
+                  }
                 }}
               >
                 <Mail className="size-4 shrink-0" />
@@ -172,19 +188,23 @@ export function InvoiceDetailClient({
                   variant="outline"
                   size="sm"
                   className={btnClass}
-                  disabled={pending || !hasClientEmail}
-                  title={!hasClientEmail ? "Add client email (Edit invoice) to send reminder" : undefined}
+                  disabled={pending}
                   onClick={() => {
-                    startTransition(async () => {
-                      const r = await sendReminderAction(invoiceId);
-                      if (r.error) {
-                        setError(r.error);
-                        toast.error(r.error);
-                      } else {
-                        setError(null);
-                        toast.success("Reminder sent");
-                      }
-                    });
+                    if (hasClientEmail) {
+                      startTransition(async () => {
+                        const r = await sendReminderAction(invoiceId);
+                        if (r.error) {
+                          setError(r.error);
+                          toast.error(r.error);
+                        } else {
+                          setError(null);
+                          toast.success("Reminder sent");
+                        }
+                      });
+                    } else {
+                      setRecipientEmail("");
+                      setEmailDialogOpen("reminder");
+                    }
                   }}
                 >
                   <Bell className="size-4 shrink-0" />
@@ -329,6 +349,110 @@ export function InvoiceDetailClient({
             </div>
           )}
       </div>
+
+      <Dialog
+        open={emailDialogOpen !== null}
+        onOpenChange={(open) => {
+          if (!open) setEmailDialogOpen(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Recipient email</DialogTitle>
+            <DialogDescription>
+              This invoice has no client email. Enter the recipient&apos;s email to{" "}
+              {emailDialogOpen === "email" ? "send the invoice" : "send a reminder"}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-2 py-2">
+            <Label htmlFor="recipient-email">Email</Label>
+            <Input
+              id="recipient-email"
+              type="email"
+              placeholder="client@example.com"
+              value={recipientEmail}
+              onChange={(e) => setRecipientEmail(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  const email = recipientEmail.trim();
+                  if (!email) return;
+                  if (emailDialogOpen === "email") {
+                    startTransition(async () => {
+                      const r = await sendInvoiceEmailAction(invoiceId, email);
+                      setEmailDialogOpen(null);
+                      if (r.error) {
+                        setError(r.error);
+                        toast.error(r.error);
+                      } else {
+                        setError(null);
+                        toast.success("Invoice sent by email");
+                      }
+                    });
+                  } else {
+                    startTransition(async () => {
+                      const r = await sendReminderAction(invoiceId, email);
+                      setEmailDialogOpen(null);
+                      if (r.error) {
+                        setError(r.error);
+                        toast.error(r.error);
+                      } else {
+                        setError(null);
+                        toast.success("Reminder sent");
+                      }
+                    });
+                  }
+                }
+              }}
+              className="h-10"
+            />
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setEmailDialogOpen(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={pending || !recipientEmail.trim()}
+              onClick={() => {
+                const email = recipientEmail.trim();
+                if (!email) return;
+                if (emailDialogOpen === "email") {
+                  startTransition(async () => {
+                    const r = await sendInvoiceEmailAction(invoiceId, email);
+                    setEmailDialogOpen(null);
+                    if (r.error) {
+                      setError(r.error);
+                      toast.error(r.error);
+                    } else {
+                      setError(null);
+                      toast.success("Invoice sent by email");
+                    }
+                  });
+                } else {
+                  startTransition(async () => {
+                    const r = await sendReminderAction(invoiceId, email);
+                    setEmailDialogOpen(null);
+                    if (r.error) {
+                      setError(r.error);
+                      toast.error(r.error);
+                    } else {
+                      setError(null);
+                      toast.success("Reminder sent");
+                    }
+                  });
+                }
+              }}
+            >
+              {emailDialogOpen === "email" ? "Send invoice" : "Send reminder"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {error && (
         <p className="mt-4 text-sm font-medium text-red-400">{error}</p>
