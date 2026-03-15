@@ -4,6 +4,12 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2025-03-15] – Register & onboarding: step validation and Google prefill
+
+- **Register:** "Next" is blocked until required fields are filled: step 1 — first name + last name; step 2 — company name. Step error message shown under the button.
+- **Onboarding (Google / post-auth):** Same step-by-step flow as register: Step 1 — Name (first, last) + email; Step 2 — Company name + optional (phone, address, website, company type); Step 3 — Currency, country, timezone + "Continue to dashboard". Progress bar and Back/Next.
+- **Prefill from Google:** If user signed in via Google, `user_metadata` (full_name, given_name, family_name) and profile `business_name` are passed to onboarding; steps are pre-filled and editable.
+
 ### [2025-03-15] – Privacy Policy
 
 - **Added:** Production-ready Privacy Policy at `/privacy`.

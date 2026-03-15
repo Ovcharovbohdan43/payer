@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useActionState, useState } from "react";
+import { useActionState, useState, useRef } from "react";
 import { signUpAction } from "./actions";
 
 const STEPS = [
@@ -17,7 +17,9 @@ function RequiredStar() {
 }
 
 export function RegisterForm() {
+  const formRef = useRef<HTMLFormElement>(null);
   const [step, setStep] = useState(1);
+  const [stepError, setStepError] = useState<string | null>(null);
   const [state, formAction, isPending] = useActionState(
     async (_prev: { error?: string } | null, formData: FormData) => {
       return await signUpAction(formData);
@@ -26,14 +28,35 @@ export function RegisterForm() {
   );
 
   const goNext = () => {
+    setStepError(null);
+    const form = formRef.current;
+    if (!form) return;
+
+    if (step === 1) {
+      const first = (form.querySelector("#first_name") as HTMLInputElement)?.value?.trim() ?? "";
+      const last = (form.querySelector("#last_name") as HTMLInputElement)?.value?.trim() ?? "";
+      if (!first || !last) {
+        setStepError("Please fill in first name and last name.");
+        return;
+      }
+    }
+    if (step === 2) {
+      const company = (form.querySelector("#business_name") as HTMLInputElement)?.value?.trim() ?? "";
+      if (!company) {
+        setStepError("Please enter your company name.");
+        return;
+      }
+    }
+
     if (step < 3) setStep((s) => s + 1);
   };
   const goBack = () => {
+    setStepError(null);
     if (step > 1) setStep((s) => s - 1);
   };
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form ref={formRef} action={formAction} className="space-y-6">
       {/* Progress bar */}
       <div className="flex items-center gap-1">
         {STEPS.map((s) => (
@@ -83,6 +106,9 @@ export function RegisterForm() {
             className="h-11"
           />
         </div>
+        {stepError && step === 1 && (
+          <p className="text-center text-sm text-destructive">{stepError}</p>
+        )}
         <Button
           type="button"
           className="h-11 w-full rounded-xl bg-[#3B82F6] font-semibold hover:bg-[#2563EB]"
@@ -137,6 +163,9 @@ export function RegisterForm() {
             PNG, JPEG or WebP, max 10MB
           </p>
         </div>
+        {stepError && step === 2 && (
+          <p className="text-center text-sm text-destructive">{stepError}</p>
+        )}
         <div className="flex gap-2">
           <Button
             type="button"

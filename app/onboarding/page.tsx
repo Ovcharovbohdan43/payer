@@ -13,13 +13,19 @@ export default async function OnboardingPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("onboarding_completed")
+    .select("onboarding_completed, business_name")
     .eq("id", user.id)
     .single();
 
   if (profile?.onboarding_completed) {
     redirect("/dashboard");
   }
+
+  const meta = user.user_metadata ?? {};
+  const fullName = (meta.full_name ?? meta.name ?? "").trim();
+  const nameParts = fullName ? fullName.split(/\s+/) : [];
+  const initialFirstName = (meta.given_name ?? meta.first_name ?? nameParts[0] ?? "").trim();
+  const initialLastName = (meta.family_name ?? meta.last_name ?? (nameParts.length > 1 ? nameParts.slice(1).join(" ") : "")).trim();
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[#0B0F14] px-4 py-8">
@@ -32,7 +38,12 @@ export default async function OnboardingPage() {
             Tell us a few details so we can set up your account and invoices.
           </p>
         </div>
-        <OnboardingForm initialEmail={user.email ?? undefined} />
+        <OnboardingForm
+          initialEmail={user.email ?? undefined}
+          initialFirstName={initialFirstName || undefined}
+          initialLastName={initialLastName || undefined}
+          initialBusinessName={profile?.business_name ?? undefined}
+        />
       </div>
     </div>
   );
