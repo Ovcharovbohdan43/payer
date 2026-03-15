@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { formatAmount, getDisplayAmountCents } from "@/lib/invoices/utils";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { PayButton } from "./pay-button";
 import { DownloadPdfLink } from "./download-pdf-placeholder";
 import { InvoiceQrCode } from "@/components/invoice-qr-code";
@@ -121,6 +122,21 @@ export default async function PublicInvoicePage({
 
   return (
     <main className="min-h-screen bg-[#0B0F14]">
+      {isDemo && (
+        <div className="sticky top-0 z-10 border-b border-white/5 bg-[#0B0F14]/90 backdrop-blur-sm">
+          <div className="mx-auto flex max-w-md items-center justify-between px-4 py-2.5">
+            <span className="text-xs font-medium uppercase tracking-wider text-amber-400/90">
+              Demo mode
+            </span>
+            <Link
+              href="/"
+              className="text-sm font-medium text-[#3B82F6] hover:text-blue-400"
+            >
+              Back to home
+            </Link>
+          </div>
+        </div>
+      )}
       <div className="mx-auto max-w-md px-4 py-12">
         <div className="rounded-[20px] border border-white/5 bg-[#121821] p-8 backdrop-blur">
           {/* Header: logo + business name + contact info */}

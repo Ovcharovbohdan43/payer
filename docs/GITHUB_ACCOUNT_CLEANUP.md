@@ -11,15 +11,33 @@
 ### 1. Установка GitHub CLI
 
 - **Windows:** скачайте установщик с https://cli.github.com/ или, если есть winget: `winget install GitHub.cli`
-- После установки перезапустите терминал.
+- После установки **закройте и заново откройте терминал** — тогда `gh` появится в PATH. Если терминал был открыт до установки и команда `gh` не находится, выполните один раз:
+  ```powershell
+  $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+  ```
+  после чего снова запустите `gh auth login`.
 
-### 2. Вход в аккаунт
+### 2. Вход в аккаунт и права на удаление репо
 
 ```bash
 gh auth login
 ```
 
 Выберите GitHub.com → HTTPS → Yes (authenticate Git) → браузер или токен. Войдите под **Ovcharovbohdan43**.
+
+Токену нужны scopes **delete_repo** (для удаления репо) и **user** (для обновления профиля). Если при удалении появится ошибка `HTTP 403: Must have admin rights to Repository`, выполните:
+
+```bash
+gh auth refresh -h github.com -s delete_repo
+```
+
+Если обновление профиля выдаст «This API operation needs the "user" scope»:
+
+```bash
+gh auth refresh -h github.com -s user
+```
+
+Откройте в браузере указанную ссылку, введите код и подтвердите. Затем снова запустите `.\scripts\github-cleanup.ps1`. Чтобы сразу выдать оба права: `gh auth refresh -h github.com -s repo,delete_repo,user`.
 
 ### 3. Удаление репозиториев
 
@@ -39,13 +57,13 @@ gh repo delete Ovcharovbohdan43/ovcharovbohdan43.github.io --yes
 Одной командой:
 
 ```bash
-gh api -X PATCH /user -f bio="WEB - developer, founder of Puyer" -f company="Puyer Ltd." -f location="Wales" -f blog="https://www.puyer.org/"
+gh api -X PATCH /user -f bio="Full-stack developer. Founder of Puyer - invoicing SaaS for freelancers and micro-businesses." -f company="Puyer Ltd." -f location="Wales" -f blog="https://www.puyer.org/"
 ```
 
 Или по отдельности (при необходимости измените значения):
 
 ```bash
-gh api -X PATCH /user -f bio="WEB - developer, founder of Puyer"
+gh api -X PATCH /user -f bio="Full-stack developer. Founder of Puyer - invoicing SaaS for freelancers and micro-businesses."
 gh api -X PATCH /user -f company="Puyer Ltd."
 gh api -X PATCH /user -f location="Wales"
 gh api -X PATCH /user -f blog="https://www.puyer.org/"
@@ -66,6 +84,13 @@ gh api -X PATCH /user -f name="Bohdan Ovcharov"
 ```
 
 Сначала выполните `gh auth login`, затем запустите скрипт.
+
+### 6. Профессиональный вид профиля
+
+- **Profile README:** репозиторий `Ovcharovbohdan43/Ovcharovbohdan43` — его `README.md` отображается на главной странице профиля. Исходник для правок: `scripts/profile-readme.md` в проекте Payer.
+- **Описания и темы репо:** у payer и desboard заданы описание (Description) и темы (Topics). Обновить через веб: репо → About → Edit.
+- **Сайт репо:** у payer в About указан Website: https://www.puyer.org
+- **Закреплённые репо (Pinned):** на странице профиля нажмите **Customize your pins** и закрепите **payer** и **desboard**, чтобы они отображались первыми. Делается только в браузере.
 
 ---
 
@@ -97,7 +122,7 @@ gh api -X PATCH /user -f name="Bohdan Ovcharov"
 ## 2. Профиль и описание аккаунта
 
 Текущие данные (уже заполнены):
-- **Bio:** WEB - developer, founder of Puyer  
+- **Bio:** Full-stack developer. Founder of Puyer — invoicing SaaS for freelancers and micro-businesses.  
 - **Company:** Puyer Ltd.  
 - **Location:** Wales  
 - **Website:** https://www.puyer.org/

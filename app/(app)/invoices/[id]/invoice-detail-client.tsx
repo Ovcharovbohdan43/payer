@@ -141,14 +141,15 @@ export function InvoiceDetailClient({
             <FileDown className="size-4 shrink-0" />
             {pdfPending ? "Downloading…" : "Download PDF"}
           </Button>
-          {hasClientEmail && status !== "paid" && status !== "void" && (
+          {status !== "paid" && status !== "void" && (
             <>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 className={btnClass}
-                disabled={pending}
+                disabled={pending || !hasClientEmail}
+                title={!hasClientEmail ? "Add client email (Edit invoice) to send by email" : undefined}
                 onClick={() => {
                   startTransition(async () => {
                     const r = await sendInvoiceEmailAction(invoiceId);
@@ -171,7 +172,8 @@ export function InvoiceDetailClient({
                   variant="outline"
                   size="sm"
                   className={btnClass}
-                  disabled={pending}
+                  disabled={pending || !hasClientEmail}
+                  title={!hasClientEmail ? "Add client email (Edit invoice) to send reminder" : undefined}
                   onClick={() => {
                     startTransition(async () => {
                       const r = await sendReminderAction(invoiceId);

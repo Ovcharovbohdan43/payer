@@ -22,12 +22,20 @@ export default async function DemoSuccessPage({
             <Image src="/logo.png" alt="Puyer" width={32} height={32} className="h-8 w-8" />
             Puyer
           </Link>
-          <Link
-            href="/register"
-            className="text-sm font-medium text-[#3B82F6] hover:text-blue-400"
-          >
-            Sign up
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/"
+              className="text-sm font-medium text-white/70 hover:text-white"
+            >
+              Back to home
+            </Link>
+            <Link
+              href="/register"
+              className="text-sm font-medium text-[#3B82F6] hover:text-blue-400"
+            >
+              Sign up
+            </Link>
+          </div>
         </div>
       </header>
 

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 /**
  * Supabase Auth callback: exchange code for session, then redirect.
- * New users → /onboarding. Returning users with profile → /dashboard.
+ * Always redirect to dashboard (or next). Onboarding is only shown after registration (see register actions).
  * Ensure Supabase Dashboard → Authentication → URL Configuration has this path in Redirect URLs.
  */
 export async function GET(request: Request) {
@@ -29,21 +29,7 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${origin}/login?error=link_invalid`);
     }
 
-    let redirectTo = next;
-    try {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("onboarding_completed")
-        .eq("id", user.id)
-        .maybeSingle();
-      if (!profile?.onboarding_completed) {
-        redirectTo = "/onboarding";
-      }
-    } catch {
-      redirectTo = "/onboarding";
-    }
-
-    return NextResponse.redirect(`${origin}${redirectTo}`);
+    return NextResponse.redirect(`${origin}${next}`);
   } catch {
     return NextResponse.redirect(`${origin}/login?error=link_invalid`);
   }
