@@ -4,7 +4,72 @@
 
 ---
 
-## 1. Удаление лишних репозиториев
+## Через консоль (GitHub CLI)
+
+Всё можно сделать из терминала с помощью **GitHub CLI** (`gh`).
+
+### 1. Установка GitHub CLI
+
+- **Windows:** скачайте установщик с https://cli.github.com/ или, если есть winget: `winget install GitHub.cli`
+- После установки перезапустите терминал.
+
+### 2. Вход в аккаунт
+
+```bash
+gh auth login
+```
+
+Выберите GitHub.com → HTTPS → Yes (authenticate Git) → браузер или токен. Войдите под **Ovcharovbohdan43**.
+
+### 3. Удаление репозиториев
+
+Из корня проекта (или из любой папки) выполните:
+
+```bash
+gh repo delete Ovcharovbohdan43/consoleJsProject --yes
+gh repo delete Ovcharovbohdan43/exgo --yes
+gh repo delete Ovcharovbohdan43/hush_v2 --yes
+gh repo delete Ovcharovbohdan43/ovcharovbohdan43.github.io --yes
+```
+
+Флаг `--yes` убирает запрос подтверждения. Без него `gh` спросит перед удалением.
+
+### 4. Обновление профиля (описание, компания, сайт)
+
+Одной командой:
+
+```bash
+gh api -X PATCH /user -f bio="WEB - developer, founder of Puyer" -f company="Puyer Ltd." -f location="Wales" -f blog="https://www.puyer.org/"
+```
+
+Или по отдельности (при необходимости измените значения):
+
+```bash
+gh api -X PATCH /user -f bio="WEB - developer, founder of Puyer"
+gh api -X PATCH /user -f company="Puyer Ltd."
+gh api -X PATCH /user -f location="Wales"
+gh api -X PATCH /user -f blog="https://www.puyer.org/"
+```
+
+Имя профиля (Name):
+
+```bash
+gh api -X PATCH /user -f name="Bohdan Ovcharov"
+```
+
+### 5. Готовый скрипт
+
+В репозитории есть скрипт `scripts/github-cleanup.ps1`. Запуск (из корня проекта):
+
+```powershell
+.\scripts\github-cleanup.ps1
+```
+
+Сначала выполните `gh auth login`, затем запустите скрипт.
+
+---
+
+## 1. Удаление лишних репозиториев (через браузер)
 
 Оставить только:
 - **payer**
