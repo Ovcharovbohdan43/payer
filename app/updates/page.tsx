@@ -18,6 +18,27 @@ type Update = {
 
 const UPDATES: Update[] = [
   {
+    date: "2025-03-15",
+    badge: "Bug fix",
+    title: "Register: required fields before Next",
+    description:
+      "You could previously move to the next step without filling in required fields. Now the Next button only advances when step 1 has first name and last name, and step 2 has company name. If something is missing, an error message appears under the button.",
+  },
+  {
+    date: "2025-03-15",
+    badge: "Improvement",
+    title: "Onboarding: step-by-step flow and Google prefill",
+    description:
+      "After sign-up (including Google), you now complete your profile in the same step-by-step flow as registration: Name & email → Company & optional details → Currency, country, timezone. If you signed in with Google, name and email are pre-filled from your account; you can edit them before continuing.",
+  },
+  {
+    date: "2025-03-15",
+    badge: "New",
+    title: "Privacy Policy",
+    description:
+      "A full Privacy Policy is now available at /privacy, with links in the footer, on the Terms page, and on the register form. It covers what data we collect, how we use it, your rights, and contact details.",
+  },
+  {
     date: "2025-03-13",
     badge: "New",
     title: "Payout email notifications",
