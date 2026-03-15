@@ -9,6 +9,16 @@ Web SaaS for micro-businesses and freelancers: create invoices in 15–30 second
 ## Documentation
 
 - **[Technical development plan (phases 0–10)](docs/TECHNICAL_PLAN.md)** — what to build and in what order.
+- **[Changelog](docs/CHANGELOG.md)** — detailed release history.
+
+## Updates
+
+**2025-03-15**
+
+- **Register (bug fix):** "Next" is disabled until required fields are filled — step 1: first name and last name; step 2: company name. Error message shown under the button if validation fails.
+- **Onboarding:** Step-by-step flow (same as register) for all users, including after Google sign-in: Step 1 — Name + email; Step 2 — Company name + optional (phone, address, website, company type); Step 3 — Currency, country, timezone + "Continue to dashboard". Progress bar and Back/Next.
+- **Google prefill:** After Google OAuth, onboarding form is pre-filled from `user_metadata` (name, email) and profile (business name when available); user can edit before submitting.
+- **Privacy Policy:** Production-ready Privacy Policy at `/privacy`; links in footer, Terms page, register form, and sitemap.
 
 ## Quick start
 
@@ -25,4 +35,4 @@ Web SaaS for micro-businesses and freelancers: create invoices in 15–30 second
 
 ---
 
-*Last updated: 2025-02-17*
+*Last updated: 2025-03-15*
