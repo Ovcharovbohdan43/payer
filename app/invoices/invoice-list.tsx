@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { InvoiceRow } from "./actions";
+import { deleteInvoicesAction } from "./actions";
 import {
   formatAmount,
   getDisplayAmountCents,
@@ -27,6 +28,8 @@ function mapInitialFilter(status?: string): string {
   return "all";
 }
 
+const DELETABLE_STATUSES = ["draft", "void"];
+
 export function InvoiceList({
   invoices,
   initialStatusFilter,
@@ -38,6 +41,42 @@ export function InvoiceList({
   const [statusFilter, setStatusFilter] = useState<string>(() =>
     mapInitialFilter(initialStatusFilter)
   );
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAllFiltered = () => {
+    const deletable = filtered.filter((inv) => DELETABLE_STATUSES.includes(inv.status));
+    if (selectedIds.size === deletable.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(deletable.map((inv) => inv.id)));
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`Delete ${selectedIds.size} invoice(s)? Only draft and void invoices can be deleted.`)) return;
+    setDeleteError(null);
+    setIsDeleting(true);
+    const result = await deleteInvoicesAction(Array.from(selectedIds));
+    setIsDeleting(false);
+    if (result.error) {
+      setDeleteError(result.error);
+      return;
+    }
+    setSelectedIds(new Set());
+    setDeleteError(null);
+  };
 
   const filtered = useMemo(() => {
     let list = invoices.filter((inv) => {
@@ -87,7 +126,42 @@ export function InvoiceList({
             </option>
           ))}
         </select>
+        {filtered.length > 0 && (
+          <>
+            <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={
+                  filtered.filter((inv) => DELETABLE_STATUSES.includes(inv.status)).length > 0 &&
+                  filtered.filter((inv) => DELETABLE_STATUSES.includes(inv.status)).every((inv) =>
+                    selectedIds.has(inv.id)
+                  )
+                }
+                onChange={selectAllFiltered}
+                className="h-4 w-4 rounded border-white/20 bg-[#121821] accent-[#3B82F6]"
+                aria-label="Select all draft/void"
+              />
+              Select to delete
+            </label>
+            {selectedIds.size > 0 && (
+              <Button
+                type="button"
+                variant="destructive"
+                className="h-10 shrink-0"
+                onClick={handleDeleteSelected}
+                disabled={isDeleting}
+              >
+                {isDeleting ? "Deleting…" : `Delete (${selectedIds.size})`}
+              </Button>
+            )}
+          </>
+        )}
       </div>
+      {deleteError && (
+        <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">
+          {deleteError}
+        </p>
+      )}
 
       {filtered.length === 0 ? (
         <div className="rounded-[20px] border border-dashed border-white/10 py-12 text-center text-muted-foreground">
@@ -105,34 +179,53 @@ export function InvoiceList({
         </div>
       ) : (
         <ul className="divide-y divide-white/5 min-w-0 overflow-hidden rounded-[16px] border border-white/5 bg-[#121821]/80 sm:rounded-[20px]">
-          {filtered.map((inv) => (
-            <li key={inv.id}>
-              <Link
-                href={`/invoices/${inv.id}`}
-                className="flex flex-col gap-1 px-4 py-3 transition-colors hover:bg-white/5 sm:flex-row sm:flex-nowrap sm:items-center sm:justify-between sm:gap-3"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium">{inv.number}</p>
-                  <p className="text-sm text-muted-foreground truncate">{inv.client_name}</p>
-                </div>
-                <div className="flex items-center justify-between gap-2 sm:justify-end sm:gap-3">
-                  <span className="text-sm font-medium tabular-nums">
-                    {formatAmount(
-                      getDisplayAmountCents(inv.amount_cents, inv.vat_included),
-                      inv.currency
-                    )}
-                  </span>
-                  <span
-                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                      STATUS_VARIANTS[inv.status as InvoiceStatus] ?? STATUS_VARIANTS.draft
-                    }`}
+          {filtered.map((inv) => {
+            const canDelete = DELETABLE_STATUSES.includes(inv.status);
+            return (
+              <li key={inv.id} className="flex items-stretch">
+                {canDelete && (
+                  <div
+                    className="flex items-center pl-3 sm:pl-4"
+                    onClick={(e) => e.preventDefault()}
                   >
-                    {STATUS_LABELS[inv.status as InvoiceStatus] ?? inv.status}
-                  </span>
-                </div>
-              </Link>
-            </li>
-          ))}
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(inv.id)}
+                      onChange={() => toggleSelect(inv.id)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="h-4 w-4 rounded border-white/20 bg-[#121821] accent-[#3B82F6]"
+                      aria-label={`Select ${inv.number} for deletion`}
+                    />
+                  </div>
+                )}
+                {!canDelete && <div className="w-7 shrink-0 sm:w-8" />}
+                <Link
+                  href={`/invoices/${inv.id}`}
+                  className="flex flex-1 flex-col gap-1 px-2 py-3 transition-colors hover:bg-white/5 sm:flex-row sm:flex-nowrap sm:items-center sm:justify-between sm:gap-3 sm:px-4"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium">{inv.number}</p>
+                    <p className="text-sm text-muted-foreground truncate">{inv.client_name}</p>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 sm:justify-end sm:gap-3">
+                    <span className="text-sm font-medium tabular-nums">
+                      {formatAmount(
+                        getDisplayAmountCents(inv.amount_cents, inv.vat_included),
+                        inv.currency
+                      )}
+                    </span>
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        STATUS_VARIANTS[inv.status as InvoiceStatus] ?? STATUS_VARIANTS.draft
+                      }`}
+                    >
+                      {STATUS_LABELS[inv.status as InvoiceStatus] ?? inv.status}
+                    </span>
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
