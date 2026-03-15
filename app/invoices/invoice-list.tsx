@@ -121,17 +121,19 @@ export function InvoiceList({
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="h-10 min-h-10 rounded-lg border border-white/10 bg-[#121821]/50 px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3B82F6]/50"
+          className="h-10 min-h-10 rounded-lg border border-[#3B82F6]/40 bg-[#121821] px-3 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3B82F6] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0F14] [&>option]:bg-[#121821] [&>option]:text-white"
         >
           <option value="all">All statuses</option>
           <option value="unpaid">Unpaid</option>
           <option value="paid">Paid</option>
           <option value="overdue">Overdue</option>
-          {(Object.keys(STATUS_LABELS) as InvoiceStatus[]).map((s) => (
-            <option key={s} value={s}>
-              {STATUS_LABELS[s]}
-            </option>
-          ))}
+          {(Object.keys(STATUS_LABELS) as InvoiceStatus[])
+            .filter((s) => s !== "paid" && s !== "overdue")
+            .map((s) => (
+              <option key={s} value={s}>
+                {STATUS_LABELS[s]}
+              </option>
+            ))}
         </select>
         {filtered.length > 0 && (
           <>
