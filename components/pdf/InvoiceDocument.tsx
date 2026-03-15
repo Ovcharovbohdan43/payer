@@ -100,10 +100,6 @@ export function InvoiceDocument({ data }: { data: InvoicePdfData }) {
 
   const metaParts: string[] = [];
   if (data.dueDate) metaParts.push(`Due: ${formatDate(data.dueDate)}`);
-  const statusStr = (data.status && String(data.status).trim()) || "Draft";
-  metaParts.push(
-    `Status: ${statusStr.charAt(0).toUpperCase() + statusStr.slice(1)}`
-  );
 
   return (
     <Document
@@ -111,39 +107,43 @@ export function InvoiceDocument({ data }: { data: InvoicePdfData }) {
       author={data.businessName}
     >
       <Page size="A4" style={styles.page}>
-        <InvoiceHeader
-          businessName={data.businessName}
-          address={data.address}
-          phone={data.phone}
-          companyNumber={data.companyNumber}
-          vatNumber={data.vatNumber}
-          logoUrl={data.logoUrl}
-          invoiceNumber={data.invoiceNumber}
-          createdAt={data.createdAt}
-        />
-        <BillTo
-          clientName={data.clientName}
-          clientCompanyName={data.clientCompanyName}
-          clientAddress={data.clientAddress}
-          clientEmail={data.clientEmail}
-          clientPhone={data.clientPhone}
-          clientVatNumber={data.clientVatNumber}
-        />
-        <InvoiceTable items={items} currency={data.currency} />
-        <InvoiceTotals
-          rows={totalRows}
-          totalCents={data.amountCents}
-          currency={data.currency}
-        />
-        <View style={styles.metaRow}>
-          <Text style={styles.metaText}>{metaParts.join("  ·  ")}</Text>
+        <View style={styles.pageContent}>
+          <InvoiceHeader
+            businessName={data.businessName}
+            address={data.address}
+            phone={data.phone}
+            companyNumber={data.companyNumber}
+            vatNumber={data.vatNumber}
+            logoUrl={data.logoUrl}
+            invoiceNumber={data.invoiceNumber}
+            createdAt={data.createdAt}
+          />
+          <BillTo
+            clientName={data.clientName}
+            clientCompanyName={data.clientCompanyName}
+            clientAddress={data.clientAddress}
+            clientEmail={data.clientEmail}
+            clientPhone={data.clientPhone}
+            clientVatNumber={data.clientVatNumber}
+          />
+          <InvoiceTable items={items} currency={data.currency} />
+          <InvoiceTotals
+            rows={totalRows}
+            totalCents={data.amountCents}
+            currency={data.currency}
+          />
+          {metaParts.length > 0 && (
+            <View style={styles.metaRow}>
+              <Text style={styles.metaText}>{metaParts.join("  ·  ")}</Text>
+            </View>
+          )}
+          {data.notes && data.notes.trim() && (
+            <View>
+              <Text style={styles.notesLabel}>Notes</Text>
+              <Text style={styles.notesText}>{data.notes.trim()}</Text>
+            </View>
+          )}
         </View>
-        {data.notes && data.notes.trim() && (
-          <View>
-            <Text style={styles.notesLabel}>Notes</Text>
-            <Text style={styles.notesText}>{data.notes.trim()}</Text>
-          </View>
-        )}
         <InvoiceFooter />
       </Page>
     </Document>

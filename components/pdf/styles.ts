@@ -13,6 +13,11 @@ export const styles = StyleSheet.create({
     paddingHorizontal: MARGIN,
     paddingTop: MARGIN,
     paddingBottom: MARGIN,
+    flexDirection: "column",
+  },
+  pageContent: {
+    flexGrow: 1,
+    flexDirection: "column",
   },
   // Header — full-width brand color block
   headerBlock: {
@@ -51,24 +56,24 @@ export const styles = StyleSheet.create({
     marginBottom: 2,
   },
   invoiceBadge: {
-    backgroundColor: "#93c5fd",
+    backgroundColor: "#ffffff",
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
   invoiceLabel: {
     fontSize: 9,
     fontFamily: "Helvetica-Bold",
-    color: "#e8edf5",
+    color: "#595959",
     marginBottom: 2,
   },
   invoiceNumber: {
     fontSize: 18,
     fontFamily: "Helvetica-Bold",
-    color: "#ffffff",
+    color: "#262626",
   },
   dateLabel: {
     fontSize: 9,
-    color: "#e8edf5",
+    color: "#595959",
     marginTop: 4,
   },
   // Bill to
@@ -223,14 +228,14 @@ export const styles = StyleSheet.create({
     color: "#595959",
     marginBottom: 16,
   },
-  // Footer — full-width brand color block
+  // Footer — full-width at bottom of page
   footerBlock: {
     backgroundColor: BRAND_DARK,
     marginHorizontal: -MARGIN,
     paddingHorizontal: MARGIN,
     paddingTop: 20,
     paddingBottom: 24,
-    marginTop: 40,
+    marginTop: "auto",
   },
   footerText: {
     fontSize: 10,
@@ -241,5 +246,11 @@ export const styles = StyleSheet.create({
     fontSize: 8,
     color: "#bfdbfe",
     marginBottom: 2,
+  },
+  footerDisclaimer: {
+    fontSize: 7,
+    color: "#93c5fd",
+    marginTop: 10,
+    marginBottom: 0,
   },
 });

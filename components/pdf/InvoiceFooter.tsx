@@ -26,6 +26,10 @@ export function InvoiceFooter() {
       >
         Terms of service: {termsHost}
       </Text>
+      <Text style={styles.footerDisclaimer}>
+        We do not store your personal or payment data. All payment and banking
+        data are processed securely by Stripe.
+      </Text>
     </View>
   );
 }
