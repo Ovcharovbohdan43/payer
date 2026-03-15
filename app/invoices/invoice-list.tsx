@@ -183,22 +183,25 @@ export function InvoiceList({
             const canDelete = DELETABLE_STATUSES.includes(inv.status);
             return (
               <li key={inv.id} className="flex items-stretch">
-                {canDelete && (
-                  <div
-                    className="flex items-center pl-3 sm:pl-4"
-                    onClick={(e) => e.preventDefault()}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.has(inv.id)}
-                      onChange={() => toggleSelect(inv.id)}
-                      onClick={(e) => e.stopPropagation()}
-                      className="h-4 w-4 rounded border-white/20 bg-[#121821] accent-[#3B82F6]"
-                      aria-label={`Select ${inv.number} for deletion`}
-                    />
-                  </div>
-                )}
-                {!canDelete && <div className="w-7 shrink-0 sm:w-8" />}
+                <div
+                  className="flex shrink-0 items-center pl-3 sm:pl-4"
+                  onClick={(e) => e.preventDefault()}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(inv.id)}
+                    disabled={!canDelete}
+                    onChange={() => canDelete && toggleSelect(inv.id)}
+                    onClick={(e) => e.stopPropagation()}
+                    className="h-4 w-4 rounded border-white/20 bg-[#121821] accent-[#3B82F6] disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label={
+                      canDelete
+                        ? `Select ${inv.number} for deletion`
+                        : `${inv.number} — only draft or void can be deleted`
+                    }
+                    title={canDelete ? undefined : "Only draft or void invoices can be deleted"}
+                  />
+                </div>
                 <Link
                   href={`/invoices/${inv.id}`}
                   className="flex flex-1 flex-col gap-1 px-2 py-3 transition-colors hover:bg-white/5 sm:flex-row sm:flex-nowrap sm:items-center sm:justify-between sm:gap-3 sm:px-4"
