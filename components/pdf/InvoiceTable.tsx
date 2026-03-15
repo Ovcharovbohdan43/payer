@@ -7,8 +7,15 @@ export type InvoiceLineItemPdf = {
   amountCents: number;
 };
 
+export type InvoiceTableRow = {
+  description: string;
+  amountCents: number;
+  isDiscount?: boolean;
+};
+
 type Props = {
-  items: InvoiceLineItemPdf[];
+  rows: InvoiceTableRow[];
+  totalCents: number;
   currency: string;
 };
 
@@ -23,8 +30,8 @@ function safeAmount(cents: number): number {
   return Number.isFinite(cents) ? Math.round(cents) : 0;
 }
 
-export function InvoiceTable({ items, currency }: Props) {
-  const list = Array.isArray(items) ? items : [];
+export function InvoiceTable({ rows, totalCents, currency }: Props) {
+  const list = Array.isArray(rows) ? rows : [];
   const curr = typeof currency === "string" && currency.trim() ? currency : "USD";
   return (
     <View style={styles.table}>
@@ -32,16 +39,29 @@ export function InvoiceTable({ items, currency }: Props) {
         <Text style={styles.tableHeaderDesc}>Description</Text>
         <Text style={styles.tableHeaderAmount}>Amount</Text>
       </View>
-      {list.map((item, i) => (
+      {list.map((row, i) => (
         <View key={i} style={styles.tableRow}>
           <Text style={styles.tableRowDesc}>
-            {item?.description != null ? String(item.description) : "—"}
+            {row?.description != null ? String(row.description) : "—"}
           </Text>
-          <Text style={styles.tableRowAmount}>
-            {formatAmount(safeAmount(item?.amountCents), curr)}
+          <Text
+            style={[
+              styles.tableRowAmount,
+              ...(row?.isDiscount ? [styles.discountAmount] : []),
+            ]}
+          >
+            {row && row.amountCents < 0
+              ? "-" + formatAmount(Math.abs(safeAmount(row.amountCents)), curr)
+              : formatAmount(safeAmount(row?.amountCents ?? 0), curr)}
           </Text>
         </View>
       ))}
+      <View style={styles.totalRow}>
+        <Text style={styles.totalLabel}>Total</Text>
+        <Text style={styles.totalAmount}>
+          {formatAmount(safeAmount(totalCents), curr)}
+        </Text>
+      </View>
     </View>
   );
 }

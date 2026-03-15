@@ -39,6 +39,16 @@ export const styles = StyleSheet.create({
   headerRight: {
     alignItems: "flex-end",
   },
+  headerRightColumn: {
+    flexDirection: "column",
+    alignItems: "flex-end",
+    minWidth: 180,
+  },
+  billToInHeader: {
+    marginTop: 16,
+    marginBottom: 0,
+    alignItems: "flex-end",
+  },
   logo: {
     width: 100,
     maxHeight: 56,
@@ -85,6 +95,53 @@ export const styles = StyleSheet.create({
   },
   billToBlock: {
     marginBottom: 28,
+  },
+  clientLineRight: {
+    fontSize: 10,
+    color: "#595959",
+    marginBottom: 2,
+    textAlign: "right",
+  },
+  clientNameRight: {
+    fontSize: 11,
+    fontFamily: "Helvetica-Bold",
+    color: "#262626",
+    marginBottom: 4,
+    textAlign: "right",
+  },
+  clientCompanyRight: {
+    fontSize: 11,
+    fontFamily: "Helvetica-Bold",
+    color: "#262626",
+    marginBottom: 4,
+    textAlign: "right",
+  },
+  sectionLabelRight: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+    color: "#e8edf5",
+    marginBottom: 6,
+    textAlign: "right",
+  },
+  clientCompanyInHeader: {
+    fontSize: 11,
+    fontFamily: "Helvetica-Bold",
+    color: "#ffffff",
+    marginBottom: 4,
+    textAlign: "right",
+  },
+  clientNameInHeader: {
+    fontSize: 11,
+    fontFamily: "Helvetica-Bold",
+    color: "#ffffff",
+    marginBottom: 4,
+    textAlign: "right",
+  },
+  clientLineInHeader: {
+    fontSize: 10,
+    color: "#e8edf5",
+    marginBottom: 2,
+    textAlign: "right",
   },
   clientCompany: {
     fontSize: 11,

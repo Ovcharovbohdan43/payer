@@ -20,6 +20,12 @@ type Props = {
   logoUrl?: string | null;
   invoiceNumber: string;
   createdAt?: string | null;
+  clientName: string;
+  clientCompanyName?: string | null;
+  clientAddress?: string | null;
+  clientEmail?: string | null;
+  clientPhone?: string | null;
+  clientVatNumber?: string | null;
 };
 
 /** PNG/JPG URLs or data URIs; WebP skipped. Reject empty or invalid. */
@@ -41,6 +47,12 @@ export function InvoiceHeader({
   logoUrl,
   invoiceNumber,
   createdAt,
+  clientName,
+  clientCompanyName,
+  clientAddress,
+  clientEmail,
+  clientPhone,
+  clientVatNumber,
 }: Props) {
   const showLogo = logoUrl && isLogoSupported(logoUrl);
 
@@ -50,6 +62,13 @@ export function InvoiceHeader({
   if (companyNumber?.trim())
     contactLines.push(`Company no: ${companyNumber.trim()}`);
   if (vatNumber?.trim()) contactLines.push(`VAT: ${vatNumber.trim()}`);
+
+  const clientLines: string[] = [];
+  if (clientAddress?.trim()) clientLines.push(clientAddress.trim());
+  if (clientEmail?.trim()) clientLines.push(clientEmail.trim());
+  if (clientPhone?.trim()) clientLines.push(clientPhone.trim());
+  if (clientVatNumber?.trim())
+    clientLines.push(`VAT: ${clientVatNumber.trim()}`);
 
   return (
     <View style={styles.headerBlock}>
@@ -63,14 +82,30 @@ export function InvoiceHeader({
             </Text>
           ))}
         </View>
-        <View style={[styles.headerRight, styles.invoiceBadge]}>
-          <Text style={styles.invoiceLabel}>INVOICE</Text>
-          <Text style={styles.invoiceNumber}>#{invoiceNumber}</Text>
-          {createdAt && (
-            <Text style={styles.dateLabel}>
-              Date: {formatDate(createdAt)}
-            </Text>
-          )}
+        <View style={[styles.headerRight, styles.headerRightColumn]}>
+          <View style={styles.invoiceBadge}>
+            <Text style={styles.invoiceLabel}>INVOICE</Text>
+            <Text style={styles.invoiceNumber}>#{invoiceNumber}</Text>
+            {createdAt && (
+              <Text style={styles.dateLabel}>
+                Date: {formatDate(createdAt)}
+              </Text>
+            )}
+          </View>
+          <View style={styles.billToInHeader}>
+            <Text style={styles.sectionLabelRight}>Bill to</Text>
+            {clientCompanyName?.trim() && (
+              <Text style={styles.clientCompanyInHeader}>
+                {clientCompanyName.trim()}
+              </Text>
+            )}
+            <Text style={styles.clientNameInHeader}>{clientName}</Text>
+            {clientLines.map((line, i) => (
+              <Text key={i} style={styles.clientLineInHeader}>
+                {line}
+              </Text>
+            ))}
+          </View>
         </View>
       </View>
     </View>

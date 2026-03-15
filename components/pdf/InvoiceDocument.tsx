@@ -2,9 +2,7 @@ import React from "react";
 import { Document, Page, View, Text } from "@react-pdf/renderer";
 import { styles } from "./styles";
 import { InvoiceHeader } from "./InvoiceHeader";
-import { BillTo } from "./BillTo";
 import { InvoiceTable } from "./InvoiceTable";
-import { InvoiceTotals } from "./InvoiceTotals";
 import { InvoiceFooter } from "./InvoiceFooter";
 import type { InvoicePdfData } from "@/lib/pdf/invoice-pdf";
 
@@ -66,16 +64,25 @@ export function InvoiceDocument({ data }: { data: InvoicePdfData }) {
     totalCents = data.amountCents;
   }
 
-  const totalRows: { label: string; amount: string; isDiscount?: boolean }[] = [];
+  type TableRow = {
+    description: string;
+    amountCents: number;
+    isDiscount?: boolean;
+  };
+  const tableRows: TableRow[] = [...items.map((i) => ({
+    description: i?.description != null ? String(i.description) : "—",
+    amountCents: Number.isFinite(i?.amountCents) ? Math.round(Number(i.amountCents)) : 0,
+    isDiscount: false,
+  }))];
 
   if (invoiceDiscountCents > 0) {
     const label =
       data.discountType === "percent"
         ? `Discount (${data.discountValue}%)`
         : "Discount";
-    totalRows.push({
-      label,
-      amount: "-" + formatAmount(invoiceDiscountCents, data.currency),
+    tableRows.push({
+      description: label,
+      amountCents: -invoiceDiscountCents,
       isDiscount: true,
     });
   }
@@ -84,17 +91,19 @@ export function InvoiceDocument({ data }: { data: InvoicePdfData }) {
     data.paymentProcessingFeeCents != null &&
     data.paymentProcessingFeeCents > 0
   ) {
-    totalRows.push({
-      label: "Payment processing fee",
-      amount: formatAmount(data.paymentProcessingFeeCents, data.currency),
+    tableRows.push({
+      description: "Payment processing fee",
+      amountCents: Math.round(Number(data.paymentProcessingFeeCents)),
+      isDiscount: false,
     });
   }
 
   if (vatIncluded != null) {
     const vatLabel = vatIncluded ? "VAT (20% incl.)" : "VAT (20%)";
-    totalRows.push({
-      label: vatLabel,
-      amount: formatAmount(vatCents, data.currency),
+    tableRows.push({
+      description: vatLabel,
+      amountCents: vatCents,
+      isDiscount: false,
     });
   }
 
@@ -117,8 +126,6 @@ export function InvoiceDocument({ data }: { data: InvoicePdfData }) {
             logoUrl={data.logoUrl}
             invoiceNumber={data.invoiceNumber}
             createdAt={data.createdAt}
-          />
-          <BillTo
             clientName={data.clientName}
             clientCompanyName={data.clientCompanyName}
             clientAddress={data.clientAddress}
@@ -126,9 +133,8 @@ export function InvoiceDocument({ data }: { data: InvoicePdfData }) {
             clientPhone={data.clientPhone}
             clientVatNumber={data.clientVatNumber}
           />
-          <InvoiceTable items={items} currency={data.currency} />
-          <InvoiceTotals
-            rows={totalRows}
+          <InvoiceTable
+            rows={tableRows}
             totalCents={data.amountCents}
             currency={data.currency}
           />
