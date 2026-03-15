@@ -7,7 +7,7 @@ import { DownloadPdfLink } from "./download-pdf-placeholder";
 import { InvoiceQrCode } from "@/components/invoice-qr-code";
 import { DemoPayArea } from "./demo-pay-area";
 import { CheckCircle2 } from "lucide-react";
-import Image from "next/image";
+import { PublicLogo } from "@/components/public-logo";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
 
@@ -142,17 +142,11 @@ export default async function PublicInvoicePage({
           {/* Header: logo + business name + contact info */}
           <div className="mb-8 flex flex-col gap-3">
             <div className="flex items-center gap-4">
-              {invoice.logo_url ? (
-                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full">
-                  <Image
-                    src={invoice.logo_url}
-                    alt=""
-                    fill
-                    className="object-cover"
-                    sizes="48px"
-                  />
-                </div>
-              ) : null}
+              <PublicLogo
+                logoUrl={invoice.logo_url ?? ""}
+                businessName={invoice.business_name}
+                size="md"
+              />
               <div className="min-w-0 flex-1">
                 <p className="text-base font-semibold text-white">
                   {invoice.business_name}

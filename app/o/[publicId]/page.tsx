@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
+import { PublicLogo } from "@/components/public-logo";
 import { formatAmount, getDisplayAmountCents } from "@/lib/invoices/utils";
 import { notFound } from "next/navigation";
 import { OfferActions } from "./offer-actions";
@@ -95,17 +95,11 @@ export default async function PublicOfferPage({
         <div className="rounded-[20px] border border-white/5 bg-[#121821] p-8 backdrop-blur">
           <div className="mb-8 flex flex-col gap-3">
             <div className="flex items-center gap-4">
-              {typedOffer.logo_url ? (
-                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full">
-                  <Image
-                    src={typedOffer.logo_url}
-                    alt=""
-                    fill
-                    className="object-cover"
-                    sizes="48px"
-                  />
-                </div>
-              ) : null}
+              <PublicLogo
+                logoUrl={typedOffer.logo_url ?? ""}
+                businessName={typedOffer.business_name}
+                size="md"
+              />
               <div className="min-w-0 flex-1">
                 <p className="text-base font-semibold text-white">
                   {typedOffer.business_name}
