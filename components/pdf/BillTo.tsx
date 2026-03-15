@@ -35,7 +35,17 @@ export function BillTo({
         style={
           clientCompanyName?.trim()
             ? styles.clientName
-            : [styles.clientName, { fontSize: 11, borderWidth: 0, borderColor: "transparent" }]
+            : [
+              styles.clientName,
+              {
+                fontSize: 11,
+                borderTopWidth: 0,
+                borderBottomWidth: 0,
+                borderLeftWidth: 0,
+                borderRightWidth: 0,
+                borderColor: "transparent",
+              },
+            ]
         }
       >
         {clientName}
