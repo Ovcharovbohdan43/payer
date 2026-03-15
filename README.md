@@ -10,6 +10,7 @@ Web SaaS for micro-businesses and freelancers: create invoices in 15–30 second
 
 - **[Technical development plan (phases 0–10)](docs/TECHNICAL_PLAN.md)** — what to build and in what order.
 - **[Changelog](docs/CHANGELOG.md)** — detailed release history.
+- **[GitHub account cleanup](docs/GITHUB_ACCOUNT_CLEANUP.md)** — how to keep only payer & desboard repos and tidy profile.
 
 ## Updates
 
