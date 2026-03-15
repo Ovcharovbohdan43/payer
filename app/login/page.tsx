@@ -1,4 +1,5 @@
 import { LoginForm } from "./login-form";
+import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 import Link from "next/link";
 
 export default async function LoginPage({
@@ -27,6 +28,15 @@ export default async function LoginPage({
             Check your email to confirm your account, then sign in.
           </p>
         )}
+        <GoogleSignInButton label="Sign in with Google" />
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-white/10" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase tracking-wider">
+            <span className="bg-background px-2 text-muted-foreground">or</span>
+          </div>
+        </div>
         <LoginForm />
         <p className="text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}

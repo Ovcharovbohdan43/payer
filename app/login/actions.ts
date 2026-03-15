@@ -124,3 +124,18 @@ export async function signOut() {
   await supabase.auth.signOut();
   redirect("/");
 }
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
+
+/** Start Google OAuth; redirects to Google, then back to /auth/callback. */
+export async function signInWithGoogleAction(): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const redirectTo = `${APP_URL}/auth/callback`;
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo },
+  });
+  if (error) return { error: error.message };
+  if (data?.url) redirect(data.url);
+  return { error: "Could not start Google sign-in" };
+}
