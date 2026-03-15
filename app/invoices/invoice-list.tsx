@@ -70,7 +70,7 @@ export function InvoiceList({
     setIsDeleting(true);
     const result = await deleteInvoicesAction(Array.from(selectedIds));
     setIsDeleting(false);
-    if (result.error) {
+    if ("error" in result) {
       setDeleteError(result.error);
       return;
     }
