@@ -28,7 +28,7 @@ function mapInitialFilter(status?: string): string {
   return "all";
 }
 
-const DELETABLE_STATUSES = ["draft", "void"];
+const ACTIVE_STATUSES = ["sent", "viewed", "paid", "overdue"];
 
 export function InvoiceList({
   invoices,
@@ -55,17 +55,24 @@ export function InvoiceList({
   };
 
   const selectAllFiltered = () => {
-    const deletable = filtered.filter((inv) => DELETABLE_STATUSES.includes(inv.status));
-    if (selectedIds.size === deletable.length) {
+    if (selectedIds.size === filtered.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(deletable.map((inv) => inv.id)));
+      setSelectedIds(new Set(filtered.map((inv) => inv.id)));
     }
   };
 
   const handleDeleteSelected = async () => {
     if (selectedIds.size === 0) return;
-    if (!confirm(`Delete ${selectedIds.size} invoice(s)? Only draft and void invoices can be deleted.`)) return;
+    const selectedInvoices = filtered.filter((inv) => selectedIds.has(inv.id));
+    const activeCount = selectedInvoices.filter((inv) =>
+      ACTIVE_STATUSES.includes(inv.status)
+    ).length;
+    const message =
+      activeCount > 0
+        ? `Delete ${selectedIds.size} invoice(s)? ${activeCount} of them ${activeCount === 1 ? "is" : "are"} active (sent/viewed/paid/overdue). Are you sure you want to delete ${activeCount === 1 ? "this invoice" : "these invoices"}?`
+        : `Delete ${selectedIds.size} invoice(s)?`;
+    if (!confirm(message)) return;
     setDeleteError(null);
     setIsDeleting(true);
     const result = await deleteInvoicesAction(Array.from(selectedIds));
@@ -132,14 +139,12 @@ export function InvoiceList({
               <input
                 type="checkbox"
                 checked={
-                  filtered.filter((inv) => DELETABLE_STATUSES.includes(inv.status)).length > 0 &&
-                  filtered.filter((inv) => DELETABLE_STATUSES.includes(inv.status)).every((inv) =>
-                    selectedIds.has(inv.id)
-                  )
+                  filtered.length > 0 &&
+                  filtered.every((inv) => selectedIds.has(inv.id))
                 }
                 onChange={selectAllFiltered}
                 className="h-4 w-4 rounded border-white/20 bg-[#121821] accent-[#3B82F6]"
-                aria-label="Select all draft/void"
+                aria-label="Select all"
               />
               Select to delete
             </label>
@@ -179,30 +184,22 @@ export function InvoiceList({
         </div>
       ) : (
         <ul className="divide-y divide-white/5 min-w-0 overflow-hidden rounded-[16px] border border-white/5 bg-[#121821]/80 sm:rounded-[20px]">
-          {filtered.map((inv) => {
-            const canDelete = DELETABLE_STATUSES.includes(inv.status);
-            return (
-              <li key={inv.id} className="flex items-stretch">
-                <div
-                  className="flex shrink-0 items-center pl-3 sm:pl-4"
-                  onClick={(e) => e.preventDefault()}
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.has(inv.id)}
-                    disabled={!canDelete}
-                    onChange={() => canDelete && toggleSelect(inv.id)}
-                    onClick={(e) => e.stopPropagation()}
-                    className="h-4 w-4 rounded border-white/20 bg-[#121821] accent-[#3B82F6] disabled:opacity-50 disabled:cursor-not-allowed"
-                    aria-label={
-                      canDelete
-                        ? `Select ${inv.number} for deletion`
-                        : `${inv.number} — only draft or void can be deleted`
-                    }
-                    title={canDelete ? undefined : "Only draft or void invoices can be deleted"}
-                  />
-                </div>
-                <Link
+          {filtered.map((inv) => (
+            <li key={inv.id} className="flex items-stretch">
+              <div
+                className="flex shrink-0 items-center pl-3 sm:pl-4"
+                onClick={(e) => e.preventDefault()}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedIds.has(inv.id)}
+                  onChange={() => toggleSelect(inv.id)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="h-4 w-4 rounded border-white/20 bg-[#121821] accent-[#3B82F6]"
+                  aria-label={`Select ${inv.number} for deletion`}
+                />
+              </div>
+              <Link
                   href={`/invoices/${inv.id}`}
                   className="flex flex-1 flex-col gap-1 px-2 py-3 transition-colors hover:bg-white/5 sm:flex-row sm:flex-nowrap sm:items-center sm:justify-between sm:gap-3 sm:px-4"
                 >
@@ -227,8 +224,7 @@ export function InvoiceList({
                   </div>
                 </Link>
               </li>
-            );
-          })}
+            ))}
         </ul>
       )}
     </div>

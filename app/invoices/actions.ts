@@ -737,7 +737,7 @@ export async function sendReminderAction(
   return { success: true };
 }
 
-/** Delete one or more invoices (and their line items via cascade). Only allows draft/void to avoid accidental loss of paid records. */
+/** Delete one or more invoices (and their line items via cascade). */
 export async function deleteInvoicesAction(
   ids: string[]
 ): Promise<{ error: string } | { deleted: number }> {
@@ -752,37 +752,17 @@ export async function deleteInvoicesAction(
   const validIds = ids.filter((id) => typeof id === "string" && id.trim().length > 0);
   if (validIds.length === 0) return { deleted: 0 };
 
-  const { data: invoices } = await supabase
-    .from("invoices")
-    .select("id, status")
-    .eq("user_id", user.id)
-    .in("id", validIds);
-
-  const toDelete = (invoices ?? []).filter(
-    (inv) => inv.status === "draft" || inv.status === "void"
-  );
-  const notAllowed = (invoices ?? []).filter(
-    (inv) => inv.status !== "draft" && inv.status !== "void"
-  );
-
-  if (notAllowed.length > 0) {
-    return {
-      error: `Cannot delete ${notAllowed.length} invoice(s): only draft or void can be deleted.`,
-    };
-  }
-
-  const toDeleteIds = toDelete.map((inv) => inv.id);
   const { error } = await supabase
     .from("invoices")
     .delete()
     .eq("user_id", user.id)
-    .in("id", toDeleteIds);
+    .in("id", validIds);
 
   if (error) return { error: error.message };
 
   revalidatePath("/invoices");
   revalidatePath("/dashboard");
-  return { deleted: toDelete.length };
+  return { deleted: validIds.length };
 }
 
 export async function updateAutoRemindAction(
