@@ -16,8 +16,9 @@ export const passwordSchema = z
   .max(100, "Password is too long");
 
 export const registerSchema = z.object({
+  first_name: z.string().min(1, "First name is required").max(100),
+  last_name: z.string().min(1, "Last name is required").max(100),
   email: emailSchema,
-  name: z.string().min(1, "Name is required").max(100),
   business_name: z.string().min(1, "Company name is required").max(200),
   password: passwordSchema,
   country: z.string().max(100).optional().or(z.literal("")),

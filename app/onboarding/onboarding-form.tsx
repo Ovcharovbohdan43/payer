@@ -25,6 +25,10 @@ const COMPANY_TYPES = [
   "Other",
 ];
 
+function RequiredStar() {
+  return <span className="text-red-500">*</span>;
+}
+
 type Props = {
   initialEmail?: string | null;
 };
@@ -42,7 +46,7 @@ export function OnboardingForm({ initialEmail }: Props) {
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
           <Label htmlFor="first_name">
-            First name <span className="text-muted-foreground">(required)</span>
+            First name <RequiredStar />
           </Label>
           <Input
             id="first_name"
@@ -55,7 +59,7 @@ export function OnboardingForm({ initialEmail }: Props) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="last_name">
-            Last name <span className="text-muted-foreground">(required)</span>
+            Last name <RequiredStar />
           </Label>
           <Input
             id="last_name"
@@ -69,7 +73,7 @@ export function OnboardingForm({ initialEmail }: Props) {
       </div>
       <div className="space-y-2">
         <Label htmlFor="email">
-          Email <span className="text-muted-foreground">(required)</span>
+          Email <RequiredStar />
         </Label>
         <Input
           id="email"
@@ -84,7 +88,7 @@ export function OnboardingForm({ initialEmail }: Props) {
       </div>
       <div className="space-y-2">
         <Label htmlFor="business_name">
-          Company name <span className="text-muted-foreground">(required)</span>
+          Company name <RequiredStar />
         </Label>
         <Input
           id="business_name"
