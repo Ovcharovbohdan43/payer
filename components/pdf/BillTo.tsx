@@ -33,7 +33,9 @@ export function BillTo({
       )}
       <Text
         style={
-          clientCompanyName?.trim() ? styles.clientName : [styles.clientName, { fontSize: 11 }]
+          clientCompanyName?.trim()
+            ? styles.clientName
+            : [styles.clientName, { fontSize: 11, borderWidth: 0, borderColor: "transparent" }]
         }
       >
         {clientName}
