@@ -33,10 +33,10 @@ export async function GET(request: Request) {
     try {
       const { data: profile } = await supabase
         .from("profiles")
-        .select("business_name")
+        .select("onboarding_completed")
         .eq("id", user.id)
         .maybeSingle();
-      if (!profile?.business_name) {
+      if (!profile?.onboarding_completed) {
         redirectTo = "/onboarding";
       }
     } catch {

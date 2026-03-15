@@ -49,10 +49,17 @@ export const currencySchema = z
   .toUpperCase();
 
 export const onboardingSchema = z.object({
-  business_name: z.string().min(1, "Business name is required").max(200),
+  first_name: z.string().min(1, "First name is required").max(100),
+  last_name: z.string().min(1, "Last name is required").max(100),
+  email: z.string().min(1, "Email is required").email("Invalid email address"),
+  business_name: z.string().min(1, "Company name is required").max(200),
+  phone: z.string().max(50).optional().or(z.literal("")),
+  address: z.string().max(500).optional().or(z.literal("")),
+  website: z.string().max(500).optional().or(z.literal("")),
+  company_type: z.string().max(100).optional().or(z.literal("")),
   default_currency: z.string().length(3).toUpperCase(),
-  country: z.string().max(100).optional(),
-  timezone: z.string().max(50).optional(),
+  country: z.string().max(100).optional().or(z.literal("")),
+  timezone: z.string().max(50).optional().or(z.literal("")),
 });
 
 /** Profile update (settings) — business_name is read-only, excluded. */

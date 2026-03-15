@@ -53,18 +53,9 @@ export async function signUpAction(formData: FormData) {
   }
   if (!data.user) return { error: "Sign up failed" };
 
-  // Profile is created by trigger with business_name from user_metadata.
-  // If we have a session (no email confirmation), ensure profile is updated.
+  // If we have a session (no email confirmation), send to onboarding to complete profile.
   if (data.session) {
-    await supabase
-      .from("profiles")
-      .update({
-        business_name: parsed.data.business_name,
-        country: parsed.data.country?.trim() || null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", data.user.id);
-    redirect("/dashboard");
+    redirect("/onboarding");
   }
 
   // Email confirmation required — redirect to login
