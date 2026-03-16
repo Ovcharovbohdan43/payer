@@ -84,8 +84,8 @@ export default async function DashboardPage() {
             glow="emerald"
           />
           <KpiCard
-            label="Money owed"
-            value={formatAmount(stats.unpaidSumCents, currency)}
+            label="Expected"
+            value={formatAmount(stats.expectedSumCents, currency)}
             href="/dashboard/analytics#invoices"
             gradient="from-blue-500/10 via-[#121821] to-[#121821]"
             glow="blue"

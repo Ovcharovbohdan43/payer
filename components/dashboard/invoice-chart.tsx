@@ -24,6 +24,7 @@ type InvoiceChartProps = {
   overdueCount: number;
   paidSumCents: number;
   unpaidSumCents: number;
+  overdueSumCents: number;
   currency: string;
 };
 
@@ -83,6 +84,91 @@ export function InvoiceBarChart({
             dataKey="count"
             radius={[6, 6, 0, 0]}
             filter="url(#bar-shadow)"
+            isAnimationActive
+            animationDuration={600}
+            animationEasing="ease-out"
+          >
+            {data.map((entry, i) => (
+              <Cell key={i} fill={entry.fill} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+export function InvoiceAmountsBarChart({
+  paidSumCents,
+  unpaidSumCents,
+  overdueSumCents,
+  currency,
+}: Pick<
+  InvoiceChartProps,
+  "paidSumCents" | "unpaidSumCents" | "overdueSumCents" | "currency"
+>) {
+  const data = [
+    { name: "Paid", amount: paidSumCents / 100, fill: INVOICE_COLORS.paid },
+    { name: "Unpaid", amount: unpaidSumCents / 100, fill: INVOICE_COLORS.unpaid },
+    { name: "Overdue", amount: overdueSumCents / 100, fill: INVOICE_COLORS.overdue },
+  ].filter((d) => d.amount > 0);
+
+  if (data.length === 0) {
+    return (
+      <div className="flex h-[200px] items-center justify-center rounded-lg bg-white/[0.02] text-sm text-muted-foreground">
+        No amounts yet
+      </div>
+    );
+  }
+
+  const formatAmount = (v: number) =>
+    new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(v);
+
+  return (
+    <div className="h-[200px] w-full" aria-label="Invoice amounts by status">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+          <defs>
+            <filter id="amounts-bar-shadow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="2" stdDeviation="4" floodOpacity="0.2" floodColor="#000" />
+            </filter>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
+          <XAxis
+            dataKey="name"
+            tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }}
+            tickLine={false}
+            axisLine={{ stroke: "rgba(255,255,255,0.08)" }}
+          />
+          <YAxis
+            tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(v) => formatAmount(v)}
+            width={50}
+          />
+          <Tooltip
+            content={({ active, payload }) => {
+              if (!active || !payload?.[0]) return null;
+              const entry = payload[0].payload as { name: string; amount: number };
+              return (
+                <div className="rounded-lg border border-white/10 bg-[#121821] px-3 py-2 shadow-xl">
+                  <p className="text-xs text-muted-foreground">{entry.name}</p>
+                  <p className="text-sm font-semibold">{formatAmount(entry.amount)}</p>
+                </div>
+              );
+            }}
+            cursor={{ fill: "rgba(255,255,255,0.03)" }}
+          />
+          <Bar
+            dataKey="amount"
+            radius={[6, 6, 0, 0]}
+            filter="url(#amounts-bar-shadow)"
             isAnimationActive
             animationDuration={600}
             animationEasing="ease-out"

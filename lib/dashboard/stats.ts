@@ -4,6 +4,9 @@ import { getDisplayAmountCents } from "@/lib/invoices/utils";
 export type DashboardStats = {
   unpaidSumCents: number;
   unpaidCount: number;
+  /** Unpaid with status sent or viewed (expected inflows, not yet overdue). */
+  expectedSumCents: number;
+  expectedCount: number;
   paidThisMonthCents: number;
   paidThisMonthCount: number;
   overdueCount: number;
@@ -21,6 +24,8 @@ export function computeDashboardStats(
 
   let unpaidSumCents = 0;
   let unpaidCount = 0;
+  let expectedSumCents = 0;
+  let expectedCount = 0;
   let paidThisMonthCents = 0;
   let paidThisMonthCount = 0;
   let overdueCount = 0;
@@ -31,6 +36,7 @@ export function computeDashboardStats(
     const isVoid = inv.status === "void";
     const isUnpaid = !isPaid && !isVoid;
     const duePast = inv.due_date && inv.due_date < today;
+    const isExpected = isUnpaid && (inv.status === "sent" || inv.status === "viewed");
 
     const displayCents = getDisplayAmountCents(
       Number(inv.amount_cents),
@@ -42,6 +48,11 @@ export function computeDashboardStats(
       if (inv.currency === defaultCurrency) {
         unpaidSumCents += displayCents;
       }
+    }
+
+    if (isExpected && inv.currency === defaultCurrency) {
+      expectedCount++;
+      expectedSumCents += displayCents;
     }
 
     if (isPaid && inv.paid_at && inv.paid_at >= thisMonthStart.toISOString()) {
@@ -62,6 +73,8 @@ export function computeDashboardStats(
   return {
     unpaidSumCents,
     unpaidCount,
+    expectedSumCents,
+    expectedCount,
     paidThisMonthCents,
     paidThisMonthCount,
     overdueCount,
