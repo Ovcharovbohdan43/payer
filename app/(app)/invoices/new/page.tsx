@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { listClients } from "@/app/clients/actions";
+import { listInvoiceTemplates } from "@/app/invoices/template-actions";
 import { redirect } from "next/navigation";
 import { NewInvoiceForm } from "@/app/invoices/new/new-invoice-form";
 import Link from "next/link";
@@ -12,13 +13,14 @@ export default async function NewInvoicePage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [profile, clients] = await Promise.all([
+  const [profile, clients, templates] = await Promise.all([
     supabase
       .from("profiles")
       .select("default_currency")
       .eq("id", user.id)
       .single(),
     listClients(),
+    listInvoiceTemplates(),
   ]);
 
   const defaultCurrency = profile?.data?.default_currency ?? "USD";
@@ -34,7 +36,7 @@ export default async function NewInvoicePage() {
           </Button>
         </div>
         <h1 className="mb-4 text-lg font-semibold sm:mb-6 sm:text-xl">Create invoice</h1>
-        <NewInvoiceForm defaultCurrency={defaultCurrency} clients={clients} />
+        <NewInvoiceForm defaultCurrency={defaultCurrency} clients={clients} templates={templates} />
       </div>
     </div>
   );

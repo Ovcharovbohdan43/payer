@@ -8,10 +8,18 @@ import type { ClientRow } from "@/app/clients/actions";
 import { listClients } from "@/app/clients/actions";
 import type { InvoiceRow } from "@/app/invoices/actions";
 import { updateInvoiceAction, type UpdateResult } from "@/app/invoices/actions";
-import { useActionState, useEffect, useState, useCallback } from "react";
+import { createInvoiceTemplate } from "@/app/invoices/template-actions";
+import { useActionState, useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Bookmark } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { calcPaymentProcessingFeeCents } from "@/lib/invoices/utils";
 
 const VAT_RATE = 0.2;
@@ -96,6 +104,25 @@ export function EditInvoiceForm({ invoice, clients, defaultCurrency }: Props) {
 
   const [lineItems, setLineItems] = useState<LineItemInput[]>(() =>
     invoiceToLineItems(invoice)
+  );
+  const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [saveTemplatePending, setSaveTemplatePending] = useState(false);
+
+  const validLineItemsForTemplate = useMemo(
+    () =>
+      lineItems
+        .filter((item) => item.description.trim() && item.amount.trim())
+        .map((item) => {
+          const amt = parseFloat(item.amount) || 0;
+          const dp = Math.min(100, Math.max(0, parseFloat(item.discountPercent) || 0));
+          return {
+            description: item.description.trim(),
+            amount: amt,
+            discountPercent: dp,
+          };
+        }),
+    [lineItems]
   );
 
   const dueDateInitial =
@@ -286,20 +313,91 @@ export function EditInvoiceForm({ invoice, clients, defaultCurrency }: Props) {
       </div>
 
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <Label>Services</Label>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={addLineItem}
-            disabled={isPending}
-            className="h-8 gap-1 text-muted-foreground hover:text-foreground"
-          >
-            <Plus className="h-4 w-4" />
-            Add service
-          </Button>
+          <div className="flex items-center gap-1">
+            {validLineItemsForTemplate.length > 0 && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setTemplateName("");
+                  setSaveTemplateOpen(true);
+                }}
+                disabled={isPending}
+                className="h-8 gap-1 text-muted-foreground hover:text-foreground"
+              >
+                <Bookmark className="h-4 w-4" />
+                Save as template
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={addLineItem}
+              disabled={isPending}
+              className="h-8 gap-1 text-muted-foreground hover:text-foreground"
+            >
+              <Plus className="h-4 w-4" />
+              Add service
+            </Button>
+          </div>
         </div>
+        <Dialog open={saveTemplateOpen} onOpenChange={setSaveTemplateOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Save as template</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground">
+              Save the current {validLineItemsForTemplate.length} line item{validLineItemsForTemplate.length !== 1 ? "s" : ""} as a template to reuse on new invoices.
+            </p>
+            <div className="space-y-2">
+              <Label htmlFor="edit-template-name">Template name</Label>
+              <Input
+                id="edit-template-name"
+                placeholder="e.g. Consulting 1h"
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+                disabled={saveTemplatePending}
+                className="h-10"
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setSaveTemplateOpen(false)}
+                disabled={saveTemplatePending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={async () => {
+                  const name = templateName.trim();
+                  if (!name) {
+                    toast.error("Enter a template name");
+                    return;
+                  }
+                  setSaveTemplatePending(true);
+                  const result = await createInvoiceTemplate(name, validLineItemsForTemplate);
+                  setSaveTemplatePending(false);
+                  if (result.error) {
+                    toast.error(result.error);
+                    return;
+                  }
+                  toast.success("Template saved");
+                  setSaveTemplateOpen(false);
+                }}
+                disabled={saveTemplatePending}
+              >
+                {saveTemplatePending ? "Saving…" : "Save"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         <div className="space-y-3">
           {lineItems.map((item) => (
             <div

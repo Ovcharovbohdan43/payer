@@ -7,10 +7,30 @@ import { ClientAutocomplete } from "@/components/clients/client-autocomplete";
 import type { ClientRow } from "@/app/clients/actions";
 import { listClients } from "@/app/clients/actions";
 import { createInvoiceAction, type CreateResult } from "../actions";
-import { useActionState, useEffect, useState, useCallback } from "react";
+import {
+  createInvoiceTemplate,
+  deleteInvoiceTemplate,
+  type InvoiceTemplateRow,
+  type InvoiceTemplateItemRow,
+} from "../template-actions";
+import { useActionState, useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Bookmark } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { calcPaymentProcessingFeeCents } from "@/lib/invoices/utils";
 
 const VAT_RATE = 0.2; // 20%
@@ -29,11 +49,6 @@ function formatMoney(cents: number, currency: string): string {
   }).format(cents / 100);
 }
 
-type NewInvoiceFormProps = {
-  defaultCurrency: string;
-  clients: ClientRow[];
-};
-
 function createEmptyLineItem(): LineItemInput {
   return {
     id: crypto.randomUUID(),
@@ -43,7 +58,23 @@ function createEmptyLineItem(): LineItemInput {
   };
 }
 
-export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps) {
+function templateItemsToLineInputs(items: InvoiceTemplateItemRow[]): LineItemInput[] {
+  if (!items?.length) return [createEmptyLineItem()];
+  return items.map((item) => ({
+    id: crypto.randomUUID(),
+    description: item.description,
+    amount: (item.amount_cents / 100).toFixed(2),
+    discountPercent: String(item.discount_percent ?? 0),
+  }));
+}
+
+type NewInvoiceFormProps = {
+  defaultCurrency: string;
+  clients: ClientRow[];
+  templates?: InvoiceTemplateRow[];
+};
+
+export function NewInvoiceForm({ defaultCurrency, clients, templates = [] }: NewInvoiceFormProps) {
   const router = useRouter();
   const [selectedClient, setSelectedClient] = useState<ClientRow | null>(null);
   const [clientsList, setClientsList] = useState(clients);
@@ -58,6 +89,27 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
   const [lineItems, setLineItems] = useState<LineItemInput[]>(() => [
     createEmptyLineItem(),
   ]);
+  const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [saveTemplatePending, setSaveTemplatePending] = useState(false);
+  const [applyTemplateValue, setApplyTemplateValue] = useState("");
+  const [manageTemplatesOpen, setManageTemplatesOpen] = useState(false);
+
+  const validLineItemsForTemplate = useMemo(
+    () =>
+      lineItems
+        .filter((item) => item.description.trim() && item.amount.trim())
+        .map((item) => {
+          const amt = parseFloat(item.amount) || 0;
+          const dp = Math.min(100, Math.max(0, parseFloat(item.discountPercent) || 0));
+          return {
+            description: item.description.trim(),
+            amount: amt,
+            discountPercent: dp,
+          };
+        }),
+    [lineItems]
+  );
 
   const addLineItem = useCallback(() => {
     setLineItems((prev) => [...prev, createEmptyLineItem()]);
@@ -244,21 +296,178 @@ export function NewInvoiceForm({ defaultCurrency, clients }: NewInvoiceFormProps
         />
       </div>
 
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <Label>Services</Label>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={addLineItem}
-            disabled={isPending}
-            className="h-8 gap-1 text-muted-foreground hover:text-foreground"
-          >
-            <Plus className="h-4 w-4" />
-            Add service
-          </Button>
+      {templates.length > 0 && (
+        <div className="space-y-2">
+          <Label>Use a template</Label>
+          <div className="flex flex-wrap items-center gap-2">
+            <Select
+              value={applyTemplateValue}
+              onValueChange={(id) => {
+                const t = templates.find((x) => x.id === id);
+                if (t?.items?.length) {
+                  setLineItems(templateItemsToLineInputs(t.items));
+                  toast.success(`Applied "${t.name}"`);
+                } else if (t && (!t.items || t.items.length === 0)) {
+                  toast.error("Template has no items");
+                }
+                setApplyTemplateValue("");
+              }}
+              disabled={isPending}
+            >
+              <SelectTrigger className="h-10 min-w-[200px] rounded-lg border-white/10 bg-[#121821]/50">
+                <SelectValue placeholder="Choose a template…" />
+              </SelectTrigger>
+              <SelectContent className="border-white/10 bg-[#121821] text-white [&_[data-slot=select-item]]:focus:bg-white/10 [&_[data-slot=select-item][data-highlighted]]:bg-white/10">
+                {templates.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>
+                    {t.name}
+                    {t.items?.length ? ` (${t.items.length} item${t.items.length !== 1 ? "s" : ""})` : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setManageTemplatesOpen(true)}
+              disabled={isPending}
+              className="h-10 text-muted-foreground hover:text-foreground"
+            >
+              Manage templates
+            </Button>
+          </div>
         </div>
+      )}
+
+      <Dialog open={manageTemplatesOpen} onOpenChange={setManageTemplatesOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Manage templates</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Delete templates you no longer need. You can save new ones from the invoice form.
+          </p>
+          <ul className="max-h-60 space-y-2 overflow-y-auto">
+            {templates.map((t) => (
+              <li
+                key={t.id}
+                className="flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-[#121821]/30 px-3 py-2"
+              >
+                <div className="min-w-0 flex-1">
+                  <span className="font-medium">{t.name}</span>
+                  <span className="ml-2 text-sm text-muted-foreground">
+                    {t.items?.length ?? 0} item{(t.items?.length ?? 0) !== 1 ? "s" : ""}
+                  </span>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  onClick={async () => {
+                    const result = await deleteInvoiceTemplate(t.id);
+                    if (result.error) toast.error(result.error);
+                    else {
+                      toast.success("Template deleted");
+                      router.refresh();
+                    }
+                  }}
+                >
+                  Delete
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </DialogContent>
+      </Dialog>
+
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <Label>Services</Label>
+          <div className="flex items-center gap-1">
+            {validLineItemsForTemplate.length > 0 && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setTemplateName("");
+                  setSaveTemplateOpen(true);
+                }}
+                disabled={isPending}
+                className="h-8 gap-1 text-muted-foreground hover:text-foreground"
+              >
+                <Bookmark className="h-4 w-4" />
+                Save as template
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={addLineItem}
+              disabled={isPending}
+              className="h-8 gap-1 text-muted-foreground hover:text-foreground"
+            >
+              <Plus className="h-4 w-4" />
+              Add service
+            </Button>
+          </div>
+        </div>
+        <Dialog open={saveTemplateOpen} onOpenChange={setSaveTemplateOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Save as template</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground">
+              Save the current {validLineItemsForTemplate.length} line item{validLineItemsForTemplate.length !== 1 ? "s" : ""} as a template to reuse on new invoices.
+            </p>
+            <div className="space-y-2">
+              <Label htmlFor="template-name">Template name</Label>
+              <Input
+                id="template-name"
+                placeholder="e.g. Consulting 1h"
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+                disabled={saveTemplatePending}
+                className="h-10"
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setSaveTemplateOpen(false)}
+                disabled={saveTemplatePending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={async () => {
+                  const name = templateName.trim();
+                  if (!name) {
+                    toast.error("Enter a template name");
+                    return;
+                  }
+                  setSaveTemplatePending(true);
+                  const result = await createInvoiceTemplate(name, validLineItemsForTemplate);
+                  setSaveTemplatePending(false);
+                  if (result.error) {
+                    toast.error(result.error);
+                    return;
+                  }
+                  toast.success("Template saved");
+                  setSaveTemplateOpen(false);
+                }}
+                disabled={saveTemplatePending}
+              >
+                {saveTemplatePending ? "Saving…" : "Save"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         <div className="space-y-3">
           {lineItems.map((item) => (
             <div

@@ -21,6 +21,7 @@ Run in order (Supabase SQL Editor or `supabase db push`):
 15. `supabase/migrations/20250233000002_get_public_invoice_discounts.sql` — get_public_invoice returns discount fields
 16. `supabase/migrations/20250238000001_subscription_plan.sql` — profiles: stripe_customer_id, subscription_status (free/active/canceled/past_due/trialing)
 17. `supabase/migrations/20250238000002_subscription_manual_grant.sql` — RPCs grant_pro_subscription, revoke_pro_subscription (manual Pro grant via Supabase)
+18. `supabase/migrations/20250318000001_invoice_templates.sql` — invoice_templates, invoice_template_items (saved line-item sets for one-click apply on new invoice); RLS by user_id
 
 ## Public invoice access
 

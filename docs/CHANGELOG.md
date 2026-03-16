@@ -4,6 +4,12 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2025-03-18] – Invoice templates
+
+- **Templates:** Save current line items as a named template from the create or edit invoice form (Save as template). On Create invoice, use the \"Use a template\" dropdown to apply a template and fill Services in one click. Manage templates (list + delete) available on the create invoice page.
+- **Limits:** Template name 1–200 characters; 1–50 lines per template. RLS by user. Same template can be used with any currency.
+- **Docs:** `docs/INVOICE_TEMPLATES.md`; Help FAQ \"How do invoice templates work?\"; migration `20250318000001_invoice_templates.sql`.
+
 ### [2025-03-15] – Register & onboarding: step validation and Google prefill
 
 - **Register (bug fix):** "Next" was allowed without required fields. Now blocked until filled: step 1 — first name + last name; step 2 — company name. Step error message shown under the button.

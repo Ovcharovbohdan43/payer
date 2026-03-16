@@ -68,6 +68,10 @@ const FAQ_CATEGORIES = [
         a: "Auto-reminders run daily: we send reminders on the schedule you chose (e.g. 1, 3, 7 days after the invoice was sent). When an invoice passes its due date, its status becomes Overdue. If it stays unpaid 7+ days after the due date, we send one overdue reminder to the client and, if you enabled it in Settings → Reminders, a copy to your account email. You see these in Recent activity as \"Reminder sent (3d)\" and \"Overdue reminder sent\".",
       },
       {
+        q: "How do invoice templates work?",
+        a: "Templates let you reuse the same line items on new invoices. On the create or edit invoice form, click Save as template, give it a name (e.g. Consulting 1h), and save. When creating a new invoice, use the \"Use a template\" dropdown to apply a template — it fills the Services section. You can edit the lines and submit. Manage templates lets you delete templates you no longer need.",
+      },
+      {
         q: "Can I void or mark an invoice as paid manually?",
         a: "Yes. On the invoice detail page you can Void (cancel) or Mark as paid. Use Mark as paid when you receive payment outside Stripe (bank transfer, cash, etc.).",
       },
