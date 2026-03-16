@@ -13,7 +13,7 @@ Templates are stored per account. Name is required; max **200 characters**. Each
 
 ## How to apply a template
 
-- On **Create invoice**, if you have any templates you’ll see **Use a template**: choose one from the dropdown. The form’s Services section is **replaced** by the template’s lines. You can edit them and submit as usual.
+- On **Create invoice**, if you have any templates you’ll see **Use a template**: choose one from the dropdown. The template’s lines are **added** to the current Services list. You can apply the same template again to add another copy of those lines, or add more services manually, then edit and submit as usual.
 
 ## Manage templates
 

@@ -305,8 +305,11 @@ export function NewInvoiceForm({ defaultCurrency, clients, templates = [] }: New
               onValueChange={(id) => {
                 const t = templates.find((x) => x.id === id);
                 if (t?.items?.length) {
-                  setLineItems(templateItemsToLineInputs(t.items));
-                  toast.success(`Applied "${t.name}"`);
+                  setLineItems((prev) => [
+                    ...prev,
+                    ...templateItemsToLineInputs(t.items ?? []),
+                  ]);
+                  toast.success(`Added "${t.name}"`);
                 } else if (t && (!t.items || t.items.length === 0)) {
                   toast.error("Template has no items");
                 }

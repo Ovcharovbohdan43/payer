@@ -6,9 +6,11 @@ import {
   buildLoginOtpEmailHtml,
   buildPasswordChangeConfirmEmailHtml,
   buildPayoutNotificationHtml,
+  buildCalendarSessionReminderHtml,
   type InvoiceEmailParams,
   type EscalationCopyToOwnerParams,
   type PayoutNotificationParams,
+  type CalendarSessionReminderParams,
 } from "./templates";
 import { isEmailUnsubscribed, generateUnsubscribeToken } from "./unsubscribe";
 
@@ -201,6 +203,31 @@ export async function sendPayoutNotificationEmail(
   });
   if (error) {
     console.error("[email] sendPayoutNotification failed:", error.message);
+    return { ok: false, error: error.message };
+  }
+  return { ok: true };
+}
+
+/**
+ * Send "Session ended — issue an invoice?" reminder to the calendar owner.
+ * No unsubscribe (owner notification).
+ */
+export async function sendCalendarSessionReminderEmail(
+  params: { to: string } & CalendarSessionReminderParams
+): Promise<SendResult> {
+  const client = getResendClient();
+  if (!client) {
+    return { ok: false, error: "Email is not configured (RESEND_API_KEY)" };
+  }
+  const html = buildCalendarSessionReminderHtml(params);
+  const { error } = await client.emails.send({
+    from: EMAIL_FROM,
+    to: params.to,
+    subject: `Session ended — issue an invoice? — Puyer`,
+    html,
+  });
+  if (error) {
+    console.error("[email] sendCalendarSessionReminder failed:", error.message);
     return { ok: false, error: error.message };
   }
   return { ok: true };

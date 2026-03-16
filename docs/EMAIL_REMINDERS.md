@@ -47,9 +47,15 @@
 - **Copy to owner:** Controlled by `profiles.escalation_cc_owner` (default true). Owner email is resolved via Supabase Auth (`auth.admin.getUserById(user_id)`). Toggle in **Settings → Reminders**: “Copy to me when overdue reminder is sent”.
 - **Setup:** Add `CRON_SECRET` to Vercel env; Vercel sends it as `Authorization: Bearer <CRON_SECRET>`.
 
+### Calendar session reminder (Integrations)
+
+- **Trigger:** When Google Calendar is connected and a calendar event ends, after a configurable delay (default 15 min) the owner receives an email: "Session ended — issue an invoice?" with a link to create an invoice (and optional `?client_id=` if the event is linked to a client).
+- **Cron:** `/api/cron/calendar-reminders` runs every 15 min (Vercel Cron). Same `CRON_SECRET` as invoice reminders. No unsubscribe (owner notification only).
+- **Template:** `buildCalendarSessionReminderHtml` / `sendCalendarSessionReminderEmail` in `lib/email/templates.ts` and `lib/email/send.ts`. See `docs/INTEGRATIONS_PLAN.md`.
+
 ## Templates
 
-- `lib/email/templates.ts` — HTML templates for invoice and reminder
+- `lib/email/templates.ts` — HTML templates for invoice, reminder, escalation copy-to-owner, calendar session reminder
 - Both include: business name, client name, amount, invoice number, "View & Pay" button, due date (if set)
 - All user-provided values escaped to prevent XSS
 

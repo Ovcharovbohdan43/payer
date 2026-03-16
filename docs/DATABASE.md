@@ -22,6 +22,9 @@ Run in order (Supabase SQL Editor or `supabase db push`):
 16. `supabase/migrations/20250238000001_subscription_plan.sql` — profiles: stripe_customer_id, subscription_status (free/active/canceled/past_due/trialing)
 17. `supabase/migrations/20250238000002_subscription_manual_grant.sql` — RPCs grant_pro_subscription, revoke_pro_subscription (manual Pro grant via Supabase)
 18. `supabase/migrations/20250318000001_invoice_templates.sql` — invoice_templates, invoice_template_items (saved line-item sets for one-click apply on new invoice); RLS by user_id
+19. `supabase/migrations/20250319000001_integration_connections.sql` — integration_connections (OAuth tokens for calendar/CRM), calendar_invoice_reminders, calendar_reminder_sent, calendar_event_links; RLS by user_id
+
+**Planned (see docs/INTEGRATIONS_PLAN.md):** clients.external_id / external_source for CRM sync.
 
 ## Public invoice access
 

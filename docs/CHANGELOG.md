@@ -4,6 +4,30 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2025-03-19] – Integrations Phase 5.3: Microsoft Calendar (Outlook)
+
+- **Microsoft Calendar:** Settings → Integrations: "Connect Microsoft Calendar (Outlook)" starts Azure AD OAuth; callback stores encrypted tokens (provider microsoft_calendar); default calendar_invoice_reminders row on first connect; same "Issue invoice?" cron and email flow as Google.
+- **Backend:** lib/integrations/calendar/microsoft.ts (auth URL, code exchange, refresh, getValidMicrosoftAccessToken, listMicrosoftCalendarEvents via Graph /me/calendarView); auth/microsoft and callback/microsoft routes; disconnect POST body { provider: "google_calendar" | "microsoft_calendar" }; reminder-job branches by connection provider.
+- **Env:** AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, AZURE_TENANT_ID (optional, default "common"). See .env.example.
+
+### [2025-03-19] – Integrations Phase 5.2: Calendar "Issue invoice?" reminder
+
+- **Cron:** GET /api/cron/calendar-reminders (every 15 min, CRON_SECRET) loads enabled calendar_invoice_reminders, fetches Google Calendar events that ended in [now − delay − 15 min, now − delay], sends "Session ended — issue an invoice?" email to owner, records in calendar_reminder_sent (idempotent).
+- **Default reminder:** On first Google Calendar connect, one row in calendar_invoice_reminders (calendar_id primary, delay 15 min, enabled).
+- **Backend:** getValidAccessToken + listGoogleCalendarEvents in lib/integrations/calendar/google.ts; lib/integrations/calendar/reminder-job.ts; buildCalendarSessionReminderHtml + sendCalendarSessionReminderEmail; vercel.json cron */15 * * * * for calendar-reminders.
+- **Link to client:** If calendar_event_links exists for event, email "Create invoice" link includes ?client_id= for prefill.
+
+### [2025-03-19] – Integrations Phase 5.1: Google Calendar OAuth
+
+- **Calendar connection:** Settings → Integrations: "Connect Google Calendar" starts OAuth; callback stores encrypted tokens in `integration_connections`; "Disconnect" removes connection.
+- **Backend:** Migration `20250319000001_integration_connections.sql` (integration_connections, calendar_invoice_reminders, calendar_reminder_sent, calendar_event_links); `lib/integrations/encryption.ts` (AES-256-GCM); `lib/integrations/calendar/google.ts` (auth URL, code exchange, state encode/decode); API routes `/api/integrations/calendar/auth/google`, `/api/integrations/calendar/callback/google`, `/api/integrations/calendar/disconnect`.
+- **Env:** GOOGLE_CALENDAR_CLIENT_ID, GOOGLE_CALENDAR_CLIENT_SECRET, INTEGRATION_ENCRYPTION_KEY (see .env.example).
+
+### [2025-03-18] – Integrations plan (Calendar, CRM, Accounting)
+
+- **Plan:** Detailed implementation plan for Integrations feature: Calendar (Google/Outlook) — "Issue invoice" reminder after session; CRM webhook for client sync; Accounting export (CSV, 1C XML, bank CSV). See `docs/INTEGRATIONS_PLAN.md`.
+- **Scope:** OAuth and token storage for calendars; cron for post-session reminders; webhook API for CRM; export API and formats for 1C and banks. Puyer fits into existing stack (killer feature).
+
 ### [2025-03-18] – Invoice templates
 
 - **Templates:** Save current line items as a named template from the create or edit invoice form (Save as template). On Create invoice, use the \"Use a template\" dropdown to apply a template and fill Services in one click. Manage templates (list + delete) available on the create invoice page.

@@ -7,7 +7,11 @@ import { SettingsForm } from "./settings-form";
 export default async function SettingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ recovery?: string }>;
+  searchParams: Promise<{
+    recovery?: string;
+    integration?: string;
+    integration_error?: string;
+  }>;
 }) {
   const supabase = await createClient();
   const {
@@ -21,8 +25,24 @@ export default async function SettingsPage({
     .eq("id", user.id)
     .single();
 
+  const { data: googleCalendarConnection } = await supabase
+    .from("integration_connections")
+    .select("id, created_at")
+    .eq("user_id", user.id)
+    .eq("provider", "google_calendar")
+    .maybeSingle();
+
+  const { data: microsoftCalendarConnection } = await supabase
+    .from("integration_connections")
+    .select("id, created_at")
+    .eq("user_id", user.id)
+    .eq("provider", "microsoft_calendar")
+    .maybeSingle();
+
   const params = await searchParams;
   const isRecovery = params?.recovery === "1";
+  const integrationSuccess = params?.integration; // "google_calendar" | "microsoft_calendar"
+  const integrationError = params?.integration_error === "calendar";
 
   return (
     <div className="min-h-screen min-w-0 overflow-x-hidden bg-[#0B0F14]">
@@ -30,6 +50,10 @@ export default async function SettingsPage({
         <h1 className="mb-4 text-lg font-semibold sm:mb-6 sm:text-xl">Settings</h1>
         <SettingsForm
           recovery={isRecovery}
+          googleCalendarConnection={googleCalendarConnection ?? null}
+          microsoftCalendarConnection={microsoftCalendarConnection ?? null}
+          integrationSuccess={integrationSuccess ?? null}
+          integrationError={integrationError}
           profile={{
             business_name: profile?.business_name ?? null,
             default_currency: profile?.default_currency ?? "USD",
@@ -52,3 +76,4 @@ export default async function SettingsPage({
     </div>
   );
 }
+

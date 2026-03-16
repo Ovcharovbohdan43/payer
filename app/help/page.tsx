@@ -69,7 +69,7 @@ const FAQ_CATEGORIES = [
       },
       {
         q: "How do invoice templates work?",
-        a: "Templates let you reuse the same line items on new invoices. On the create or edit invoice form, click Save as template, give it a name (e.g. Consulting 1h), and save. When creating a new invoice, use the \"Use a template\" dropdown to apply a template — it fills the Services section. You can edit the lines and submit. Manage templates lets you delete templates you no longer need.",
+        a: "Templates let you reuse the same line items on new invoices. On the create or edit invoice form, click Save as template, give it a name (e.g. Consulting 1h), and save. When creating a new invoice, use the \"Use a template\" dropdown to add a template's lines to the form. You can apply the same template again to add more copies of those lines, then edit and submit. Manage templates lets you delete templates you no longer need.",
       },
       {
         q: "Can I void or mark an invoice as paid manually?",
