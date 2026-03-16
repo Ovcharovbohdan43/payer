@@ -49,6 +49,14 @@ export type InvoiceRow = {
   payment_processing_fee_cents?: number | null;
   auto_remind_enabled?: boolean;
   auto_remind_days?: string;
+  reminder_1d_sent_at?: string | null;
+  reminder_2d_sent_at?: string | null;
+  reminder_3d_sent_at?: string | null;
+  reminder_5d_sent_at?: string | null;
+  reminder_7d_sent_at?: string | null;
+  reminder_10d_sent_at?: string | null;
+  reminder_14d_sent_at?: string | null;
+  escalation_sent_at?: string | null;
   recurring?: boolean;
   recurring_interval?: string | null;
   recurring_interval_value?: number | null;
@@ -272,7 +280,7 @@ export async function listInvoices(): Promise<InvoiceRow[]> {
   const { data } = await supabase
     .from("invoices")
     .select(
-      "id, number, public_id, status, client_name, client_email, amount_cents, currency, description, created_at, sent_at, viewed_at, paid_at, voided_at, due_date, notes, stripe_payment_intent_id, vat_included"
+      "id, number, public_id, status, client_name, client_email, amount_cents, currency, description, created_at, sent_at, viewed_at, paid_at, voided_at, due_date, notes, stripe_payment_intent_id, vat_included, reminder_1d_sent_at, reminder_2d_sent_at, reminder_3d_sent_at, reminder_5d_sent_at, reminder_7d_sent_at, reminder_10d_sent_at, reminder_14d_sent_at, escalation_sent_at"
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });

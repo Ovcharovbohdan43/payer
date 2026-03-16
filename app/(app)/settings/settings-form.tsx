@@ -36,6 +36,7 @@ type Profile = {
   company_number?: string | null;
   vat_number?: string | null;
   logo_url?: string | null;
+  escalation_cc_owner?: boolean;
 };
 
 export function SettingsForm({ profile, recovery = false }: { profile: Profile; recovery?: boolean }) {
@@ -177,6 +178,26 @@ export function SettingsForm({ profile, recovery = false }: { profile: Profile; 
             </div>
           </div>
         </div>
+        </section>
+
+        <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
+          <h2 className="mb-4 text-base font-semibold">Reminders</h2>
+          <label className="flex cursor-pointer items-center gap-3">
+            <input
+              type="checkbox"
+              name="escalation_cc_owner"
+              value="on"
+              defaultChecked={profile.escalation_cc_owner !== false}
+              disabled={isPending}
+              className="size-4 rounded border-white/20 bg-[#121821]/50 text-[#3B82F6] focus:ring-[#3B82F6]"
+            />
+            <span className="text-sm text-foreground">
+              Copy to me when overdue reminder is sent
+            </span>
+          </label>
+          <p className="mt-2 text-xs text-muted-foreground">
+            When an invoice is 7+ days overdue, we send one overdue reminder to the client. If enabled, a copy is sent to your account email.
+          </p>
         </section>
 
         {state?.error && <p className="text-sm text-destructive">{state.error}</p>}

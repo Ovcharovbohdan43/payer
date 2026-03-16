@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { ActivityItem } from "@/lib/dashboard/activity";
-import { Check, Send, Eye, AlertCircle, Settings, Banknote, ChevronDown, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Check, Send, Eye, AlertCircle, Settings, Banknote, ChevronDown, ThumbsUp, ThumbsDown, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const INITIAL_COUNT = 4;
@@ -13,6 +13,8 @@ const ICONS: Record<ActivityItem["type"], React.ReactNode> = {
   sent: <Send className="size-4 text-blue-400" />,
   viewed: <Eye className="size-4 text-amber-400" />,
   overdue: <AlertCircle className="size-4 text-red-400" />,
+  reminder_sent: <Bell className="size-4 text-blue-400" />,
+  escalation: <Bell className="size-4 text-amber-400" />,
   currency_changed: <Settings className="size-4 text-blue-400" />,
   payout: <Banknote className="size-4 text-emerald-400" />,
   offer_accepted: <ThumbsUp className="size-4 text-emerald-400" />,

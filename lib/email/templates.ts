@@ -127,6 +127,58 @@ export function buildReminderEmailHtml(params: ReminderEmailParams): string {
 </html>`;
 }
 
+export type EscalationCopyToOwnerParams = {
+  invoiceNumber: string;
+  clientName: string;
+  amountFormatted: string;
+  publicUrl: string;
+  dashboardUrl: string;
+};
+
+export function buildEscalationCopyToOwnerHtml(params: EscalationCopyToOwnerParams): string {
+  const { invoiceNumber, clientName, amountFormatted, publicUrl, dashboardUrl } = params;
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color:#f4f4f5;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 560px; background:#fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+          <tr>
+            <td style="padding: 32px 40px 24px; border-bottom: 1px solid #e4e4e7;">
+              <span style="font-size: 22px; font-weight: 700; color: #18181b;">Puyer</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 32px 40px;">
+              <h1 style="margin: 0 0 12px 0; font-size: 20px; font-weight: 600; color: #18181b;">Overdue reminder sent</h1>
+              <p style="margin: 0 0 16px 0; font-size: 15px; color: #52525b;">An overdue reminder was sent for invoice <strong>${escapeHtml(invoiceNumber)}</strong> to <strong>${escapeHtml(clientName)}</strong> (${escapeHtml(amountFormatted)}).</p>
+              <table cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="padding-right: 12px;">
+                    <a href="${escapeHtml(publicUrl)}" target="_blank" rel="noopener" style="display: inline-block; padding: 12px 24px; background:#18181b; color:#fff; font-size: 14px; font-weight: 600; text-decoration: none; border-radius: 8px;">View invoice</a>
+                  </td>
+                  <td>
+                    <a href="${escapeHtml(dashboardUrl)}" target="_blank" rel="noopener" style="display: inline-block; padding: 12px 24px; background:#f4f4f5; color:#18181b; font-size: 14px; font-weight: 600; text-decoration: none; border-radius: 8px;">Dashboard</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 24px 40px 32px; border-top: 1px solid #e4e4e7; background:#fafafa; border-radius: 0 0 12px 12px;">
+              ${buildEmailFooter()}
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
 export function buildPasswordChangeConfirmEmailHtml() {
   return `<!DOCTYPE html>
 <html>

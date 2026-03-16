@@ -64,6 +64,10 @@ const FAQ_CATEGORIES = [
         a: "You can enable auto-reminders when creating an invoice (e.g. 1, 3, 7 days after send). Or send manual reminders from the invoice detail page. Reminders are rate-limited (e.g. once per 24 hours) to avoid spam.",
       },
       {
+        q: "What are smart reminders and escalation?",
+        a: "Auto-reminders run daily: we send reminders on the schedule you chose (e.g. 1, 3, 7 days after the invoice was sent). When an invoice passes its due date, its status becomes Overdue. If it stays unpaid 7+ days after the due date, we send one overdue reminder to the client and, if you enabled it in Settings → Reminders, a copy to your account email. You see these in Recent activity as \"Reminder sent (3d)\" and \"Overdue reminder sent\".",
+      },
+      {
         q: "Can I void or mark an invoice as paid manually?",
         a: "Yes. On the invoice detail page you can Void (cancel) or Mark as paid. Use Mark as paid when you receive payment outside Stripe (bank transfer, cash, etc.).",
       },

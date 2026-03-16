@@ -2,10 +2,12 @@ import { Resend } from "resend";
 import {
   buildInvoiceEmailHtml,
   buildReminderEmailHtml,
+  buildEscalationCopyToOwnerHtml,
   buildLoginOtpEmailHtml,
   buildPasswordChangeConfirmEmailHtml,
   buildPayoutNotificationHtml,
   type InvoiceEmailParams,
+  type EscalationCopyToOwnerParams,
   type PayoutNotificationParams,
 } from "./templates";
 import { isEmailUnsubscribed, generateUnsubscribeToken } from "./unsubscribe";
@@ -66,11 +68,13 @@ export async function sendInvoiceEmail(params: {
 }
 
 /**
- * Send reminder email. Same template as invoice, but with "Reminder" in subject.
+ * Send reminder email. Same template as invoice, but with "Reminder" (or custom subject) in subject.
  * Skips send if recipient has unsubscribed. Includes List-Unsubscribe header.
+ * @param subjectOverride - Optional subject line; if not set, uses "Reminder: Invoice #X from Business"
  */
 export async function sendReminderEmail(params: {
   to: string;
+  subjectOverride?: string;
 } & InvoiceEmailParams): Promise<SendResult> {
   const unsubscribed = await isEmailUnsubscribed(params.to);
   if (unsubscribed) {
@@ -84,11 +88,13 @@ export async function sendReminderEmail(params: {
 
   const unsubscribeUrl = buildUnsubscribeUrl(params.to);
   const html = buildReminderEmailHtml({ ...params, unsubscribeUrl });
+  const subject =
+    params.subjectOverride ?? `Reminder: Invoice ${params.invoiceNumber} from ${params.businessName}`;
 
   const { error } = await client.emails.send({
     from: EMAIL_FROM,
     to: params.to,
-    subject: `Reminder: Invoice ${params.invoiceNumber} from ${params.businessName}`,
+    subject,
     html,
     headers: {
       "List-Unsubscribe": `<${unsubscribeUrl}>`,
@@ -97,6 +103,31 @@ export async function sendReminderEmail(params: {
   });
   if (error) {
     console.error("[email] sendReminder failed:", error.message);
+    return { ok: false, error: error.message };
+  }
+  return { ok: true };
+}
+
+/**
+ * Send copy-to-owner email when an overdue escalation reminder was sent to the client.
+ * No unsubscribe (owner notification). Subject: [Puyer] Overdue reminder sent: Invoice #X — Client.
+ */
+export async function sendEscalationCopyToOwnerEmail(params: {
+  to: string;
+} & EscalationCopyToOwnerParams): Promise<SendResult> {
+  const client = getResendClient();
+  if (!client) {
+    return { ok: false, error: "Email is not configured (RESEND_API_KEY)" };
+  }
+  const html = buildEscalationCopyToOwnerHtml(params);
+  const { error } = await client.emails.send({
+    from: EMAIL_FROM,
+    to: params.to,
+    subject: `[Puyer] Overdue reminder sent: Invoice ${params.invoiceNumber} — ${params.clientName}`,
+    html,
+  });
+  if (error) {
+    console.error("[email] sendEscalationCopyToOwner failed:", error.message);
     return { ok: false, error: error.message };
   }
   return { ok: true };

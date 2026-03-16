@@ -1,12 +1,24 @@
 import type { InvoiceRow } from "@/app/invoices/actions";
 import { formatAmount, getDisplayAmountCents } from "@/lib/invoices/utils";
 
+const REMINDER_DAY_COLUMNS: { key: keyof InvoiceRow; day: string }[] = [
+  { key: "reminder_1d_sent_at", day: "1d" },
+  { key: "reminder_2d_sent_at", day: "2d" },
+  { key: "reminder_3d_sent_at", day: "3d" },
+  { key: "reminder_5d_sent_at", day: "5d" },
+  { key: "reminder_7d_sent_at", day: "7d" },
+  { key: "reminder_10d_sent_at", day: "10d" },
+  { key: "reminder_14d_sent_at", day: "14d" },
+];
+
 export type ActivityItem = {
   type:
     | "paid"
     | "sent"
     | "viewed"
     | "overdue"
+    | "reminder_sent"
+    | "escalation"
     | "currency_changed"
     | "payout"
     | "offer_accepted"
@@ -72,21 +84,44 @@ export function buildActivityFromInvoices(
         )}`,
         sortAt: inv.paid_at,
       });
-    } else if (isOverdue) {
+    }
+
+    if (inv.escalation_sent_at) {
+      items.push({
+        type: "escalation",
+        invoiceId: inv.id,
+        label: `Overdue reminder sent to ${inv.client_name}`,
+        sortAt: inv.escalation_sent_at,
+      });
+    }
+
+    for (const { key, day } of REMINDER_DAY_COLUMNS) {
+      const sentAt = inv[key] as string | null | undefined;
+      if (sentAt) {
+        items.push({
+          type: "reminder_sent",
+          invoiceId: inv.id,
+          label: `Reminder sent (${day}) to ${inv.client_name}`,
+          sortAt: sentAt,
+        });
+      }
+    }
+
+    if (!isPaid && isOverdue) {
       items.push({
         type: "overdue",
         invoiceId: inv.id,
         label: `${inv.client_name} overdue`,
         sortAt: inv.due_date ?? inv.created_at,
       });
-    } else if (inv.viewed_at) {
+    } else if (!isPaid && inv.viewed_at) {
       items.push({
         type: "viewed",
         invoiceId: inv.id,
         label: `${inv.client_name} viewed invoice`,
         sortAt: inv.viewed_at,
       });
-    } else if (inv.sent_at) {
+    } else if (!isPaid && inv.sent_at) {
       items.push({
         type: "sent",
         invoiceId: inv.id,

@@ -52,6 +52,8 @@ export async function updateProfileAction(formData: FormData) {
   const contactParsed = profileContactSchema.safeParse(contactRaw);
   const contact = contactParsed.success ? contactParsed.data : {};
 
+  const escalationCcOwner = formData.get("escalation_cc_owner") === "on";
+
   const { error } = await supabase
     .from("profiles")
     .update({
@@ -62,6 +64,7 @@ export async function updateProfileAction(formData: FormData) {
       phone: contact.phone || null,
       company_number: contact.company_number || null,
       vat_number: contact.vat_number || null,
+      escalation_cc_owner: escalationCcOwner,
       updated_at: new Date().toISOString(),
     })
     .eq("id", user.id);
