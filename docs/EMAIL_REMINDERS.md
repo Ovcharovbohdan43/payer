@@ -50,7 +50,7 @@
 ### Calendar session reminder (Integrations)
 
 - **Trigger:** When Google Calendar is connected and a calendar event ends, after a configurable delay (default 15 min) the owner receives an email: "Session ended — issue an invoice?" with a link to create an invoice (and optional `?client_id=` if the event is linked to a client).
-- **Cron:** `/api/cron/calendar-reminders` runs every 15 min (Vercel Cron). Same `CRON_SECRET` as invoice reminders. No unsubscribe (owner notification only).
+- **Cron:** `/api/cron/calendar-reminders` runs daily at 9:00 UTC (Vercel Cron; Hobby plan allows only once/day). Processes events that ended in the last 24h; same `CRON_SECRET` as invoice reminders. On Vercel Pro you can set `*/15 * * * *` and change `CRON_WINDOW_MINUTES` to 15 in `reminder-job.ts` for near–real-time reminders. No unsubscribe (owner notification only).
 - **Template:** `buildCalendarSessionReminderHtml` / `sendCalendarSessionReminderEmail` in `lib/email/templates.ts` and `lib/email/send.ts`. See `docs/INTEGRATIONS_PLAN.md`.
 
 ## Templates

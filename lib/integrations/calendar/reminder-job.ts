@@ -1,6 +1,7 @@
 /**
  * Cron job: for each enabled calendar_invoice_reminders, fetch events that ended
- * in [now - delay - 15min, now - delay], send "Issue invoice?" email to owner, record in calendar_reminder_sent.
+ * in [now - delay - CRON_WINDOW_MINUTES, now - delay], send "Issue invoice?" email to owner, record in calendar_reminder_sent.
+ * On Vercel Hobby (1 run/day) use 24h window; on Pro you can run every 15 min with 15min window.
  */
 
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -22,7 +23,8 @@ export type CalendarEventLike = {
 };
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
-const CRON_WINDOW_MINUTES = 15;
+/** Window of events to process. Use 1440 (24h) when cron runs once/day (Vercel Hobby); 15 when every 15 min. */
+const CRON_WINDOW_MINUTES = 1440;
 
 type ReminderWithConnection = {
   id: string;
