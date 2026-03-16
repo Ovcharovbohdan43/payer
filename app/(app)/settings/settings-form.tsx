@@ -266,8 +266,14 @@ export function SettingsForm({
         )}
       </section>
 
-      <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
-        <h2 className="mb-2 text-base font-semibold">Integrations</h2>
+      <section
+        id="integrations"
+        className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6"
+      >
+        <h2 className="mb-2 flex items-center gap-2 text-base font-semibold">
+          <Calendar className="size-4 text-[#3B82F6]" />
+          Integrations
+        </h2>
         <p className="mb-3 text-sm text-muted-foreground">
           Connect your calendar to get a reminder to issue an invoice after a session.
         </p>
