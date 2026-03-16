@@ -6,9 +6,13 @@ import {
 } from "@/lib/integrations/calendar/google";
 import { encrypt } from "@/lib/integrations/encryption";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
+function getBaseUrl(): string {
+  const url = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
+  return url.trim().replace(/\/+$/, "");
+}
 
 export async function GET(request: Request) {
+  const baseUrl = getBaseUrl();
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
   const state = searchParams.get("state");
@@ -16,19 +20,19 @@ export async function GET(request: Request) {
 
   if (error) {
     return NextResponse.redirect(
-      new URL(`/settings?integration_error=calendar&reason=${encodeURIComponent(error)}`, BASE_URL)
+      new URL(`/settings?integration_error=calendar&reason=${encodeURIComponent(error)}`, baseUrl)
     );
   }
 
   if (!code || !state) {
     return NextResponse.redirect(
-      new URL("/settings?integration_error=calendar&reason=missing_params", BASE_URL)
+      new URL("/settings?integration_error=calendar&reason=missing_params", baseUrl)
     );
   }
 
   try {
     const userId = decodeState(state);
-    const redirectUri = `${BASE_URL}/api/integrations/calendar/callback/google`;
+    const redirectUri = `${baseUrl}/api/integrations/calendar/callback/google`;
     const tokens = await exchangeCodeForTokens(code, redirectUri);
 
     const expiresAt = tokens.expires_in
@@ -78,11 +82,11 @@ export async function GET(request: Request) {
       }
     }
 
-    return NextResponse.redirect(new URL("/settings?integration=google_calendar", BASE_URL));
+    return NextResponse.redirect(new URL("/settings?integration=google_calendar", baseUrl));
   } catch (err) {
     console.error("[calendar callback google]", err);
     return NextResponse.redirect(
-      new URL("/settings?integration_error=calendar", BASE_URL)
+      new URL("/settings?integration_error=calendar", baseUrl)
     );
   }
 }
