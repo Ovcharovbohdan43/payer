@@ -3,9 +3,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
-type Props = { publicId: string };
+type Props = {
+  publicId: string;
+  accentColor?: string;
+  buttonStyle?: "filled" | "outline";
+};
 
-export function PayButton({ publicId }: Props) {
+export function PayButton({ publicId, accentColor = "#3B82F6", buttonStyle = "filled" }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,7 +44,20 @@ export function PayButton({ publicId }: Props) {
       <Button
         onClick={handlePay}
         disabled={loading}
-        className="h-12 w-full min-w-[140px] rounded-xl bg-[#3B82F6] font-semibold hover:bg-[#2563EB] sm:w-auto"
+        className="h-12 w-full min-w-[140px] rounded-xl font-semibold sm:w-auto"
+        style={
+          buttonStyle === "outline"
+            ? {
+                backgroundColor: "transparent",
+                color: accentColor,
+                border: `1px solid ${accentColor}`,
+              }
+            : {
+                backgroundColor: accentColor,
+                color: "#FFFFFF",
+                border: `1px solid ${accentColor}`,
+              }
+        }
       >
         {loading ? "Redirecting…" : "Pay"}
       </Button>

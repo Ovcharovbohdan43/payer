@@ -32,6 +32,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { calcPaymentProcessingFeeCents } from "@/lib/invoices/utils";
+import {
+  type InvoiceVisualConfig,
+} from "@/lib/invoice-visual-config";
+import { InvoiceVisualEditor } from "@/components/invoices/invoice-visual-editor";
+import { InvoicePdfPreview } from "@/components/invoices/invoice-pdf-preview";
+import type { InvoiceVisualTemplateRow } from "@/lib/invoice-visual-config";
 
 const VAT_RATE = 0.2; // 20%
 
@@ -49,9 +55,15 @@ function formatMoney(cents: number, currency: string): string {
   }).format(cents / 100);
 }
 
-function createEmptyLineItem(): LineItemInput {
+function createClientLineItemId(): string {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `item-${Date.now()}`;
+}
+
+function createEmptyLineItem(id = "item-0"): LineItemInput {
   return {
-    id: crypto.randomUUID(),
+    id,
     description: "",
     amount: "",
     discountPercent: "",
@@ -60,8 +72,8 @@ function createEmptyLineItem(): LineItemInput {
 
 function templateItemsToLineInputs(items: InvoiceTemplateItemRow[]): LineItemInput[] {
   if (!items?.length) return [createEmptyLineItem()];
-  return items.map((item) => ({
-    id: crypto.randomUUID(),
+  return items.map((item, index) => ({
+    id: `template-${item.template_id}-${item.id}-${index}`,
     description: item.description,
     amount: (item.amount_cents / 100).toFixed(2),
     discountPercent: String(item.discount_percent ?? 0),
@@ -70,11 +82,31 @@ function templateItemsToLineInputs(items: InvoiceTemplateItemRow[]): LineItemInp
 
 type NewInvoiceFormProps = {
   defaultCurrency: string;
+  initialVisualConfig: InvoiceVisualConfig;
+  businessName: string;
+  logoUrl?: string | null;
+  address?: string | null;
+  phone?: string | null;
+  companyNumber?: string | null;
+  vatNumber?: string | null;
   clients: ClientRow[];
   templates?: InvoiceTemplateRow[];
+  visualTemplates?: InvoiceVisualTemplateRow[];
 };
 
-export function NewInvoiceForm({ defaultCurrency, clients, templates = [] }: NewInvoiceFormProps) {
+export function NewInvoiceForm({
+  defaultCurrency,
+  initialVisualConfig,
+  businessName,
+  logoUrl,
+  address,
+  phone,
+  companyNumber,
+  vatNumber,
+  clients,
+  templates = [],
+  visualTemplates = [],
+}: NewInvoiceFormProps) {
   const router = useRouter();
   const [selectedClient, setSelectedClient] = useState<ClientRow | null>(null);
   const [clientsList, setClientsList] = useState(clients);
@@ -94,6 +126,9 @@ export function NewInvoiceForm({ defaultCurrency, clients, templates = [] }: New
   const [saveTemplatePending, setSaveTemplatePending] = useState(false);
   const [applyTemplateValue, setApplyTemplateValue] = useState("");
   const [manageTemplatesOpen, setManageTemplatesOpen] = useState(false);
+  const [visualConfig, setVisualConfig] = useState<InvoiceVisualConfig>(initialVisualConfig);
+  const [dueDate, setDueDate] = useState("");
+  const [notes, setNotes] = useState("");
 
   const validLineItemsForTemplate = useMemo(
     () =>
@@ -112,13 +147,13 @@ export function NewInvoiceForm({ defaultCurrency, clients, templates = [] }: New
   );
 
   const addLineItem = useCallback(() => {
-    setLineItems((prev) => [...prev, createEmptyLineItem()]);
+    setLineItems((prev) => [...prev, createEmptyLineItem(createClientLineItemId())]);
   }, []);
 
   const removeLineItem = useCallback((id: string) => {
     setLineItems((prev) => {
       const next = prev.filter((item) => item.id !== id);
-      return next.length > 0 ? next : [createEmptyLineItem()];
+      return next.length > 0 ? next : [createEmptyLineItem(createClientLineItemId())];
     });
   }, []);
 
@@ -151,16 +186,29 @@ export function NewInvoiceForm({ defaultCurrency, clients, templates = [] }: New
   const [invoiceDiscountPercent, setInvoiceDiscountPercent] = useState("");
   const [invoiceDiscountCents, setInvoiceDiscountCents] = useState("");
 
-  let subtotalAfterLineDiscounts = lineItems.reduce((sum, item) => {
+  const subtotalBeforeInvoiceDiscount = lineItems.reduce((sum, item) => {
     const amt = parseFloat(item.amount);
     const dp = Math.min(100, Math.max(0, parseFloat(item.discountPercent) || 0));
     const rawCents = isNaN(amt) || amt < 0 ? 0 : Math.round(amt * 100);
     const afterDiscount = Math.round(rawCents * (1 - dp / 100));
     return sum + afterDiscount;
   }, 0);
+  let subtotalAfterLineDiscounts = subtotalBeforeInvoiceDiscount;
 
   const invDiscPct = invoiceDiscountType === "percent" ? Math.min(100, Math.max(0, parseFloat(invoiceDiscountPercent) || 0)) : 0;
   const invDiscCts = invoiceDiscountType === "fixed" ? Math.max(0, Math.round(parseFloat(invoiceDiscountCents) * 100) || 0) : 0;
+  const invoiceDiscountPreviewCents =
+    invoiceDiscountType === "percent" && invDiscPct > 0
+      ? Math.round(subtotalBeforeInvoiceDiscount * (invDiscPct / 100))
+      : invoiceDiscountType === "fixed" && invDiscCts > 0
+        ? Math.min(subtotalBeforeInvoiceDiscount, invDiscCts)
+        : 0;
+  const invoiceDiscountPreviewLabel =
+    invoiceDiscountType === "percent" && invDiscPct > 0
+      ? `Discount (${invDiscPct}%)`
+      : invoiceDiscountType === "fixed" && invDiscCts > 0
+        ? "Discount"
+        : null;
   if (invoiceDiscountType === "percent" && invDiscPct > 0) {
     subtotalAfterLineDiscounts = Math.round(subtotalAfterLineDiscounts * (1 - invDiscPct / 100));
   } else if (invoiceDiscountType === "fixed" && invDiscCts > 0) {
@@ -215,9 +263,29 @@ export function NewInvoiceForm({ defaultCurrency, clients, templates = [] }: New
     }
   }, [state, router]);
 
+  const previewLineItems = useMemo(
+    () =>
+      lineItems
+        .filter((item) => item.description.trim() && item.amount.trim())
+        .map((item) => {
+          const rawCents = Math.round((parseFloat(item.amount) || 0) * 100);
+          const discountPercent = Math.min(
+            100,
+            Math.max(0, parseFloat(item.discountPercent) || 0)
+          );
+          return {
+            description: item.description.trim(),
+            amountCents: rawCents,
+            discountPercent,
+          };
+        }),
+    [lineItems]
+  );
+
   return (
     <form action={formAction} className="space-y-6">
       <input type="hidden" name="currency" value={defaultCurrency} />
+      <input type="hidden" name="invoiceDesign" value={visualConfig.baseDesign} />
       <input
         type="hidden"
         name="clientId"
@@ -342,6 +410,27 @@ export function NewInvoiceForm({ defaultCurrency, clients, templates = [] }: New
           </div>
         </div>
       )}
+
+      <InvoiceVisualEditor
+        visualConfig={visualConfig}
+        onVisualConfigChange={setVisualConfig}
+        visualTemplates={visualTemplates}
+        onTemplatesChanged={() => router.refresh()}
+        businessName={businessName}
+        logoUrl={logoUrl}
+        address={address}
+        phone={phone}
+        companyNumber={companyNumber}
+        vatNumber={vatNumber}
+        clientName={selectedClient?.name}
+        currency={defaultCurrency}
+        totalCents={totalCents}
+        dueDate={dueDate || null}
+        notes={notes}
+        lineItems={previewLineItems}
+        paymentProcessingFeeCents={processingFeeCents}
+        disabled={isPending}
+      />
 
       <Dialog open={manageTemplatesOpen} onOpenChange={setManageTemplatesOpen}>
         <DialogContent className="sm:max-w-md">
@@ -593,6 +682,29 @@ export function NewInvoiceForm({ defaultCurrency, clients, templates = [] }: New
             {formatMoney(totalCents, defaultCurrency)}
           </p>
         ) : null}
+
+        <InvoicePdfPreview
+          businessName={businessName}
+          logoUrl={logoUrl}
+          address={address}
+          phone={phone}
+          companyNumber={companyNumber}
+          vatNumber={vatNumber}
+          clientName={selectedClient?.name}
+          clientEmail={selectedClient?.email}
+          currency={defaultCurrency}
+          lineItems={previewLineItems}
+          subtotalCents={subtotalBeforeInvoiceDiscount}
+          invoiceDiscountCents={invoiceDiscountPreviewCents}
+          invoiceDiscountLabel={invoiceDiscountPreviewLabel}
+          vatIncluded={vatIncluded}
+          vatCents={vatCents}
+          paymentProcessingFeeCents={processingFeeCents}
+          totalCents={totalCents}
+          dueDate={dueDate || null}
+          notes={notes}
+          visualConfig={visualConfig}
+        />
       </div>
 
       <div>
@@ -611,6 +723,8 @@ export function NewInvoiceForm({ defaultCurrency, clients, templates = [] }: New
                 id="dueDate"
                 name="dueDate"
                 type="date"
+                value={dueDate}
+                onChange={(event) => setDueDate(event.target.value)}
                 disabled={isPending}
                 className="h-10"
               />
@@ -621,6 +735,8 @@ export function NewInvoiceForm({ defaultCurrency, clients, templates = [] }: New
                 id="notes"
                 name="notes"
                 placeholder="Internal or client notes"
+                value={notes}
+                onChange={(event) => setNotes(event.target.value)}
                 disabled={isPending}
                 className="h-10"
               />

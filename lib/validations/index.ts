@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { INVOICE_DESIGNS } from "@/lib/invoice-designs";
 
 /**
  * Shared Zod schemas for client and server validation.
@@ -68,6 +69,14 @@ export const profileUpdateSchema = z.object({
   default_currency: z.string().length(3).toUpperCase(),
   country: z.string().max(100).optional().or(z.literal("")),
   timezone: z.string().max(50).optional(),
+  default_invoice_design: z
+    .enum(INVOICE_DESIGNS.map((design) => design.key) as [string, ...string[]])
+    .optional(),
+  default_invoice_visual_template_id: z
+    .string()
+    .uuid()
+    .optional()
+    .or(z.literal("")),
 });
 
 export const profileContactSchema = z.object({
@@ -105,11 +114,20 @@ export const lineItemSchema = z.object({
     }),
 });
 
+const invoiceDesignSchema = z
+  .enum(INVOICE_DESIGNS.map((design) => design.key) as [string, ...string[]])
+  .optional();
+
 export const invoiceCreateSchema = z.object({
   clientId: z.string().uuid().optional().or(z.literal("")),
   clientName: z.string().min(1, "Client name is required").max(200),
   clientEmail: z.string().max(255).optional().or(z.literal("")),
   currency: z.string().length(3).toUpperCase(),
+  invoiceDesign: invoiceDesignSchema,
+  invoiceDesignConfig: z
+    .string()
+    .optional()
+    .transform((value) => value?.trim() || ""),
   dueDate: z.string().optional().or(z.literal("")),
   notes: z.string().max(2000).optional().or(z.literal("")),
   vatIncluded: z

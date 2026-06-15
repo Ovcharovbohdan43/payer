@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getInvoiceById } from "@/app/invoices/actions";
+import { normalizeInvoiceDesign } from "@/lib/invoice-designs";
+import { normalizeInvoiceVisualConfig } from "@/lib/invoice-visual-config";
 import { generateInvoicePdf } from "@/lib/pdf/invoice-pdf";
 import { logoUrlToDataUri } from "@/lib/pdf/logo";
 import { NextResponse } from "next/server";
@@ -76,6 +78,10 @@ export async function GET(
     pdfBytes = await generateInvoicePdf({
     businessName: profile?.business_name ?? "Business",
     invoiceNumber: invoice.number,
+    invoiceDesign: normalizeInvoiceDesign(invoice.invoice_design),
+    invoiceDesignConfig: invoice.invoice_design_config
+      ? normalizeInvoiceVisualConfig(invoice.invoice_design_config, invoice.invoice_design)
+      : null,
     amountCents: Number(invoice.amount_cents),
     currency: invoice.currency,
     lineItems,

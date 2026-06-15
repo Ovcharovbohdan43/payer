@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { profileUpdateSchema, passwordSchema, profileContactSchema } from "@/lib/validations";
 import { revalidatePath } from "next/cache";
+import { DEFAULT_INVOICE_DESIGN, normalizeInvoiceDesign } from "@/lib/invoice-designs";
 
 const LOGO_BUCKET = "logos";
 
@@ -11,6 +12,9 @@ export async function updateProfileAction(formData: FormData) {
     default_currency: formData.get("default_currency"),
     country: formData.get("country") ?? "",
     timezone: formData.get("timezone") ?? "UTC",
+    default_invoice_design: formData.get("default_invoice_design") ?? DEFAULT_INVOICE_DESIGN,
+    default_invoice_visual_template_id:
+      formData.get("default_invoice_visual_template_id") ?? "",
   };
   const parsed = profileUpdateSchema.safeParse(raw);
   if (!parsed.success) {
@@ -54,10 +58,41 @@ export async function updateProfileAction(formData: FormData) {
 
   const escalationCcOwner = formData.get("escalation_cc_owner") === "on";
 
+  const defaultVisualTemplateId =
+    parsed.data.default_invoice_visual_template_id?.trim() || null;
+
+  if (defaultVisualTemplateId) {
+    const { data: template } = await supabase
+      .from("invoice_visual_templates")
+      .select("id")
+      .eq("id", defaultVisualTemplateId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (!template) {
+      return { error: "Selected visual template was not found" };
+    }
+    await supabase
+      .from("invoice_visual_templates")
+      .update({ is_default: false })
+      .eq("user_id", user.id);
+    await supabase
+      .from("invoice_visual_templates")
+      .update({ is_default: true, updated_at: new Date().toISOString() })
+      .eq("id", defaultVisualTemplateId)
+      .eq("user_id", user.id);
+  } else {
+    await supabase
+      .from("invoice_visual_templates")
+      .update({ is_default: false })
+      .eq("user_id", user.id);
+  }
+
   const { error } = await supabase
     .from("profiles")
     .update({
       default_currency: parsed.data.default_currency,
+      default_invoice_design: normalizeInvoiceDesign(parsed.data.default_invoice_design),
+      default_invoice_visual_template_id: defaultVisualTemplateId,
       country: parsed.data.country || null,
       timezone: parsed.data.timezone || "UTC",
       address: contact.address || null,

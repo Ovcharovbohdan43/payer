@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendInvoiceEmail } from "@/lib/email/send";
 import { formatAmount, getDisplayAmountCents } from "@/lib/invoices/utils";
+import { normalizeInvoiceDesign } from "@/lib/invoice-designs";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
 
@@ -12,6 +13,7 @@ type InvoiceTemplate = {
   client_email: string | null;
   amount_cents: number;
   currency: string;
+  invoice_design: string | null;
   vat_included: boolean | null;
   payment_processing_fee_included: boolean;
   payment_processing_fee_cents: number | null;
@@ -55,7 +57,7 @@ export async function runRecurringInvoices(): Promise<{
   const { data: templates, error: fetchError } = await supabase
     .from("invoices")
     .select(
-      "id, user_id, client_id, client_name, client_email, amount_cents, currency, vat_included, payment_processing_fee_included, payment_processing_fee_cents, discount_type, discount_value, notes, auto_remind_enabled, auto_remind_days, recurring_interval, recurring_interval_value, last_recurred_at, sent_at"
+      "id, user_id, client_id, client_name, client_email, amount_cents, currency, invoice_design, vat_included, payment_processing_fee_included, payment_processing_fee_cents, discount_type, discount_value, notes, auto_remind_enabled, auto_remind_days, recurring_interval, recurring_interval_value, last_recurred_at, sent_at"
     )
     .eq("recurring", true)
     .is("recurring_parent_id", null)
@@ -104,6 +106,7 @@ export async function runRecurringInvoices(): Promise<{
     const paymentProcessingFeeIncluded = t.payment_processing_fee_included ?? false;
     const paymentProcessingFeeCents = t.payment_processing_fee_cents ?? null;
     const finalAmountCents = Number(t.amount_cents);
+    const invoiceDesign = normalizeInvoiceDesign(t.invoice_design);
 
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + 14);
@@ -121,6 +124,7 @@ export async function runRecurringInvoices(): Promise<{
         status: "sent",
         amount_cents: finalAmountCents,
         currency,
+        invoice_design: invoiceDesign,
         vat_included: vatIncluded,
         payment_processing_fee_included: paymentProcessingFeeIncluded,
         payment_processing_fee_cents: paymentProcessingFeeCents,
@@ -163,7 +167,7 @@ export async function runRecurringInvoices(): Promise<{
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("business_name")
+      .select("business_name, logo_url")
       .eq("id", t.user_id)
       .single();
 
@@ -179,6 +183,8 @@ export async function runRecurringInvoices(): Promise<{
       clientName: t.client_name,
       amountFormatted,
       invoiceNumber: nextNumber,
+      invoiceDesign,
+      logoUrl: profile?.logo_url ?? null,
       publicUrl,
       dueDate: dueDateStr,
     });

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { SettingsForm } from "./settings-form";
+import { listInvoiceVisualTemplates } from "@/app/invoices/visual-template-actions";
 
 export default async function SettingsPage({
   searchParams,
@@ -19,25 +20,31 @@ export default async function SettingsPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("business_name, default_currency, country, timezone, stripe_connect_account_id, stripe_customer_id, subscription_status, password_set_at, address, phone, company_number, vat_number, logo_url, escalation_cc_owner")
-    .eq("id", user.id)
-    .single();
+  const [profileResult, googleCalendarConnection, microsoftCalendarConnection, visualTemplates] =
+    await Promise.all([
+      supabase
+        .from("profiles")
+        .select(
+          "business_name, default_currency, country, timezone, default_invoice_design, default_invoice_visual_template_id, stripe_connect_account_id, stripe_customer_id, subscription_status, password_set_at, address, phone, company_number, vat_number, logo_url, escalation_cc_owner"
+        )
+        .eq("id", user.id)
+        .single(),
+      supabase
+        .from("integration_connections")
+        .select("id, created_at")
+        .eq("user_id", user.id)
+        .eq("provider", "google_calendar")
+        .maybeSingle(),
+      supabase
+        .from("integration_connections")
+        .select("id, created_at")
+        .eq("user_id", user.id)
+        .eq("provider", "microsoft_calendar")
+        .maybeSingle(),
+      listInvoiceVisualTemplates(),
+    ]);
 
-  const { data: googleCalendarConnection } = await supabase
-    .from("integration_connections")
-    .select("id, created_at")
-    .eq("user_id", user.id)
-    .eq("provider", "google_calendar")
-    .maybeSingle();
-
-  const { data: microsoftCalendarConnection } = await supabase
-    .from("integration_connections")
-    .select("id, created_at")
-    .eq("user_id", user.id)
-    .eq("provider", "microsoft_calendar")
-    .maybeSingle();
+  const profile = profileResult.data;
 
   const params = await searchParams;
   const isRecovery = params?.recovery === "1";
@@ -50,15 +57,18 @@ export default async function SettingsPage({
         <h1 className="mb-4 text-lg font-semibold sm:mb-6 sm:text-xl">Settings</h1>
         <SettingsForm
           recovery={isRecovery}
-          googleCalendarConnection={googleCalendarConnection ?? null}
-          microsoftCalendarConnection={microsoftCalendarConnection ?? null}
+          googleCalendarConnection={googleCalendarConnection.data ?? null}
+          microsoftCalendarConnection={microsoftCalendarConnection.data ?? null}
           integrationSuccess={integrationSuccess ?? null}
           integrationError={integrationError}
+          visualTemplates={visualTemplates}
           profile={{
             business_name: profile?.business_name ?? null,
             default_currency: profile?.default_currency ?? "USD",
             country: profile?.country ?? null,
             timezone: profile?.timezone ?? "UTC",
+            default_invoice_design: profile?.default_invoice_design ?? "classic",
+            default_invoice_visual_template_id: profile?.default_invoice_visual_template_id ?? null,
             stripe_connect_account_id: profile?.stripe_connect_account_id ?? null,
             stripe_customer_id: profile?.stripe_customer_id ?? null,
             subscription_status: profile?.subscription_status ?? "free",

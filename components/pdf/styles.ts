@@ -1,4 +1,10 @@
 import { StyleSheet } from "@react-pdf/renderer";
+import { getInvoiceDesignTheme, normalizeInvoiceDesign } from "@/lib/invoice-designs";
+import {
+  normalizeInvoiceVisualConfig,
+  resolveInvoiceTheme,
+  type InvoiceVisualConfig,
+} from "@/lib/invoice-visual-config";
 
 export const BRAND = "#3B82F6";
 export const BRAND_DARK = "#2563EB";
@@ -6,7 +12,19 @@ export const MARGIN = 48;
 export const CONTENT_WIDTH = 595 - MARGIN * 2;
 export const VAT_RATE = 0.2;
 
-export const styles = StyleSheet.create({
+export function createInvoicePdfStyles(
+  designKey: unknown,
+  visualConfig?: InvoiceVisualConfig | null
+) {
+  const normalizedDesign = normalizeInvoiceDesign(designKey);
+  const theme = visualConfig
+    ? resolveInvoiceTheme(
+        normalizeInvoiceVisualConfig(visualConfig, normalizedDesign),
+        normalizedDesign
+      ).pdf
+    : getInvoiceDesignTheme(normalizedDesign).pdf;
+
+  return StyleSheet.create({
   page: {
     fontFamily: "Helvetica",
     fontSize: 10,
@@ -21,12 +39,14 @@ export const styles = StyleSheet.create({
   },
   // Header — full-width brand color block
   headerBlock: {
-    backgroundColor: BRAND,
+    backgroundColor: theme.headerBg,
     marginHorizontal: -MARGIN,
     marginBottom: 32,
     paddingHorizontal: MARGIN,
     paddingTop: 32,
     paddingBottom: 24,
+    borderBottomWidth: theme.headerBg === "#FFFFFF" ? 1 : 0,
+    borderBottomColor: theme.border,
   },
   headerRow: {
     flexDirection: "row",
@@ -57,33 +77,33 @@ export const styles = StyleSheet.create({
   brandName: {
     fontSize: 24,
     fontFamily: "Helvetica-Bold",
-    color: "#ffffff",
+    color: theme.headerText,
     marginBottom: 6,
   },
   contactLine: {
     fontSize: 9,
-    color: "#e8edf5",
+    color: theme.headerMuted,
     marginBottom: 2,
   },
   invoiceBadge: {
-    backgroundColor: "#ffffff",
+    backgroundColor: theme.invoiceBadgeBg,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
   invoiceLabel: {
     fontSize: 9,
     fontFamily: "Helvetica-Bold",
-    color: "#595959",
+    color: theme.invoiceBadgeText,
     marginBottom: 2,
   },
   invoiceNumber: {
     fontSize: 18,
     fontFamily: "Helvetica-Bold",
-    color: "#262626",
+    color: theme.invoiceBadgeText,
   },
   dateLabel: {
     fontSize: 9,
-    color: "#595959",
+    color: theme.invoiceBadgeText,
     marginTop: 4,
   },
   // Bill to
@@ -119,27 +139,27 @@ export const styles = StyleSheet.create({
   sectionLabelRight: {
     fontSize: 8,
     fontFamily: "Helvetica-Bold",
-    color: "#e8edf5",
+    color: theme.headerMuted,
     marginBottom: 6,
     textAlign: "right",
   },
   clientCompanyInHeader: {
     fontSize: 11,
     fontFamily: "Helvetica-Bold",
-    color: "#ffffff",
+    color: theme.headerText,
     marginBottom: 4,
     textAlign: "right",
   },
   clientNameInHeader: {
     fontSize: 11,
     fontFamily: "Helvetica-Bold",
-    color: "#ffffff",
+    color: theme.headerText,
     marginBottom: 4,
     textAlign: "right",
   },
   clientLineInHeader: {
     fontSize: 10,
-    color: "#e8edf5",
+    color: theme.headerMuted,
     marginBottom: 2,
     textAlign: "right",
   },
@@ -166,7 +186,7 @@ export const styles = StyleSheet.create({
   },
   tableHeader: {
     flexDirection: "row",
-    backgroundColor: BRAND,
+    backgroundColor: theme.tableHeaderBg,
     borderTopWidth: 0,
     borderBottomWidth: 0,
     borderLeftWidth: 0,
@@ -179,13 +199,13 @@ export const styles = StyleSheet.create({
     flex: 1,
     fontSize: 10,
     fontFamily: "Helvetica-Bold",
-    color: "#ffffff",
+    color: theme.tableHeaderText,
   },
   tableHeaderAmount: {
     width: 110,
     fontSize: 10,
     fontFamily: "Helvetica-Bold",
-    color: "#ffffff",
+    color: theme.tableHeaderText,
     textAlign: "right",
   },
   tableRow: {
@@ -194,7 +214,7 @@ export const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderLeftWidth: 0.5,
     borderRightWidth: 0.5,
-    borderColor: "#e6e6e6",
+    borderColor: theme.border,
     paddingHorizontal: 12,
     paddingVertical: 10,
     minHeight: 28,
@@ -224,12 +244,12 @@ export const styles = StyleSheet.create({
   },
   totalRow: {
     flexDirection: "row",
-    backgroundColor: "#eff6ff",
+    backgroundColor: theme.totalBg,
     borderTopWidth: 1,
     borderBottomWidth: 1,
     borderLeftWidth: 1,
     borderRightWidth: 1,
-    borderColor: BRAND,
+    borderColor: theme.border,
     paddingHorizontal: 16,
     paddingVertical: 14,
     alignItems: "center",
@@ -248,7 +268,7 @@ export const styles = StyleSheet.create({
   totalAmount: {
     fontSize: 16,
     fontFamily: "Helvetica-Bold",
-    color: BRAND,
+    color: theme.totalText,
     borderTopWidth: 0,
     borderBottomWidth: 0,
     borderLeftWidth: 0,
@@ -287,7 +307,7 @@ export const styles = StyleSheet.create({
   },
   // Footer — full-width at bottom of page
   footerBlock: {
-    backgroundColor: BRAND_DARK,
+    backgroundColor: theme.brandDark,
     marginHorizontal: -MARGIN,
     paddingHorizontal: MARGIN,
     paddingTop: 20,
@@ -296,18 +316,22 @@ export const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 10,
-    color: "#ffffff",
+    color: theme.footerText,
     marginBottom: 6,
   },
   footerSmall: {
     fontSize: 8,
-    color: "#bfdbfe",
+    color: theme.footerMuted,
     marginBottom: 2,
   },
   footerDisclaimer: {
     fontSize: 7,
-    color: "#93c5fd",
+    color: theme.footerDisclaimer,
     marginTop: 10,
     marginBottom: 0,
   },
-});
+  });
+}
+
+export const styles = createInvoicePdfStyles("classic");
+export type InvoicePdfStyles = typeof styles;

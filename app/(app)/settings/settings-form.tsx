@@ -19,6 +19,8 @@ import { maskEmail } from "@/lib/utils";
 import { ConnectStripeButton } from "./connect-stripe-button";
 import { useRouter } from "next/navigation";
 import { Calendar } from "lucide-react";
+import { INVOICE_DESIGNS, normalizeInvoiceDesign, type InvoiceDesignKey } from "@/lib/invoice-designs";
+import type { InvoiceVisualTemplateRow } from "@/lib/invoice-visual-config";
 
 const CURRENCIES = ["USD", "EUR", "GBP"];
 
@@ -27,6 +29,8 @@ type Profile = {
   default_currency: string;
   country: string | null;
   timezone: string | null;
+  default_invoice_design?: string | null;
+  default_invoice_visual_template_id?: string | null;
   stripe_connect_account_id: string | null;
   stripe_customer_id?: string | null;
   subscription_status?: string | null;
@@ -49,6 +53,7 @@ export function SettingsForm({
   microsoftCalendarConnection = null,
   integrationSuccess = null,
   integrationError = false,
+  visualTemplates = [],
 }: {
   profile: Profile;
   recovery?: boolean;
@@ -56,9 +61,16 @@ export function SettingsForm({
   microsoftCalendarConnection?: CalendarConnection;
   integrationSuccess?: string | null;
   integrationError?: boolean;
+  visualTemplates?: InvoiceVisualTemplateRow[];
 }) {
   const router = useRouter();
   const [currency, setCurrency] = useState(profile.default_currency);
+  const [defaultInvoiceDesign, setDefaultInvoiceDesign] = useState<InvoiceDesignKey>(() =>
+    normalizeInvoiceDesign(profile.default_invoice_design)
+  );
+  const [defaultVisualTemplateId, setDefaultVisualTemplateId] = useState(
+    profile.default_invoice_visual_template_id ?? ""
+  );
   const [state, formAction, isPending] = useActionState(
     async (_prev: { error?: string } | null, formData: FormData) => {
       return await updateProfileAction(formData);
@@ -140,6 +152,71 @@ export function SettingsForm({
               defaultValue={profile.timezone ?? "UTC"}
               className="h-10"
             />
+          </div>
+          <div className="border-t border-white/5 pt-4">
+            <h3 className="mb-3 text-sm font-medium">Invoice design</h3>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="default_invoice_design">Fallback base style</Label>
+                <Select
+                  value={defaultInvoiceDesign}
+                  onValueChange={(value) => setDefaultInvoiceDesign(normalizeInvoiceDesign(value))}
+                  disabled={isPending}
+                >
+                  <SelectTrigger
+                    id="default_invoice_design"
+                    className="h-10 w-full rounded-lg border-white/10 bg-[#121821]/50"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="border-white/10 bg-[#121821] text-white [&_[data-slot=select-item]]:focus:bg-white/10 [&_[data-slot=select-item][data-highlighted]]:bg-white/10">
+                    {INVOICE_DESIGNS.map((design) => (
+                      <SelectItem key={design.key} value={design.key}>
+                        {design.name} — {design.description}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <input
+                  type="hidden"
+                  name="default_invoice_design"
+                  value={defaultInvoiceDesign}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="default_invoice_visual_template_id">Default visual template</Label>
+                <Select
+                  value={defaultVisualTemplateId || "none"}
+                  onValueChange={(value) =>
+                    setDefaultVisualTemplateId(value === "none" ? "" : value)
+                  }
+                  disabled={isPending}
+                >
+                  <SelectTrigger
+                    id="default_invoice_visual_template_id"
+                    className="h-10 w-full rounded-lg border-white/10 bg-[#121821]/50"
+                  >
+                    <SelectValue placeholder="Use fallback base style only" />
+                  </SelectTrigger>
+                  <SelectContent className="border-white/10 bg-[#121821] text-white [&_[data-slot=select-item]]:focus:bg-white/10 [&_[data-slot=select-item][data-highlighted]]:bg-white/10">
+                    <SelectItem value="none">Use fallback base style only</SelectItem>
+                    {visualTemplates.map((template) => (
+                      <SelectItem key={template.id} value={template.id}>
+                        {template.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <input
+                  type="hidden"
+                  name="default_invoice_visual_template_id"
+                  value={defaultVisualTemplateId}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                New invoices start with your saved visual template when selected. Otherwise the fallback base style is used. Customize and save templates from the invoice editor.
+              </p>
+            </div>
           </div>
           <div className="border-t border-white/5 pt-4">
             <h3 className="mb-3 flex items-center gap-2 text-sm font-medium">

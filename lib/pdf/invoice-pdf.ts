@@ -1,6 +1,8 @@
 import { renderToBuffer } from "@react-pdf/renderer";
 import React from "react";
 import { InvoiceDocument } from "@/components/pdf/InvoiceDocument";
+import { normalizeInvoiceDesign, type InvoiceDesignKey } from "@/lib/invoice-designs";
+import { normalizeInvoiceVisualConfig, type InvoiceVisualConfig } from "@/lib/invoice-visual-config";
 
 export type InvoiceLineItemPdf = {
   description: string;
@@ -10,6 +12,8 @@ export type InvoiceLineItemPdf = {
 export type InvoicePdfData = {
   businessName: string;
   invoiceNumber: string;
+  invoiceDesign?: InvoiceDesignKey | null;
+  invoiceDesignConfig?: InvoiceVisualConfig | null;
   amountCents: number;
   currency: string;
   /** Line items for the table; if empty, falls back to single "Invoice payment" row */
@@ -59,6 +63,10 @@ function sanitizeInvoicePdfData(data: InvoicePdfData): InvoicePdfData {
   return {
     businessName: safeStr(data.businessName).trim() || "Business",
     invoiceNumber: safeStr(data.invoiceNumber).trim() || "INV",
+    invoiceDesign: normalizeInvoiceDesign(data.invoiceDesign),
+    invoiceDesignConfig: data.invoiceDesignConfig
+      ? normalizeInvoiceVisualConfig(data.invoiceDesignConfig, data.invoiceDesign)
+      : undefined,
     amountCents: Math.round(safeNum(data.amountCents)),
     currency: safeStr(data.currency).trim() || "USD",
     lineItems,
@@ -94,9 +102,9 @@ export async function generateInvoicePdf(
   data: InvoicePdfData
 ): Promise<Uint8Array> {
   const safe = sanitizeInvoicePdfData(data);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const element = React.createElement(InvoiceDocument, { data: safe });
   const buffer = await renderToBuffer(
-    React.createElement(InvoiceDocument, { data: safe }) as any
+    element as Parameters<typeof renderToBuffer>[0]
   );
   return new Uint8Array(buffer);
 }

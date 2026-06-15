@@ -12,8 +12,34 @@ import { canCreateInvoice } from "@/lib/subscription";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { sendInvoiceEmail, sendReminderEmail } from "@/lib/email/send";
+import { DEFAULT_INVOICE_DESIGN, normalizeInvoiceDesign, type InvoiceDesignKey } from "@/lib/invoice-designs";
+import {
+  getDefaultVisualConfig,
+  normalizeInvoiceVisualConfig,
+  parseInvoiceVisualConfigJson,
+  serializeInvoiceVisualConfig,
+  type InvoiceVisualConfig,
+} from "@/lib/invoice-visual-config";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
+
+function resolveInvoiceDesignFromForm(
+  formData: FormData,
+  parsedDesign: InvoiceDesignKey | undefined,
+  profileDefaultDesign?: string | null
+): { invoiceDesign: InvoiceDesignKey; invoiceDesignConfig: InvoiceVisualConfig } {
+  const configJson = formData.get("invoiceDesignConfig");
+  const fallbackDesign = normalizeInvoiceDesign(parsedDesign ?? profileDefaultDesign);
+  const parsedConfig =
+    typeof configJson === "string"
+      ? parseInvoiceVisualConfigJson(configJson, fallbackDesign)
+      : null;
+  const invoiceDesignConfig = parsedConfig ?? getDefaultVisualConfig(fallbackDesign);
+  return {
+    invoiceDesign: normalizeInvoiceDesign(invoiceDesignConfig.baseDesign ?? fallbackDesign),
+    invoiceDesignConfig: normalizeInvoiceVisualConfig(invoiceDesignConfig, fallbackDesign),
+  };
+}
 
 const REMINDER_RATE_LIMIT_HOURS = parseInt(
   process.env.REMINDER_RATE_LIMIT_HOURS ?? "24",
@@ -35,6 +61,8 @@ export type InvoiceRow = {
   client_email: string | null;
   amount_cents: number;
   currency: string;
+  invoice_design?: InvoiceDesignKey | null;
+  invoice_design_config?: InvoiceVisualConfig | null;
   description: string | null;
   created_at: string;
   sent_at: string | null;
@@ -68,7 +96,13 @@ export type InvoiceRow = {
 
 export type CreateResult =
   | { error: string }
-  | { invoiceId: string; publicUrl: string; number: string; intent: string };
+  | {
+      invoiceId: string;
+      publicUrl: string;
+      number: string;
+      intent: string;
+      emailSent?: boolean;
+    };
 
 export async function createInvoiceAction(
   formData: FormData,
@@ -79,6 +113,8 @@ export async function createInvoiceAction(
     clientName: formData.get("clientName"),
     clientEmail: formData.get("clientEmail") ?? "",
     currency: formData.get("currency") ?? "USD",
+    invoiceDesign: formData.get("invoiceDesign") ?? "",
+    invoiceDesignConfig: formData.get("invoiceDesignConfig") ?? "",
     dueDate: formData.get("dueDate") ?? "",
     notes: formData.get("notes") ?? "",
     vatIncluded: formData.get("vatIncluded") ?? "",
@@ -154,7 +190,7 @@ export async function createInvoiceAction(
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("subscription_status")
+    .select("subscription_status, default_invoice_design")
     .eq("id", user.id)
     .single();
 
@@ -180,6 +216,11 @@ export async function createInvoiceAction(
   const recurringEnabled = parsed.data.recurringEnabled ?? false;
   const recurringInterval = parsed.data.recurringInterval ?? "days";
   const recurringIntervalValue = parsed.data.recurringIntervalValue ?? 7;
+  const { invoiceDesign, invoiceDesignConfig } = resolveInvoiceDesignFromForm(
+    formData,
+    normalizeInvoiceDesign(parsed.data.invoiceDesign),
+    profile?.default_invoice_design
+  );
 
   const { data: invoice, error: insertError } = await supabase
     .from("invoices")
@@ -193,6 +234,8 @@ export async function createInvoiceAction(
       status: options.markSent ? "sent" : "draft",
       amount_cents: amountCents,
       currency: parsed.data.currency,
+      invoice_design: invoiceDesign,
+      invoice_design_config: JSON.parse(serializeInvoiceVisualConfig(invoiceDesignConfig)),
       description: null,
       notes: parsed.data.notes || null,
       due_date: parsed.data.dueDate || null,
@@ -239,7 +282,7 @@ export async function createInvoiceAction(
   if (intent === "email" && parsed.data.clientEmail) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("business_name")
+      .select("business_name, logo_url")
       .eq("id", user.id)
       .single();
     const amountFormatted = formatAmount(
@@ -252,6 +295,9 @@ export async function createInvoiceAction(
       clientName: parsed.data.clientName,
       amountFormatted,
       invoiceNumber: invoice.number,
+      invoiceDesign,
+      invoiceDesignConfig,
+      logoUrl: profile?.logo_url ?? null,
       publicUrl,
       dueDate: parsed.data.dueDate || null,
     });
@@ -280,7 +326,7 @@ export async function listInvoices(): Promise<InvoiceRow[]> {
   const { data } = await supabase
     .from("invoices")
     .select(
-      "id, number, public_id, status, client_name, client_email, amount_cents, currency, description, created_at, sent_at, viewed_at, paid_at, voided_at, due_date, notes, stripe_payment_intent_id, vat_included, reminder_1d_sent_at, reminder_2d_sent_at, reminder_3d_sent_at, reminder_5d_sent_at, reminder_7d_sent_at, reminder_10d_sent_at, reminder_14d_sent_at, escalation_sent_at"
+      "id, number, public_id, status, client_name, client_email, amount_cents, currency, invoice_design, description, created_at, sent_at, viewed_at, paid_at, voided_at, due_date, notes, stripe_payment_intent_id, vat_included, reminder_1d_sent_at, reminder_2d_sent_at, reminder_3d_sent_at, reminder_5d_sent_at, reminder_7d_sent_at, reminder_10d_sent_at, reminder_14d_sent_at, escalation_sent_at"
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
@@ -298,7 +344,7 @@ export async function getInvoiceById(id: string): Promise<InvoiceRow | null> {
   const { data: invoice } = await supabase
     .from("invoices")
     .select(
-      "id, number, public_id, status, client_id, client_name, client_email, amount_cents, currency, description, created_at, sent_at, viewed_at, paid_at, voided_at, due_date, notes, stripe_payment_intent_id, vat_included, payment_processing_fee_cents, discount_type, discount_value, auto_remind_enabled, auto_remind_days, recurring, recurring_interval, recurring_interval_value, recurring_parent_id"
+      "id, number, public_id, status, client_id, client_name, client_email, amount_cents, currency, invoice_design, invoice_design_config, description, created_at, sent_at, viewed_at, paid_at, voided_at, due_date, notes, stripe_payment_intent_id, vat_included, payment_processing_fee_cents, discount_type, discount_value, auto_remind_enabled, auto_remind_days, recurring, recurring_interval, recurring_interval_value, recurring_parent_id"
     )
     .eq("id", id)
     .eq("user_id", user.id)
@@ -314,6 +360,9 @@ export async function getInvoiceById(id: string): Promise<InvoiceRow | null> {
 
   return {
     ...invoice,
+    invoice_design_config: invoice.invoice_design_config
+      ? normalizeInvoiceVisualConfig(invoice.invoice_design_config, invoice.invoice_design)
+      : null,
     line_items: (items ?? []).map((i) => {
       const raw = Number(i.amount_cents);
       const dp = Number(i.discount_percent ?? 0);
@@ -338,7 +387,7 @@ export async function getInvoiceForEdit(id: string): Promise<InvoiceRow | null> 
   const { data: invoice } = await supabase
     .from("invoices")
     .select(
-      "id, number, public_id, status, client_name, client_email, amount_cents, currency, description, created_at, sent_at, viewed_at, paid_at, voided_at, due_date, notes, stripe_payment_intent_id, vat_included, payment_processing_fee_included, payment_processing_fee_cents, discount_type, discount_value, auto_remind_enabled, auto_remind_days, recurring, recurring_interval, recurring_interval_value, recurring_parent_id"
+      "id, number, public_id, status, client_name, client_email, amount_cents, currency, invoice_design, invoice_design_config, description, created_at, sent_at, viewed_at, paid_at, voided_at, due_date, notes, stripe_payment_intent_id, vat_included, payment_processing_fee_included, payment_processing_fee_cents, discount_type, discount_value, auto_remind_enabled, auto_remind_days, recurring, recurring_interval, recurring_interval_value, recurring_parent_id"
     )
     .eq("id", id)
     .eq("user_id", user.id)
@@ -354,6 +403,9 @@ export async function getInvoiceForEdit(id: string): Promise<InvoiceRow | null> 
 
   return {
     ...invoice,
+    invoice_design_config: invoice.invoice_design_config
+      ? normalizeInvoiceVisualConfig(invoice.invoice_design_config, invoice.invoice_design)
+      : null,
     line_items: (items ?? []).map((i) => ({
       description: i.description,
       amount_cents: Number(i.amount_cents),
@@ -374,6 +426,8 @@ export async function updateInvoiceAction(formData: FormData): Promise<UpdateRes
     clientName: formData.get("clientName"),
     clientEmail: formData.get("clientEmail") ?? "",
     currency: formData.get("currency") ?? "USD",
+    invoiceDesign: formData.get("invoiceDesign") ?? "",
+    invoiceDesignConfig: formData.get("invoiceDesignConfig") ?? "",
     dueDate: formData.get("dueDate") ?? "",
     notes: formData.get("notes") ?? "",
     vatIncluded: formData.get("vatIncluded") ?? "",
@@ -421,6 +475,10 @@ export async function updateInvoiceAction(formData: FormData): Promise<UpdateRes
   const discountType = parsed.data.discountType ?? "none";
   const discountPercent = parsed.data.discountPercent ?? 0;
   const discountCents = parsed.data.discountCents ?? 0;
+  const { invoiceDesign, invoiceDesignConfig } = resolveInvoiceDesignFromForm(
+    formData,
+    normalizeInvoiceDesign(parsed.data.invoiceDesign)
+  );
 
   const lineTotalsAfterDiscount = lineItems.map((i) => {
     const rawCents = Math.round(i.amount * 100);
@@ -462,6 +520,8 @@ export async function updateInvoiceAction(formData: FormData): Promise<UpdateRes
       client_email: parsed.data.clientEmail || null,
       amount_cents: amountCents,
       currency,
+      invoice_design: invoiceDesign,
+      invoice_design_config: JSON.parse(serializeInvoiceVisualConfig(invoiceDesignConfig)),
       notes: parsed.data.notes || null,
       due_date: parsed.data.dueDate || null,
       vat_included: vatIncluded,
@@ -632,7 +692,7 @@ export async function sendInvoiceEmailAction(
   const { data: invoice } = await supabase
     .from("invoices")
     .select(
-      "id, number, public_id, client_name, client_email, amount_cents, currency, vat_included, due_date"
+      "id, number, public_id, client_name, client_email, amount_cents, currency, invoice_design, invoice_design_config, vat_included, due_date"
     )
     .eq("id", invoiceId)
     .eq("user_id", user.id)
@@ -645,7 +705,7 @@ export async function sendInvoiceEmailAction(
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("business_name")
+    .select("business_name, logo_url")
     .eq("id", user.id)
     .single();
 
@@ -660,12 +720,19 @@ export async function sendInvoiceEmailAction(
       })
     : null;
 
+  const invoiceDesignConfig = invoice.invoice_design_config
+    ? normalizeInvoiceVisualConfig(invoice.invoice_design_config, invoice.invoice_design)
+    : null;
+
   const result = await sendInvoiceEmail({
     to: recipientEmail,
     businessName: profile?.business_name ?? "Business",
     clientName: invoice.client_name,
     amountFormatted,
     invoiceNumber: invoice.number,
+    invoiceDesign: normalizeInvoiceDesign(invoice.invoice_design),
+    invoiceDesignConfig,
+    logoUrl: profile?.logo_url ?? null,
     publicUrl,
     dueDate: dueDateFormatted,
   });
@@ -696,7 +763,7 @@ export async function sendReminderAction(
   const { data: invoice } = await supabase
     .from("invoices")
     .select(
-      "id, number, public_id, client_name, client_email, amount_cents, currency, vat_included, due_date, last_reminder_at, status"
+      "id, number, public_id, client_name, client_email, amount_cents, currency, invoice_design, invoice_design_config, vat_included, due_date, last_reminder_at, status"
     )
     .eq("id", invoiceId)
     .eq("user_id", user.id)
@@ -722,7 +789,7 @@ export async function sendReminderAction(
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("business_name")
+    .select("business_name, logo_url")
     .eq("id", user.id)
     .single();
 
@@ -737,12 +804,19 @@ export async function sendReminderAction(
       })
     : null;
 
+  const reminderDesignConfig = invoice.invoice_design_config
+    ? normalizeInvoiceVisualConfig(invoice.invoice_design_config, invoice.invoice_design)
+    : null;
+
   const result = await sendReminderEmail({
     to: recipientEmail,
     businessName: profile?.business_name ?? "Business",
     clientName: invoice.client_name,
     amountFormatted,
     invoiceNumber: invoice.number,
+    invoiceDesign: normalizeInvoiceDesign(invoice.invoice_design),
+    invoiceDesignConfig: reminderDesignConfig,
+    logoUrl: profile?.logo_url ?? null,
     publicUrl,
     dueDate: dueDateFormatted,
   });

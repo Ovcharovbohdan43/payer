@@ -4,6 +4,23 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2026-06-15] – Invoice visual editor MVP
+
+- **Visual editor:** Create/edit invoice forms now include a visual invoice editor with live preview, accent color, header style, visibility toggles, and pay button style.
+- **PDF preview:** Services sections now include an A4-like PDF invoice preview that updates while editing services, discounts, VAT, fees, due date, and notes.
+- **Saved visual templates:** Users can save, apply, delete, and set a default visual template separate from service line-item templates.
+- **Snapshot:** New invoices store full visual config in `invoices.invoice_design_config` for stable PDF/public/email rendering.
+- **Backend:** Migration `20250321000001_invoice_visual_templates.sql` adds `invoice_visual_templates`, `profiles.default_invoice_visual_template_id`, and `invoices.invoice_design_config`.
+- **Docs:** Updated `docs/INVOICE_DESIGN_TEMPLATES.md` and `docs/DATABASE.md`.
+
+### [2026-06-15] – Invoice design templates
+
+- **Design templates:** Added built-in visual invoice designs (`Classic`, `Modern`, `Minimal`) for PDFs, public invoice payment pages, and invoice/reminder emails.
+- **Settings:** Users can choose a default invoice design in Settings; new invoices snapshot the selected design so existing invoices stay stable.
+- **Invoice forms:** Create and edit invoice forms include an "Invoice design" selector. Business details and logo continue to come from the profile.
+- **Backend:** Migration `20250320000001_invoice_design_templates.sql` adds `profiles.default_invoice_design`, `invoices.invoice_design`, and extends `get_public_invoice` with the design key.
+- **Docs:** Added `docs/INVOICE_DESIGN_TEMPLATES.md`.
+
 ### [2025-03-19] – Integrations Phase 5.3: Microsoft Calendar (Outlook)
 
 - **Microsoft Calendar:** Settings → Integrations: "Connect Microsoft Calendar (Outlook)" starts Azure AD OAuth; callback stores encrypted tokens (provider microsoft_calendar); default calendar_invoice_reminders row on first connect; same "Issue invoice?" cron and email flow as Google.

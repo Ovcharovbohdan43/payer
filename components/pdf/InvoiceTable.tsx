@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text } from "@react-pdf/renderer";
-import { styles } from "./styles";
+import type { InvoicePdfStyles } from "./styles";
 
 export type InvoiceLineItemPdf = {
   description: string;
@@ -14,6 +14,7 @@ export type InvoiceTableRow = {
 };
 
 type Props = {
+  styles: InvoicePdfStyles;
   rows: InvoiceTableRow[];
   totalCents: number;
   currency: string;
@@ -30,7 +31,7 @@ function safeAmount(cents: number): number {
   return Number.isFinite(cents) ? Math.round(cents) : 0;
 }
 
-export function InvoiceTable({ rows, totalCents, currency }: Props) {
+export function InvoiceTable({ styles, rows, totalCents, currency }: Props) {
   const list = Array.isArray(rows) ? rows : [];
   const curr = typeof currency === "string" && currency.trim() ? currency : "USD";
   return (

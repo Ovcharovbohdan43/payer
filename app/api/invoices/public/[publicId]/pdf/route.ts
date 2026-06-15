@@ -1,4 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { normalizeInvoiceDesign } from "@/lib/invoice-designs";
+import { normalizeInvoiceVisualConfig } from "@/lib/invoice-visual-config";
 import { generateInvoicePdf } from "@/lib/pdf/invoice-pdf";
 import { logoUrlToDataUri } from "@/lib/pdf/logo";
 import { NextResponse } from "next/server";
@@ -9,6 +11,8 @@ export const runtime = "nodejs";
 type PublicInvoiceRpc = {
   business_name: string;
   invoice_number: string;
+  invoice_design?: string | null;
+  invoice_design_config?: Record<string, unknown> | null;
   amount_cents: number;
   currency: string;
   due_date: string | null;
@@ -69,6 +73,13 @@ export async function GET(
     pdfBytes = await generateInvoicePdf({
     businessName: invoice.business_name,
     invoiceNumber: invoice.invoice_number,
+    invoiceDesign: normalizeInvoiceDesign(invoice.invoice_design),
+    invoiceDesignConfig: invoice.invoice_design_config
+      ? normalizeInvoiceVisualConfig(
+          invoice.invoice_design_config,
+          normalizeInvoiceDesign(invoice.invoice_design)
+        )
+      : null,
     amountCents: Number(invoice.amount_cents),
     currency: invoice.currency,
     lineItems,

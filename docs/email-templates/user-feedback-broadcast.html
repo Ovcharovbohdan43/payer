@@ -1,0 +1,109 @@
+<!--
+  Puyer User Feedback Broadcast — HTML template for Resend Broadcasts.
+
+  Purpose:
+    Send a personal feedback request to existing Puyer users.
+
+  Recommended Resend setup:
+    From: Stephen from Puyer <support@puyer.org>
+    Reply-To: Stephen <support@puyer.org>
+    Subject: Can I ask what you really think about Puyer?
+
+  Replace before sending:
+    {{recipientName}} — recipient first name, or "there" if unavailable.
+
+  Resend Broadcasts:
+    {{{RESEND_UNSUBSCRIBE_URL}}} is auto-replaced by Resend with the per-recipient unsubscribe link.
+    Keep it in the footer for compliance.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>Can I ask what you really think about Puyer?</title>
+</head>
+<body style="margin:0; padding:0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size:16px; line-height:1.5; color:#18181b; background-color:#f4f4f5;">
+  <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent;">
+    A short personal note from Stephen asking for your honest feedback about Puyer.
+  </div>
+
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="background-color:#f4f4f5;">
+    <tr>
+      <td align="center" style="padding:40px 20px;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="max-width:560px; background-color:#ffffff; border-radius:14px; box-shadow:0 1px 3px rgba(0,0,0,0.08); overflow:hidden;">
+          <tr>
+            <td style="padding:32px 40px 24px 40px; border-bottom:1px solid #e4e4e7;">
+              <table cellpadding="0" cellspacing="0" border="0" role="presentation">
+                <tr>
+                  <td width="36" height="36" align="center" valign="middle" style="width:36px; height:36px; border-radius:10px; background-color:#18181b;">
+                    <span style="font-size:18px; line-height:36px; font-weight:800; color:#ffffff; letter-spacing:-0.04em;">P</span>
+                  </td>
+                  <td style="padding-left:12px;">
+                    <div style="font-size:22px; font-weight:700; letter-spacing:-0.02em; color:#18181b;">Puyer</div>
+                    <div style="margin-top:2px; font-size:13px; color:#71717a;">Invoice in 15 seconds. Get paid faster.</div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:32px 40px;">
+              <h1 style="margin:0 0 16px 0; font-size:22px; line-height:1.3; font-weight:650; color:#18181b;">Hi {{recipientName}}, I’m Stephen.</h1>
+
+              <p style="margin:0 0 16px 0; font-size:15px; color:#52525b; line-height:1.65;">
+                I’m reaching out because I’d genuinely like to understand what you think about Puyer.
+              </p>
+
+              <p style="margin:0 0 16px 0; font-size:15px; color:#52525b; line-height:1.65;">
+                If you have a minute, could you reply and tell me:
+              </p>
+
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin:0 0 20px 0;">
+                <tr>
+                  <td style="padding:16px 18px; background-color:#fafafa; border:1px solid #e4e4e7; border-radius:12px;">
+                    <p style="margin:0 0 10px 0; font-size:15px; color:#3f3f46; line-height:1.55;">1. Do you like the service so far?</p>
+                    <p style="margin:0 0 10px 0; font-size:15px; color:#3f3f46; line-height:1.55;">2. Why did you choose Puyer instead of another invoicing tool?</p>
+                    <p style="margin:0; font-size:15px; color:#3f3f46; line-height:1.55;">3. Have you run into any errors, bugs, confusing screens, or missing features?</p>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:0 0 16px 0; font-size:15px; color:#52525b; line-height:1.65;">
+                You can reply directly to this email. Short answers are completely fine, and honest criticism is even more useful than polite feedback.
+              </p>
+
+              <p style="margin:0 0 24px 0; font-size:15px; color:#52525b; line-height:1.65;">
+                I read every reply myself, and your feedback will help decide what we improve next.
+              </p>
+
+              <p style="margin:0; font-size:15px; color:#52525b; line-height:1.65;">
+                Thank you,<br>
+                <strong style="color:#18181b;">Stephen</strong><br>
+                Founder, Puyer
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:24px 40px 32px 40px; border-top:1px solid #e4e4e7; background-color:#fafafa;">
+              <p style="margin:0 0 10px 0; font-size:12px; color:#71717a; line-height:1.6;">
+                This is a real note written by me, Stephen. It is not an AI-generated support reply or a no-reply automated email.
+              </p>
+              <p style="margin:0 0 10px 0; font-size:12px; color:#a1a1aa; line-height:1.6;">
+                You received this because you created a Puyer account. You can reply directly to this email, or unsubscribe from product emails below.
+              </p>
+              <p style="margin:0; font-size:12px; color:#a1a1aa;">
+                Puyer · <a href="https://puyer.org" style="color:#3b82f6; text-decoration:none;">puyer.org</a> ·
+                <a href="{{{RESEND_UNSUBSCRIBE_URL}}}" style="color:#3b82f6; text-decoration:none;">Unsubscribe</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

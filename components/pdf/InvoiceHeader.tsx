@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, Image } from "@react-pdf/renderer";
-import { styles } from "./styles";
+import type { InvoicePdfStyles } from "./styles";
 
 function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return "";
@@ -12,6 +12,7 @@ function formatDate(dateStr: string | null | undefined): string {
 }
 
 type Props = {
+  styles: InvoicePdfStyles;
   businessName: string;
   address?: string | null;
   phone?: string | null;
@@ -39,6 +40,7 @@ function isLogoSupported(url: unknown): url is string {
 }
 
 export function InvoiceHeader({
+  styles,
   businessName,
   address,
   phone,

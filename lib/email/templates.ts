@@ -3,16 +3,40 @@
  * No PII in template strings; values are injected as params.
  */
 
+import { getInvoiceDesignTheme, normalizeInvoiceDesign } from "@/lib/invoice-designs";
+import {
+  normalizeInvoiceVisualConfig,
+  resolveInvoiceTheme,
+  type InvoiceVisualConfig,
+} from "@/lib/invoice-visual-config";
+
 export type InvoiceEmailParams = {
   businessName: string;
   clientName: string;
   amountFormatted: string;
   invoiceNumber: string;
+  invoiceDesign?: string | null;
+  invoiceDesignConfig?: InvoiceVisualConfig | null;
+  logoUrl?: string | null;
   publicUrl: string;
   dueDate?: string | null;
   /** Unsubscribe URL for this recipient. Required for CAN-SPAM compliance. */
   unsubscribeUrl?: string | null;
 };
+
+function getEmailTheme(params: {
+  invoiceDesign?: string | null;
+  invoiceDesignConfig?: InvoiceVisualConfig | null;
+}) {
+  const normalizedDesign = normalizeInvoiceDesign(params.invoiceDesign);
+  if (params.invoiceDesignConfig) {
+    return resolveInvoiceTheme(
+      normalizeInvoiceVisualConfig(params.invoiceDesignConfig, normalizedDesign),
+      normalizedDesign
+    ).email;
+  }
+  return getInvoiceDesignTheme(normalizedDesign).email;
+}
 
 function buildEmailFooter(unsubscribeUrl?: string | null): string {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
@@ -29,25 +53,50 @@ function buildEmailFooter(unsubscribeUrl?: string | null): string {
   return lines.join("");
 }
 
+function buildEmailHeader(params: {
+  businessName: string;
+  logoUrl?: string | null;
+  invoiceDesign?: string | null;
+  invoiceDesignConfig?: InvoiceVisualConfig | null;
+}): string {
+  const theme = getEmailTheme(params);
+  const logo = params.logoUrl?.trim()
+    ? `<img src="${escapeHtml(params.logoUrl.trim())}" alt="${escapeHtml(params.businessName)} logo" width="44" height="44" style="display:block; width:44px; height:44px; border-radius:10px; object-fit:cover;">`
+    : "";
+  const logoCell = logo
+    ? `<td style="padding-right:12px; vertical-align:middle;">${logo}</td>`
+    : "";
+
+  return `<td style="padding: 32px 40px 24px; border-bottom: 1px solid #e4e4e7; background:${theme.headerBg};">
+              <table cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  ${logoCell}
+                  <td style="vertical-align:middle;">
+                    <span style="font-size: 22px; font-weight: 700; color: ${theme.headerText};">${escapeHtml(params.businessName)}</span>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: ${theme.headerMuted};">Invoice in 15 seconds. Get paid faster.</p>
+                  </td>
+                </tr>
+              </table>
+            </td>`;
+}
+
 export function buildInvoiceEmailHtml(params: InvoiceEmailParams): string {
   const { businessName, clientName, amountFormatted, invoiceNumber, publicUrl, dueDate, unsubscribeUrl } =
     params;
+  const theme = getEmailTheme(params);
   const dueLine = dueDate
     ? `<p style="margin: 0 0 24px 0; font-size: 15px; color: #52525b;">Due date: ${escapeHtml(dueDate)}</p>`
     : "";
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"></head>
-<body style="margin:0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color:#f4f4f5;">
+<body style="margin:0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color:${theme.pageBg};">
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="padding: 40px 20px;">
     <tr>
       <td align="center">
-        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 560px; background:#fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 560px; background:${theme.cardBg}; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow:hidden;">
           <tr>
-            <td style="padding: 32px 40px 24px; border-bottom: 1px solid #e4e4e7;">
-              <span style="font-size: 22px; font-weight: 700; color: #18181b;">${escapeHtml(businessName)}</span>
-              <p style="margin: 4px 0 0 0; font-size: 13px; color: #71717a;">Invoice in 15 seconds. Get paid faster.</p>
-            </td>
+            ${buildEmailHeader(params)}
           </tr>
           <tr>
             <td style="padding: 32px 40px;">
@@ -58,15 +107,15 @@ export function buildInvoiceEmailHtml(params: InvoiceEmailParams): string {
               <table cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td>
-                    <a href="${escapeHtml(publicUrl)}" target="_blank" rel="noopener" style="display: inline-block; padding: 14px 28px; background:#18181b; color:#fff; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 8px;">View &amp; Pay</a>
+                    <a href="${escapeHtml(publicUrl)}" target="_blank" rel="noopener" style="display: inline-block; padding: 14px 28px; background:${theme.buttonBg}; color:${theme.buttonText}; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 8px;">View &amp; Pay</a>
                   </td>
                 </tr>
               </table>
-              <p style="margin: 24px 0 0 0; font-size: 13px; color: #a1a1aa;">Or copy this link: <a href="${escapeHtml(publicUrl)}" style="color:#3b82f6; word-break: break-all;">${escapeHtml(publicUrl)}</a></p>
+              <p style="margin: 24px 0 0 0; font-size: 13px; color: #a1a1aa;">Or copy this link: <a href="${escapeHtml(publicUrl)}" style="color:${theme.link}; word-break: break-all;">${escapeHtml(publicUrl)}</a></p>
             </td>
           </tr>
           <tr>
-            <td style="padding: 24px 40px 32px; border-top: 1px solid #e4e4e7; background:#fafafa; border-radius: 0 0 12px 12px;">
+            <td style="padding: 24px 40px 32px; border-top: 1px solid #e4e4e7; background:${theme.footerBg}; border-radius: 0 0 12px 12px;">
               ${buildEmailFooter(unsubscribeUrl)}
             </td>
           </tr>
@@ -81,6 +130,7 @@ export function buildInvoiceEmailHtml(params: InvoiceEmailParams): string {
 export type ReminderEmailParams = InvoiceEmailParams;
 
 export function buildReminderEmailHtml(params: ReminderEmailParams): string {
+  const theme = getEmailTheme(params);
   const { businessName, clientName, amountFormatted, invoiceNumber, publicUrl, dueDate, unsubscribeUrl } =
     params;
   const dueLine = dueDate
@@ -89,15 +139,13 @@ export function buildReminderEmailHtml(params: ReminderEmailParams): string {
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"></head>
-<body style="margin:0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color:#f4f4f5;">
+<body style="margin:0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color:${theme.pageBg};">
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="padding: 40px 20px;">
     <tr>
       <td align="center">
-        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 560px; background:#fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 560px; background:${theme.cardBg}; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow:hidden;">
           <tr>
-            <td style="padding: 32px 40px 24px; border-bottom: 1px solid #e4e4e7;">
-              <span style="font-size: 22px; font-weight: 700; color: #18181b;">${escapeHtml(businessName)}</span>
-            </td>
+            ${buildEmailHeader(params)}
           </tr>
           <tr>
             <td style="padding: 32px 40px;">
@@ -108,14 +156,14 @@ export function buildReminderEmailHtml(params: ReminderEmailParams): string {
               <table cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td>
-                    <a href="${escapeHtml(publicUrl)}" target="_blank" rel="noopener" style="display: inline-block; padding: 14px 28px; background:#18181b; color:#fff; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 8px;">View &amp; Pay</a>
+                    <a href="${escapeHtml(publicUrl)}" target="_blank" rel="noopener" style="display: inline-block; padding: 14px 28px; background:${theme.buttonBg}; color:${theme.buttonText}; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 8px;">View &amp; Pay</a>
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
           <tr>
-            <td style="padding: 24px 40px 32px; border-top: 1px solid #e4e4e7; background:#fafafa; border-radius: 0 0 12px 12px;">
+            <td style="padding: 24px 40px 32px; border-top: 1px solid #e4e4e7; background:${theme.footerBg}; border-radius: 0 0 12px 12px;">
               ${buildEmailFooter(unsubscribeUrl)}
             </td>
           </tr>

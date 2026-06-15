@@ -8,6 +8,11 @@ import { InvoiceQrCode } from "@/components/invoice-qr-code";
 import { DemoPayArea } from "./demo-pay-area";
 import { CheckCircle2 } from "lucide-react";
 import { PublicLogo } from "@/components/public-logo";
+import { getInvoiceDesignTheme, normalizeInvoiceDesign } from "@/lib/invoice-designs";
+import {
+  normalizeInvoiceVisualConfig,
+  resolvePublicPageTheme,
+} from "@/lib/invoice-visual-config";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
 
@@ -20,6 +25,8 @@ export type PublicInvoiceLineItem = {
 export type PublicInvoice = {
   business_name: string;
   invoice_number: string;
+  invoice_design?: string | null;
+  invoice_design_config?: Record<string, unknown> | null;
   amount_cents: number;
   currency: string;
   due_date: string | null;
@@ -111,17 +118,29 @@ export default async function PublicInvoicePage({
 
   const isPaid = invoice.status === "paid";
   const showSuccessScreen = !isDemo && (paidParam === "1" || isPaid);
+  const invoiceDesign = normalizeInvoiceDesign(invoice.invoice_design);
+  const visualConfig = invoice.invoice_design_config
+    ? normalizeInvoiceVisualConfig(invoice.invoice_design_config, invoiceDesign)
+    : null;
+  const pageTheme = resolvePublicPageTheme(visualConfig, invoiceDesign);
+  const designTheme = getInvoiceDesignTheme(invoiceDesign).publicPage;
+  const isMinimal = invoiceDesign === "minimal";
+  const primaryTextClass = isMinimal ? "text-zinc-950" : "text-white";
+  const mutedTextClass = isMinimal ? "text-zinc-500" : "text-muted-foreground";
+  const softCardClass = isMinimal ? "bg-zinc-50" : "bg-white/5";
 
   const contactLines: string[] = [];
+  if (visualConfig?.showBusinessDetails !== false) {
     if (invoice.address?.trim()) contactLines.push(invoice.address.trim());
     if (invoice.phone?.trim()) contactLines.push(invoice.phone.trim());
     if (invoice.company_number?.trim())
       contactLines.push(`Company no: ${invoice.company_number.trim()}`);
     if (invoice.vat_number?.trim())
       contactLines.push(`VAT: ${invoice.vat_number.trim()}`);
+  }
 
   return (
-    <main className="min-h-screen bg-[#0B0F14]">
+    <main className="min-h-screen" style={{ backgroundColor: pageTheme.pageBg }}>
       {isDemo && (
         <div className="sticky top-0 z-10 border-b border-white/5 bg-[#0B0F14]/90 backdrop-blur-sm">
           <div className="mx-auto flex max-w-md items-center justify-between px-4 py-2.5">
@@ -138,26 +157,39 @@ export default async function PublicInvoicePage({
         </div>
       )}
       <div className="mx-auto max-w-md px-4 py-12">
-        <div className="rounded-[20px] border border-white/5 bg-[#121821] p-8 backdrop-blur">
+        <div
+          className={`rounded-[20px] border p-8 backdrop-blur ${designTheme.border}`}
+          style={{ backgroundColor: pageTheme.cardBg, borderColor: pageTheme.borderColor }}
+        >
           {/* Header: logo + business name + contact info */}
-          <div className="mb-8 flex flex-col gap-3">
-            <div className="flex items-center gap-4">
-              <PublicLogo
-                logoUrl={invoice.logo_url ?? ""}
-                businessName={invoice.business_name}
-                size="md"
-              />
-              <div className="min-w-0 flex-1">
-                <p className="text-base font-semibold text-white">
-                  {invoice.business_name}
-                </p>
-                {contactLines.length > 0 ? (
-                  <div className="mt-1 space-y-0.5 text-xs text-muted-foreground">
-                    {contactLines.map((line, i) => (
-                      <p key={i}>{line}</p>
-                    ))}
-                  </div>
+          <div
+            className="-mx-8 -mt-8 mb-8 rounded-t-[20px] px-8 py-5"
+            style={{ backgroundColor: pageTheme.headerBg }}
+          >
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-4">
+                {visualConfig?.showLogo !== false ? (
+                  <PublicLogo
+                    logoUrl={invoice.logo_url ?? ""}
+                    businessName={invoice.business_name}
+                    size="md"
+                  />
                 ) : null}
+                <div className="min-w-0 flex-1">
+                  <p
+                    className="text-base font-semibold"
+                    style={{ color: pageTheme.headerText }}
+                  >
+                    {invoice.business_name}
+                  </p>
+                  {contactLines.length > 0 ? (
+                    <div className="mt-1 space-y-0.5 text-xs" style={{ color: pageTheme.headerMuted }}>
+                      {contactLines.map((line, i) => (
+                        <p key={i}>{line}</p>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
               </div>
             </div>
           </div>
@@ -168,17 +200,17 @@ export default async function PublicInvoicePage({
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
                   <CheckCircle2 className="h-10 w-10" strokeWidth={2} />
                 </div>
-                <h1 className="mt-6 text-2xl font-bold text-white">
+                <h1 className={`mt-6 text-2xl font-bold ${primaryTextClass}`}>
                   Payment successful
                 </h1>
-                <p className="mt-2 text-muted-foreground">
+                <p className={`mt-2 ${mutedTextClass}`}>
                   Thank you for your payment. Your invoice has been paid.
                 </p>
-                <div className="mt-6 rounded-xl bg-white/5 px-4 py-3">
-                  <p className="text-sm text-muted-foreground">
+                <div className={`mt-6 rounded-xl px-4 py-3 ${softCardClass}`}>
+                  <p className={`text-sm ${mutedTextClass}`}>
                     {invoice.business_name}
                   </p>
-                  <p className="mt-1 text-xl font-semibold tabular-nums">
+                  <p className={`mt-1 text-xl font-semibold tabular-nums ${primaryTextClass}`}>
                     {formatAmount(
                       getDisplayAmountCents(
                         Number(invoice.amount_cents),
@@ -196,7 +228,7 @@ export default async function PublicInvoicePage({
           ) : isDemo ? (
             <>
               <div>
-                <h1 className="text-3xl font-bold tabular-nums">
+                <h1 className={`text-3xl font-bold tabular-nums ${primaryTextClass}`}>
                   {formatAmount(
                     getDisplayAmountCents(
                       Number(invoice.amount_cents),
@@ -205,12 +237,12 @@ export default async function PublicInvoicePage({
                     invoice.currency
                   )}
                 </h1>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className={`mt-1 text-sm ${mutedTextClass}`}>
                   Invoice {invoice.invoice_number}
                 </p>
               </div>
               {invoice.line_items?.length > 0 && (
-                <ul className="mt-3 space-y-1 text-sm text-muted-foreground">
+                <ul className={`mt-3 space-y-1 text-sm ${mutedTextClass}`}>
                   {invoice.line_items.map((item, idx) => {
                     const raw = Number(item.amount_cents);
                     const dp = Number((item as { discount_percent?: number }).discount_percent ?? 0);
@@ -227,7 +259,7 @@ export default async function PublicInvoicePage({
                 </ul>
               )}
               {invoice.due_date && (
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className={`mt-1 text-sm ${mutedTextClass}`}>
                   Due: {new Date(invoice.due_date).toLocaleDateString("en-US")}
                 </p>
               )}
@@ -240,10 +272,10 @@ export default async function PublicInvoicePage({
             <>
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wider text-white/50">
+                  <p className={`text-xs font-medium uppercase tracking-wider ${isMinimal ? "text-zinc-500" : "text-white/50"}`}>
                     Total to pay
                   </p>
-                  <h1 className="text-3xl font-bold tabular-nums">
+                  <h1 className={`text-3xl font-bold tabular-nums ${primaryTextClass}`}>
                     {formatAmount(
                       getDisplayAmountCents(
                         Number(invoice.amount_cents),
@@ -252,7 +284,7 @@ export default async function PublicInvoicePage({
                       invoice.currency
                     )}
                   </h1>
-                  <p className="mt-1 text-sm text-muted-foreground">
+                  <p className={`mt-1 text-sm ${mutedTextClass}`}>
                     Invoice {invoice.invoice_number}
                   </p>
                 </div>
@@ -263,7 +295,7 @@ export default async function PublicInvoicePage({
                 />
               </div>
               {invoice.line_items?.length > 0 && (
-                <ul className="mt-3 space-y-1 text-sm text-muted-foreground">
+                <ul className={`mt-3 space-y-1 text-sm ${mutedTextClass}`}>
                   {invoice.line_items.map((item, idx) => {
                     const raw = Number(item.amount_cents);
                     const dp = Number((item as { discount_percent?: number }).discount_percent ?? 0);
@@ -280,11 +312,11 @@ export default async function PublicInvoicePage({
                 </ul>
               )}
               {/* Breakdown: fee and total so client sees full amount before checkout */}
-              <div className="mt-3 border-t border-white/10 pt-3 text-sm">
+              <div className={`mt-3 border-t pt-3 text-sm ${isMinimal ? "border-zinc-200" : "border-white/10"}`}>
                 {invoice.payment_processing_fee_included &&
                   typeof invoice.payment_processing_fee_cents === "number" &&
                   invoice.payment_processing_fee_cents > 0 && (
-                    <div className="flex justify-between gap-2 text-muted-foreground">
+                    <div className={`flex justify-between gap-2 ${mutedTextClass}`}>
                       <span>Payment processing fee</span>
                       <span className="tabular-nums">
                         {formatAmount(
@@ -294,7 +326,7 @@ export default async function PublicInvoicePage({
                       </span>
                     </div>
                   )}
-                <div className="mt-2 flex justify-between gap-2 font-semibold text-white">
+                <div className={`mt-2 flex justify-between gap-2 font-semibold ${primaryTextClass}`}>
                   <span>Total to pay</span>
                   <span className="tabular-nums">
                     {formatAmount(
@@ -308,19 +340,23 @@ export default async function PublicInvoicePage({
                 </div>
               </div>
               {invoice.due_date && (
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className={`mt-1 text-sm ${mutedTextClass}`}>
                   Due: {new Date(invoice.due_date).toLocaleDateString("en-US")}
                 </p>
               )}
 
               <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                <PayButton publicId={publicId} />
+                <PayButton
+                  publicId={publicId}
+                  accentColor={pageTheme.accentColor}
+                  buttonStyle={visualConfig?.buttonStyle}
+                />
                 <DownloadPdfLink publicId={publicId} />
               </div>
             </>
           )}
 
-          <p className="mt-8 text-center text-xs text-muted-foreground">
+          <p className={`mt-8 text-center text-xs ${mutedTextClass}`}>
             Powered by Puyer
           </p>
         </div>

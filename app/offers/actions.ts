@@ -300,6 +300,7 @@ export async function acceptOfferAction(publicId: string): Promise<AcceptOfferRe
       status: "sent",
       amount_cents: offer.amount_cents,
       currency: offer.currency,
+      invoice_design: "classic",
       vat_included: offer.vat_included,
       payment_processing_fee_included: offer.payment_processing_fee_included ?? false,
       payment_processing_fee_cents: offer.payment_processing_fee_cents ?? null,

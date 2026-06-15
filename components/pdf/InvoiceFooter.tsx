@@ -1,8 +1,8 @@
 import React from "react";
 import { View, Text } from "@react-pdf/renderer";
-import { styles } from "./styles";
+import type { InvoicePdfStyles } from "./styles";
 
-export function InvoiceFooter() {
+export function InvoiceFooter({ styles }: { styles: InvoicePdfStyles }) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
   const termsUrl = appUrl.replace(/\/$/, "") + "/terms";
   const termsHost = termsUrl.replace(/^https?:\/\//, "");

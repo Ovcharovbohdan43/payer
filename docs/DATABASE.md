@@ -23,6 +23,8 @@ Run in order (Supabase SQL Editor or `supabase db push`):
 17. `supabase/migrations/20250238000002_subscription_manual_grant.sql` — RPCs grant_pro_subscription, revoke_pro_subscription (manual Pro grant via Supabase)
 18. `supabase/migrations/20250318000001_invoice_templates.sql` — invoice_templates, invoice_template_items (saved line-item sets for one-click apply on new invoice); RLS by user_id
 19. `supabase/migrations/20250319000001_integration_connections.sql` — integration_connections (OAuth tokens for calendar/CRM), calendar_invoice_reminders, calendar_reminder_sent, calendar_event_links; RLS by user_id
+20. `supabase/migrations/20250320000001_invoice_design_templates.sql` — profiles.default_invoice_design, invoices.invoice_design, get_public_invoice invoice_design field (built-in visual invoice templates)
+21. `supabase/migrations/20250321000001_invoice_visual_templates.sql` — invoice_visual_templates, profiles.default_invoice_visual_template_id, invoices.invoice_design_config, get_public_invoice invoice_design_config field (saved visual templates + per-invoice snapshot)
 
 **Planned (see docs/INTEGRATIONS_PLAN.md):** clients.external_id / external_source for CRM sync.
 
@@ -31,7 +33,7 @@ Run in order (Supabase SQL Editor or `supabase db push`):
 - **Never** expose `invoices` by internal `id` or `user_id` to unauthenticated users.
 - Public invoice data is available **only** by `public_id` via:
   - **RPC:** `select * from get_public_invoice('...public_id...')`  
-  - Returns: `business_name`, `invoice_number`, `amount_cents`, `currency`, `line_items`, `due_date`, `status`, `client_name`, `logo_url`, `address`, `phone`, `company_number`, `vat_number` (no `user_id`, no internal `id`).
+  - Returns: `business_name`, `invoice_number`, `invoice_design`, `amount_cents`, `currency`, `line_items`, `due_date`, `status`, `client_name`, `logo_url`, `address`, `phone`, `company_number`, `vat_number` (no `user_id`, no internal `id`).
 - Use this from the public invoice page; call with anon client.
 - **Record view:** Call `record_public_invoice_viewed(public_id)` on first load when status is `sent`; RPC updates `viewed_at` and status to `viewed` (idempotent).
 
@@ -44,3 +46,13 @@ Run in order (Supabase SQL Editor or `supabase db push`):
 
 - RLS on `payments` allows only **SELECT** for users (for their invoices).
 - **INSERT** into `payments` must be done with **service role** (e.g. Stripe webhook handler); anon/authenticated cannot insert.
+
+## Invoice design templates
+
+- Built-in visual design keys: `classic`, `modern`, `minimal`.
+- `profiles.default_invoice_design` stores the fallback base style for new invoices.
+- `profiles.default_invoice_visual_template_id` stores the optional default saved visual template.
+- `invoice_visual_templates` stores user-saved visual configs (`name`, `config jsonb`, `is_default`).
+- `invoices.invoice_design` snapshots the base design key per invoice.
+- `invoices.invoice_design_config` snapshots the full visual config per invoice for stable PDFs, public pages, and emails.
+- This is separate from `invoice_templates`, which stores reusable service/line-item sets.

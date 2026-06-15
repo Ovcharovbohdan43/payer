@@ -106,6 +106,42 @@ create table public.calendar_event_links (
 - `POST /api/integrations/calendar/reminders` — create/update `calendar_invoice_reminders` (calendar_id, delay_minutes).
 - Optional: `POST /api/integrations/calendar/event-link` — link event to client (event_id, client_id).
 
+#### 2.3.1 How scopes are used (for Google verification / justification)
+
+We request **only** read-only access to the user's calendar. No events are created or modified by Puyer.
+
+| Scope | Use in the app |
+|-------|-----------------|
+| `https://www.googleapis.com/auth/calendar.readonly` | **List calendars** — so the user can choose which calendar to use for "issue invoice" reminders (e.g. "Primary" or a work calendar). **List events** in a time window — our cron job runs daily and looks for events that *ended* in the last 24 hours; for each such event we send one email to the calendar owner: "Session [title] ended. Issue an invoice?" with a link to create an invoice. We do not store event content; we only record that a reminder was sent (event id + connection) to avoid duplicate emails. |
+
+**User value:** Freelancers and coaches who track sessions in Google Calendar get a timely reminder to issue an invoice after each session, so they don't forget. Access is minimal (read-only) and can be revoked in Google account settings or by disconnecting the integration in Puyer Settings.
+
+**Copy-paste for Google Cloud Console (Data Access → scope justification):**
+
+> Puyer uses read-only calendar access to show the user their calendar list (to choose which calendar to use for reminders) and to detect calendar events that have ended. When an event ends, we send one email to the user: "Session ended — issue an invoice?" with a link to create an invoice. We do not create, edit, or delete any calendar events; we do not store event content. Users can disconnect the integration at any time in Settings.
+
+#### 2.3.2 Demo video (required for scope verification)
+
+Google may require a **demo video** showing how the app uses the requested scope. Requirements (typical):
+
+- **Format:** Unlisted YouTube link or Google Drive (viewable by reviewers). Duration usually 1–3 minutes.
+- **Content:** Show the real user flow; no need for voiceover if the flow is clear.
+
+**Checklist — what to show in the video:**
+
+1. **Login** — User signs in to Puyer (or show already logged-in state).
+2. **Open Integrations** — Go to Settings → Integrations section.
+3. **Connect Google Calendar** — Click "Connect Google Calendar"; show redirect to Google consent screen.
+4. **Grant access** — Complete OAuth (allow calendar read-only). Return to Settings.
+5. **Result** — Show that Google Calendar is now "Connected" (and, if implemented, that a default reminder is created, e.g. "Primary calendar, 15 min after event").
+6. **Optional:** Show Google Calendar with a past event (e.g. "Session with Client X" that ended yesterday), then show inbox with the reminder email "Session ended — issue an invoice?" and the link to create an invoice. This proves we only use calendar to trigger the reminder and do not modify the calendar.
+7. **Revocation** — Show "Disconnect" for Google Calendar so reviewers see users can revoke access.
+
+**What to say in the video (if you add a short voiceover or caption):**  
+"We use read-only access to list the user's calendars and to find events that have ended. For each ended event we send one email reminding the user to issue an invoice. We do not create or change any calendar events."
+
+After uploading, paste the video URL in the Verification Center where Google asks for "Demo video" for the calendar scope.
+
 ### 2.4 Microsoft Calendar (Outlook)
 
 - **OAuth:** Microsoft Identity Platform (Azure AD app). Scopes: `Calendars.Read`, `offline_access`.

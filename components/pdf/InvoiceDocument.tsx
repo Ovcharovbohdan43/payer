@@ -1,6 +1,6 @@
 import React from "react";
 import { Document, Page, View, Text } from "@react-pdf/renderer";
-import { styles } from "./styles";
+import { createInvoicePdfStyles } from "./styles";
 import { InvoiceHeader } from "./InvoiceHeader";
 import { InvoiceTable } from "./InvoiceTable";
 import { InvoiceFooter } from "./InvoiceFooter";
@@ -25,12 +25,13 @@ function formatDate(dateStr: string | null | undefined): string {
 }
 
 export function InvoiceDocument({ data }: { data: InvoicePdfData }) {
+  const styles = createInvoicePdfStyles(data.invoiceDesign, data.invoiceDesignConfig);
   const items =
     data.lineItems?.length > 0
       ? data.lineItems
       : [{ description: "Invoice payment", amountCents: data.amountCents }];
 
-  let subtotalFromLines = items.reduce((s, i) => s + i.amountCents, 0);
+  const subtotalFromLines = items.reduce((s, i) => s + i.amountCents, 0);
   let invoiceDiscountCents = 0;
   if (data.discountType && data.discountValue != null && data.discountValue > 0) {
     if (data.discountType === "percent") {
@@ -118,6 +119,7 @@ export function InvoiceDocument({ data }: { data: InvoicePdfData }) {
       <Page size="A4" style={styles.page}>
         <View style={styles.pageContent}>
           <InvoiceHeader
+            styles={styles}
             businessName={data.businessName}
             address={data.address}
             phone={data.phone}
@@ -134,6 +136,7 @@ export function InvoiceDocument({ data }: { data: InvoicePdfData }) {
             clientVatNumber={data.clientVatNumber}
           />
           <InvoiceTable
+            styles={styles}
             rows={tableRows}
             totalCents={data.amountCents}
             currency={data.currency}
@@ -150,7 +153,7 @@ export function InvoiceDocument({ data }: { data: InvoicePdfData }) {
             </View>
           )}
         </View>
-        <InvoiceFooter />
+        <InvoiceFooter styles={styles} />
       </Page>
     </Document>
   );
