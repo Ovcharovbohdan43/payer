@@ -13,10 +13,11 @@ import {
   type CalendarSessionReminderParams,
 } from "./templates";
 import { isEmailUnsubscribed, generateUnsubscribeToken } from "./unsubscribe";
+import { toUserFacingError } from "@/lib/errors/user-facing";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const EMAIL_FROM =
-  process.env.EMAIL_FROM ?? "Puyer <onboarding@resend.dev>";
+  process.env.EMAIL_FROM ?? "Puyer <noreply@puyer.org>";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
 
 function getResendClient(): Resend | null {
@@ -32,6 +33,18 @@ function buildUnsubscribeUrl(email: string): string {
 
 export type SendResult = { ok: true } | { ok: false; error: string };
 
+function emailSendFailure(
+  providerMessage: string,
+  logLabel: string,
+  context: "email" | "otp" = "email"
+): SendResult {
+  console.error(`[email] ${logLabel} failed:`, providerMessage);
+  return {
+    ok: false,
+    error: toUserFacingError(providerMessage, context),
+  };
+}
+
 /**
  * Send invoice email to client. Used on "Create & send email" and "Send by email".
  * Skips send if recipient has unsubscribed. Includes List-Unsubscribe header for spam compliance.
@@ -46,7 +59,7 @@ export async function sendInvoiceEmail(params: {
 
   const client = getResendClient();
   if (!client) {
-    return { ok: false, error: "Email is not configured (RESEND_API_KEY)" };
+    return emailSendFailure("Email is not configured (RESEND_API_KEY)", "sendInvoice");
   }
 
   const unsubscribeUrl = buildUnsubscribeUrl(params.to);
@@ -63,8 +76,7 @@ export async function sendInvoiceEmail(params: {
     },
   });
   if (error) {
-    console.error("[email] sendInvoice failed:", error.message);
-    return { ok: false, error: error.message };
+    return emailSendFailure(error.message, "sendInvoice");
   }
   return { ok: true };
 }
@@ -85,7 +97,7 @@ export async function sendReminderEmail(params: {
 
   const client = getResendClient();
   if (!client) {
-    return { ok: false, error: "Email is not configured (RESEND_API_KEY)" };
+    return emailSendFailure("Email is not configured (RESEND_API_KEY)", "sendReminder");
   }
 
   const unsubscribeUrl = buildUnsubscribeUrl(params.to);
@@ -104,8 +116,7 @@ export async function sendReminderEmail(params: {
     },
   });
   if (error) {
-    console.error("[email] sendReminder failed:", error.message);
-    return { ok: false, error: error.message };
+    return emailSendFailure(error.message, "sendReminder");
   }
   return { ok: true };
 }
@@ -119,7 +130,7 @@ export async function sendEscalationCopyToOwnerEmail(params: {
 } & EscalationCopyToOwnerParams): Promise<SendResult> {
   const client = getResendClient();
   if (!client) {
-    return { ok: false, error: "Email is not configured (RESEND_API_KEY)" };
+    return emailSendFailure("Email is not configured (RESEND_API_KEY)", "sendEscalationCopyToOwner");
   }
   const html = buildEscalationCopyToOwnerHtml(params);
   const { error } = await client.emails.send({
@@ -129,8 +140,7 @@ export async function sendEscalationCopyToOwnerEmail(params: {
     html,
   });
   if (error) {
-    console.error("[email] sendEscalationCopyToOwner failed:", error.message);
-    return { ok: false, error: error.message };
+    return emailSendFailure(error.message, "sendEscalationCopyToOwner");
   }
   return { ok: true };
 }
@@ -144,7 +154,7 @@ export async function sendLoginOtpEmail(params: {
 }): Promise<SendResult> {
   const client = getResendClient();
   if (!client) {
-    return { ok: false, error: "Email is not configured (RESEND_API_KEY)" };
+    return emailSendFailure("Email is not configured (RESEND_API_KEY)", "sendLoginOtp", "otp");
   }
   const html = buildLoginOtpEmailHtml({ code: params.code });
   const { error } = await client.emails.send({
@@ -154,8 +164,7 @@ export async function sendLoginOtpEmail(params: {
     html,
   });
   if (error) {
-    console.error("[email] sendLoginOtp failed:", error.message);
-    return { ok: false, error: error.message };
+    return emailSendFailure(error.message, "sendLoginOtp", "otp");
   }
   return { ok: true };
 }
@@ -168,7 +177,7 @@ export async function sendPasswordChangeConfirmEmail(params: {
 }): Promise<SendResult> {
   const client = getResendClient();
   if (!client) {
-    return { ok: false, error: "Email is not configured (RESEND_API_KEY)" };
+    return emailSendFailure("Email is not configured (RESEND_API_KEY)", "sendPasswordChangeConfirm");
   }
   const html = buildPasswordChangeConfirmEmailHtml();
   const { error } = await client.emails.send({
@@ -178,8 +187,7 @@ export async function sendPasswordChangeConfirmEmail(params: {
     html,
   });
   if (error) {
-    console.error("[email] sendPasswordChangeConfirm failed:", error.message);
-    return { ok: false, error: error.message };
+    return emailSendFailure(error.message, "sendPasswordChangeConfirm");
   }
   return { ok: true };
 }
@@ -192,7 +200,7 @@ export async function sendPayoutNotificationEmail(
 ): Promise<SendResult> {
   const client = getResendClient();
   if (!client) {
-    return { ok: false, error: "Email is not configured (RESEND_API_KEY)" };
+    return emailSendFailure("Email is not configured (RESEND_API_KEY)", "sendPayoutNotification");
   }
   const html = buildPayoutNotificationHtml(params);
   const { error } = await client.emails.send({
@@ -202,8 +210,7 @@ export async function sendPayoutNotificationEmail(
     html,
   });
   if (error) {
-    console.error("[email] sendPayoutNotification failed:", error.message);
-    return { ok: false, error: error.message };
+    return emailSendFailure(error.message, "sendPayoutNotification");
   }
   return { ok: true };
 }
@@ -217,7 +224,7 @@ export async function sendCalendarSessionReminderEmail(
 ): Promise<SendResult> {
   const client = getResendClient();
   if (!client) {
-    return { ok: false, error: "Email is not configured (RESEND_API_KEY)" };
+    return emailSendFailure("Email is not configured (RESEND_API_KEY)", "sendCalendarSessionReminder");
   }
   const html = buildCalendarSessionReminderHtml(params);
   const { error } = await client.emails.send({
@@ -227,8 +234,7 @@ export async function sendCalendarSessionReminderEmail(
     html,
   });
   if (error) {
-    console.error("[email] sendCalendarSessionReminder failed:", error.message);
-    return { ok: false, error: error.message };
+    return emailSendFailure(error.message, "sendCalendarSessionReminder");
   }
   return { ok: true };
 }

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, FileText, Users, Settings, FileSignature } from "lucide-react";
+import { LayoutDashboard, FileText, Users, Settings, FileSignature, Star } from "lucide-react";
 import { signOut } from "@/app/login/actions";
 import { MobileNav } from "./mobile-nav";
 
@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   { href: "/invoices", label: "Invoices", icon: FileText },
   { href: "/offers", label: "Offers", icon: FileSignature, badge: "New" },
   { href: "/clients", label: "Clients", icon: Users },
+  { href: "/rate-us", label: "Rate us", icon: Star },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 

@@ -13,12 +13,12 @@
    ```
    RESEND_API_KEY=re_...
    ```
-3. For development: use default `onboarding@resend.dev` as sender (Resend allows this without domain verification)
+3. Verify **puyer.org** in Resend → Domains. Set `EMAIL_FROM` to an address on that domain (default in code: `Puyer <noreply@puyer.org>`).
 4. For production: verify your domain in Resend Dashboard → Domains
 
 ### Optional
 
-- `EMAIL_FROM` — Sender address (default: `Puyer <onboarding@resend.dev>`)
+- `EMAIL_FROM` — Sender address (default: `Puyer <noreply@puyer.org>`; must use verified domain in Resend)
 - `REMINDER_RATE_LIMIT_HOURS` — Limit reminders per invoice (default: 24). Set to `0` to disable during debugging
 
 ## Flows

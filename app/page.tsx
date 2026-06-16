@@ -13,6 +13,7 @@ import {
   Check,
 } from "lucide-react";
 import { ScreenshotGallery } from "@/components/screenshot-gallery";
+import { PublicReviewsSection } from "@/components/reviews/public-reviews-section";
 
 export default function HomePage() {
   return (
@@ -191,6 +192,8 @@ export default function HomePage() {
             </AnimateInView>
           </div>
         </section>
+
+        <PublicReviewsSection />
 
         {/* Pricing */}
         <section className="border-t border-white/5 px-4 py-12 sm:px-6 sm:py-24 min-[375px]:px-4">

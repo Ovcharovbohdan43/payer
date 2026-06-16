@@ -4,6 +4,23 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2026-06-16] – Resend sender uses puyer.org domain
+
+- **Email:** Default `EMAIL_FROM` is now `Puyer <noreply@puyer.org>` instead of `onboarding@resend.dev`. Set `EMAIL_FROM` in env (local + Vercel) if you use a different address on the verified domain.
+
+### [2026-06-16] – Login error messages sanitized
+
+- **Auth:** Resend/Supabase/DB errors during sign-in, OTP, and sign-up no longer expose raw provider text in the UI. Technical details are logged server-side only (`lib/errors/user-facing.ts`).
+
+### [2026-06-15] – Rate Us (user reviews)
+
+- **Rate Us:** New `/rate-us` page where signed-in users can leave a 1–5 star rating and optional comment.
+- **Public reviews:** Landing page section "What our users say" shows all reviews with avatars (profile logo or initial), stars, and comments.
+- **Community list:** `/rate-us` shows all user reviews below the submit form.
+- **Navigation:** "Rate us" added to sidebar and mobile nav.
+- **Backend:** Migration `20250322000001_user_reviews.sql` — `user_reviews` table with one review per user (updatable); RLS by `user_id`. Migration `20250322000002_public_user_reviews_rpc.sql` — `get_public_user_reviews()` RPC for safe public read.
+- **Docs:** Added `docs/USER_REVIEWS.md`.
+
 ### [2026-06-15] – Invoice visual editor MVP
 
 - **Visual editor:** Create/edit invoice forms now include a visual invoice editor with live preview, accent color, header style, visibility toggles, and pay button style.

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { sendLoginOtpEmail } from "@/lib/email/send";
+import { toUserFacingError } from "@/lib/errors/user-facing";
 import { createHmac, timingSafeEqual } from "crypto";
 
 const OTP_EXPIRY_MINUTES = 5;
@@ -24,7 +25,9 @@ export async function createAndSendOtp(userId: string, email: string): Promise<{
     .from("login_otps")
     .insert({ user_id: userId, code_hash: codeHash, expires_at: expiresAt.toISOString() });
 
-  if (insertError) return { ok: false, error: insertError.message };
+  if (insertError) {
+    return { ok: false, error: toUserFacingError(insertError.message, "otp") };
+  }
 
   const result = await sendLoginOtpEmail({ to: email, code });
   if (!result.ok) {
@@ -42,7 +45,7 @@ export async function verifyOtp(userId: string, code: string): Promise<{ ok: tru
     .eq("user_id", userId)
     .gt("expires_at", new Date().toISOString());
 
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: toUserFacingError(error.message, "otp") };
   if (!rows || rows.length === 0) return { ok: false, error: "Code expired or invalid. Request a new one." };
 
   const expectedHash = hashCode(code, userId);

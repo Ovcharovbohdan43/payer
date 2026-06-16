@@ -10,6 +10,7 @@ import {
   clearOtpPendingCookie,
   setRememberCookie,
 } from "@/lib/auth/remember-cookie";
+import { toUserFacingError } from "@/lib/errors/user-facing";
 
 export async function signInWithMagicLink(formData: FormData) {
   const email = formData.get("email");
@@ -48,7 +49,7 @@ export async function signInWithMagicLink(formData: FormData) {
     if (/rate limit|too many requests|limit exceeded/i.test(msg) || msg.includes("over email sending")) {
       return { error: "Email limit exceeded. Try again later or sign in with password." };
     }
-    return { error: msg };
+    return { error: toUserFacingError(msg, "sign-in") };
   }
 
   return { success: true };
@@ -71,7 +72,7 @@ export async function signInWithPassword(formData: FormData) {
     password,
   });
 
-  if (error) return { error: error.message };
+  if (error) return { error: toUserFacingError(error.message, "sign-in") };
   if (!data.user) return { error: "Sign-in failed" };
 
   if (await isRememberedForUser(data.user.id)) {
@@ -107,7 +108,7 @@ export async function verifyOtpAction(
   if (!user) return { error: "Session expired. Please sign in again." };
 
   const result = await verifyOtp(user.id, codeDigits);
-  if (!result.ok) return { error: result.error };
+  if (!result.ok) return { error: toUserFacingError(result.error, "otp") };
 
   await clearOtpPendingCookie();
 
@@ -135,7 +136,7 @@ export async function signInWithGoogleAction(): Promise<{ error?: string }> {
     provider: "google",
     options: { redirectTo },
   });
-  if (error) return { error: error.message };
+  if (error) return { error: toUserFacingError(error.message, "sign-in") };
   if (data?.url) redirect(data.url);
   return { error: "Could not start Google sign-in" };
 }

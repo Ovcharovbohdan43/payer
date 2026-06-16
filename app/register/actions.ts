@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { registerSchema } from "@/lib/validations";
 import { redirect } from "next/navigation";
+import { toUserFacingError } from "@/lib/errors/user-facing";
 
 const LOGO_BUCKET = "logos";
 const LOGO_MAX_BYTES = 10 * 1024 * 1024;
@@ -56,7 +57,7 @@ export async function signUpAction(formData: FormData) {
           "Email sending limit exceeded. Try again in an hour or use magic link to sign in.",
       };
     }
-    return { error: msg };
+    return { error: toUserFacingError(msg, "sign-up") };
   }
   if (!data.user) return { error: "Sign up failed" };
 

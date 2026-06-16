@@ -25,6 +25,11 @@ When a user signs in with **email + password**, they must enter a 5-digit code s
 - `LOGIN_VERIFY_SECRET` — optional; used for remember cookie. Uses `CRON_SECRET` or fallback.
 - `RESEND_API_KEY` — required for sending OTP emails.
 
+## User-facing errors
+
+Provider/internal errors (e.g. Resend sandbox limits, missing API key) are **never** shown raw in the UI. They are logged server-side and mapped to generic copy via `lib/errors/user-facing.ts`.
+
 ## Version
 
+- 2026-06-16 — Sanitize login/email errors shown to users
 - 2025-02-25 — Initial implementation

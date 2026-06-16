@@ -239,3 +239,17 @@ export const offerCreateSchema = z.object({
     })
     .pipe(z.array(lineItemSchema).min(1, "Add at least one service")),
 });
+
+/** Rate Us — star rating (1–5) and optional comment. */
+export const userReviewSchema = z.object({
+  rating: z.coerce
+    .number()
+    .int("Rating must be a whole number")
+    .min(1, "Select a star rating")
+    .max(5, "Rating must be between 1 and 5 stars"),
+  comment: z
+    .string()
+    .max(2000, "Comment is too long (max 2000 characters)")
+    .optional()
+    .or(z.literal("")),
+});
