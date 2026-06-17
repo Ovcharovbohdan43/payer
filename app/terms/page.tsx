@@ -25,7 +25,7 @@ export default function TermsOfServicePage() {
           Terms of Service
         </h1>
         <p className="mt-2 text-sm text-white/60">
-          Last updated: February 2025
+          Last updated: June 2026
         </p>
 
         <article className="mt-8 space-y-8 text-sm text-white/80 sm:text-base">
@@ -74,21 +74,76 @@ export default function TermsOfServicePage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white">5. Acceptable Use</h2>
+            <h2 className="text-lg font-semibold text-white">5. Prohibited Activities and Acceptable Use</h2>
             <p className="mt-2">
-              You agree to use the Service only for lawful purposes and in accordance with
-              these Terms. You must not: (a) use the Service for any illegal or fraudulent
-              activity; (b) send invoices or collect payments for illegal goods or
-              services; (c) harass, abuse, or harm others; (d) attempt to gain unauthorized
-              access to the Service or related systems; (e) interfere with or disrupt the
-              Service; (f) use the Service in any way that violates applicable laws or
-              regulations. We reserve the right to suspend or terminate your account for
-              any violation of this section.
+              Puyer is a business invoicing and payment platform for lawful commercial
+              activities only. You agree to use the Service exclusively for legitimate
+              business purposes and in compliance with all applicable laws and
+              regulations in your jurisdiction and in the jurisdictions of your clients.
+            </p>
+            <p className="mt-3 font-medium text-white">
+              You must not use the Service, directly or indirectly, to invoice, collect,
+              facilitate, or promote any of the following (including related goods,
+              services, or activities):
+            </p>
+            <ul className="mt-3 list-inside list-disc space-y-1 pl-2">
+              <li>Illegal goods, services, or activities of any kind</li>
+              <li>Gambling, betting, casinos, lottery services, or other games of chance where prohibited or unlicensed</li>
+              <li>Weapons, firearms, ammunition, explosives, or related accessories where sale or transfer is restricted or illegal</li>
+              <li>Controlled substances, illegal drugs, narcotics, or prescription medicines sold without proper authorization</li>
+              <li>Counterfeit, stolen, or fraudulently obtained goods or services</li>
+              <li>Human trafficking, exploitation, or abuse</li>
+              <li>Child sexual abuse material or any content involving minors in a sexual context</li>
+              <li>Terrorist financing, money laundering, sanctions evasion, or other financial crime</li>
+              <li>Pyramid schemes, unlicensed investment schemes, or deceptive financial products</li>
+              <li>Adult content or services where prohibited by law or Stripe&apos;s policies</li>
+              <li>Any activity that violates Stripe&apos;s restricted or prohibited business lists or payment network rules</li>
+              <li>Any other activity that is unlawful, harmful, deceptive, or that we reasonably determine is incompatible with the Service</li>
+            </ul>
+            <p className="mt-3">
+              You must not: (a) harass, abuse, or harm others; (b) attempt to gain
+              unauthorized access to the Service or related systems; (c) interfere with or
+              disrupt the Service; (d) misrepresent your identity, business, or the
+              nature of goods or services invoiced through the Service; or (e) use the
+              Service to process payments for third parties in a manner that conceals the
+              true merchant or purpose of the transaction (&quot;transaction laundering&quot;).
+            </p>
+            <p className="mt-3">
+              We may monitor use of the Service for compliance, cooperate with payment
+              providers and authorities, and investigate suspected violations. You are
+              solely responsible for ensuring that your business and every invoice you
+              create complies with these restrictions.
             </p>
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white">6. Payment Terms</h2>
+            <h2 className="text-lg font-semibold text-white">6. Enforcement and Account Termination</h2>
+            <p className="mt-2">
+              If we discover, reasonably suspect, or are notified of a violation of these
+              Terms — including use of the Service for any prohibited activity described
+              in Section 5 — we may, at our sole discretion and without prior notice:
+              suspend your account, restrict access to the Service, disconnect payment
+              processing, withhold or reverse payouts where permitted by law and our
+              payment providers, and{" "}
+              <strong className="text-white">permanently delete your account</strong>.
+            </p>
+            <p className="mt-3">
+              Permanent deletion is at our sole discretion and may be applied
+              unilaterally. Upon termination for violation, you lose access to your
+              account and data immediately. We are not obliged to provide a refund,
+              explanation, or appeal process, except where required by mandatory
+              applicable law. We may retain certain records as required by law or for
+              fraud prevention.
+            </p>
+            <p className="mt-3">
+              You may close your account at any time if you are in good standing. Sections
+              that by their nature should survive termination (including liability,
+              indemnification, and governing law) will survive.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-white">7. Payment Terms</h2>
             <p className="mt-2">
               Payment processing is provided by Stripe. When you receive payments through
               the Service, Stripe fees and applicable taxes apply. You are responsible for
@@ -101,7 +156,7 @@ export default function TermsOfServicePage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white">7. Your Content and Data</h2>
+            <h2 className="text-lg font-semibold text-white">8. Your Content and Data</h2>
             <p className="mt-2">
               You retain ownership of the content you create (invoices, client data, etc.).
               By using the Service, you grant us a limited license to process, store, and
@@ -112,7 +167,7 @@ export default function TermsOfServicePage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white">8. Intellectual Property</h2>
+            <h2 className="text-lg font-semibold text-white">9. Intellectual Property</h2>
             <p className="mt-2">
               The Service, including its design, software, trademarks, and branding, is
               owned by us or our licensors. You may not copy, modify, distribute, or
@@ -122,7 +177,7 @@ export default function TermsOfServicePage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white">9. Limitation of Liability</h2>
+            <h2 className="text-lg font-semibold text-white">10. Limitation of Liability</h2>
             <p className="mt-2">
               TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, PUYER AND ITS
               AFFILIATES SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL,
@@ -137,7 +192,7 @@ export default function TermsOfServicePage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-white">10. Indemnification</h2>
+            <h2 className="text-lg font-semibold text-white">11. Indemnification</h2>
             <p className="mt-2">
               You agree to indemnify, defend, and hold harmless Puyer and its officers,
               directors, employees, and agents from and against any claims, damages,
@@ -145,17 +200,6 @@ export default function TermsOfServicePage() {
               from: (a) your use of the Service; (b) your violation of these Terms; (c)
               your violation of any third-party rights; or (d) any content or data you
               submit through the Service.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-lg font-semibold text-white">11. Termination</h2>
-            <p className="mt-2">
-              You may close your account at any time. We may suspend or terminate your
-              account and access to the Service for any reason, including breach of these
-              Terms, with or without notice. Upon termination, your right to use the
-              Service ceases immediately. Sections that by their nature should survive
-              (including Sections 7–10, 12) will survive termination.
             </p>
           </section>
 

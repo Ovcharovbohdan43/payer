@@ -27,6 +27,13 @@ export const registerSchema = z.object({
     .string()
     .optional()
     .refine((v) => v === "true", "You must agree to the Terms of Service"),
+  acceptableUseAccepted: z
+    .string()
+    .optional()
+    .refine(
+      (v) => v === "true",
+      "You must confirm that your business is lawful and not prohibited"
+    ),
 });
 
 export const optionalEmailSchema = z

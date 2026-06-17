@@ -256,7 +256,34 @@ export function RegisterForm() {
               >
                 Privacy Policy
               </a>
-              . By clicking Create account, you accept them.
+              .
+            </Label>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">
+            Lawful use <RequiredStar />
+          </Label>
+          <div className="flex items-start gap-3 rounded-lg border border-white/10 bg-[#121821]/50 px-4 py-3">
+            <input
+              type="checkbox"
+              id="acceptableUseAccepted"
+              name="acceptableUseAccepted"
+              value="true"
+              required
+              disabled={isPending}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-white/20 accent-[#3B82F6]"
+            />
+            <Label
+              htmlFor="acceptableUseAccepted"
+              className="cursor-pointer text-sm font-normal leading-relaxed text-muted-foreground"
+            >
+              I confirm that I will use Puyer only for lawful business purposes. I will
+              not use the Service for gambling, casinos, weapons, illegal drugs, or any
+              other prohibited activity listed in the Terms. I understand that if Puyer
+              discovers a violation, my account may be{" "}
+              <span className="text-white/90">permanently deleted</span> at Puyer&apos;s sole
+              discretion, without prior notice.
             </Label>
           </div>
         </div>

@@ -26,7 +26,7 @@ export default function PrivacyPolicyPage() {
           Privacy Policy
         </h1>
         <p className="mt-2 text-sm text-white/60">
-          Last updated: March 2025
+          Last updated: June 2026
         </p>
 
         <article className="mt-8 space-y-8 text-sm text-white/80 sm:text-base">
@@ -106,7 +106,31 @@ export default function PrivacyPolicyPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-white">
-              4. Legal basis for processing (EEA/UK)
+              4. Lawful use and prohibited activities
+            </h2>
+            <p className="mt-2">
+              Puyer may be used only for lawful business invoicing and payment
+              collection. You must not use the Service for illegal activities or for
+              prohibited goods and services, including but not limited to: unlicensed
+              gambling or casinos; sale of weapons or controlled substances where
+              restricted; fraud; money laundering; or any activity listed in our{" "}
+              <Link href="/terms" className="text-[#3B82F6] underline hover:text-blue-400">
+                Terms of Service
+              </Link>
+              .
+            </p>
+            <p className="mt-3">
+              If we discover or reasonably suspect a violation, we may suspend or
+              permanently delete your account at our sole discretion, restrict access to
+              your data, cooperate with Stripe and competent authorities, and retain
+              information where required by law or for fraud prevention. See our Terms of
+              Service for full enforcement details.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-white">
+              5. Legal basis for processing (EEA/UK)
             </h2>
             <p className="mt-2">
               Where data protection laws (e.g. GDPR, UK GDPR) apply, we process your
@@ -123,7 +147,7 @@ export default function PrivacyPolicyPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-white">
-              5. Data sharing and third parties
+              6. Data sharing and third parties
             </h2>
             <p className="mt-2">
               We share data only as necessary to operate the Service and as described
@@ -162,7 +186,7 @@ export default function PrivacyPolicyPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-white">
-              6. International transfers
+              7. International transfers
             </h2>
             <p className="mt-2">
               Your data may be processed in countries outside your country of residence,
@@ -175,7 +199,7 @@ export default function PrivacyPolicyPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-white">
-              7. Data retention
+              8. Data retention
             </h2>
             <p className="mt-2">
               We retain your data for as long as your account is active and as needed to
@@ -189,7 +213,7 @@ export default function PrivacyPolicyPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-white">
-              8. Security
+              9. Security
             </h2>
             <p className="mt-2">
               We implement appropriate technical and organisational measures to protect
@@ -203,7 +227,7 @@ export default function PrivacyPolicyPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-white">
-              9. Your rights
+              10. Your rights
             </h2>
             <p className="mt-2">
               Depending on your location, you may have the right to: access your
@@ -220,7 +244,7 @@ export default function PrivacyPolicyPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-white">
-              10. Cookies and similar technologies
+              11. Cookies and similar technologies
             </h2>
             <p className="mt-2">
               We use cookies and similar technologies (e.g. local storage) that are
@@ -234,7 +258,7 @@ export default function PrivacyPolicyPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-white">
-              11. Children
+              12. Children
             </h2>
             <p className="mt-2">
               The Service is not directed at individuals under 16 (or higher age where
@@ -246,7 +270,7 @@ export default function PrivacyPolicyPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-white">
-              12. Changes to this policy
+              13. Changes to this policy
             </h2>
             <p className="mt-2">
               We may update this Privacy Policy from time to time. We will post the
@@ -260,7 +284,7 @@ export default function PrivacyPolicyPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-white">
-              13. Contact
+              14. Contact
             </h2>
             <p className="mt-2">
               For any questions about this Privacy Policy, your personal data, or to

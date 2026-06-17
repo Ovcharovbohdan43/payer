@@ -4,6 +4,12 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2026-06-17] – Prohibited activities policy and registration consent
+
+- **Terms:** Expanded Section 5 with explicit prohibited activities (gambling, weapons, drugs, fraud, etc.) and Section 6 on permanent account deletion for violations.
+- **Privacy:** Added lawful-use and enforcement section; renumbered subsequent sections.
+- **Registration:** Required checkbox confirming lawful use only and acknowledgment that violations may result in permanent account deletion.
+
 ### [2026-06-17] – Stripe Connect: connected accounts pay processing fees
 
 - **Invoice payments:** Switched from destination charges (`transfer_data`) to **direct charges** (Checkout on connected account). Stripe payment processing fees are now billed to the connected account, not the platform.
