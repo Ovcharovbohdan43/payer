@@ -3,7 +3,7 @@ import { processPendingStripeRevocations } from "@/lib/auth/process-ban-stripe";
 
 /**
  * Cron: revoke Stripe Connect accounts for banned users.
- * Secured by CRON_SECRET.
+ * Secured by CRON_SECRET. Runs once daily on Vercel Hobby (see vercel.json).
  */
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");

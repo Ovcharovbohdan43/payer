@@ -4,6 +4,10 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2026-06-17] – Cron: enforce-bans daily on Vercel Hobby
+
+- **Vercel:** Changed `enforce-bans` schedule from hourly to `0 9 * * *` (once per day) — Hobby plan limit.
+
 ### [2026-06-17] – Admin panel
 
 - **Access:** `profiles.is_admin` + optional `ADMIN_USER_IDS` env; route group `/admin`.

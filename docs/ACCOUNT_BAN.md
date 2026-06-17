@@ -86,7 +86,7 @@ When `account_status = 'banned'`:
 | `lib/auth/process-ban-stripe.ts` | Batch Stripe Connect revocation |
 | `lib/stripe/revoke-connect-account.ts` | `stripe.accounts.del()` |
 | `lib/supabase/proxy.ts` | Middleware: IP ban, account ban, IP logging |
-| `app/api/cron/enforce-bans/route.ts` | Hourly cron to revoke Stripe accounts |
+| `app/api/cron/enforce-bans/route.ts` | Daily cron to revoke Stripe accounts |
 | `app/account-restricted/page.tsx` | Restricted account UI |
 | `app/register/actions.ts` | Block banned email/IP on signup |
 | `app/login/actions.ts` | Block banned email/IP on sign-in |
@@ -96,7 +96,7 @@ When `account_status = 'banned'`:
 
 ## Cron
 
-`vercel.json` runs `GET /api/cron/enforce-bans` hourly (`0 * * * *`).
+`vercel.json` runs `GET /api/cron/enforce-bans` once daily at 09:00 UTC (`0 9 * * *`). Vercel Hobby allows at most one run per cron per day.
 
 ```bash
 curl -H "Authorization: Bearer $CRON_SECRET" https://puyer.org/api/cron/enforce-bans
@@ -119,7 +119,7 @@ Manual trigger after banning a user with Connect speeds up Stripe disconnection.
 
 - **IP blocking** depends on `x-forwarded-for` / `x-real-ip` and only covers IPs logged before the ban. New IPs or VPNs can bypass until logged and re-banned manually.
 - **Email blocking** covers the exact email on the banned account; new emails are not blocked unless the same IP is blocklisted.
-- **Stripe revoke** is asynchronous (cron, up to ~1 hour). `stripe_connect_account_id` is cleared immediately so new checkouts fail even before cron runs.
+- **Stripe revoke** is asynchronous (daily cron, or manual trigger from `/admin`). `stripe_connect_account_id` is cleared immediately so new checkouts fail even before cron runs.
 - Ban status is read from `profiles` on each request (not cached in JWT).
 - Public invoice/offer pages (`/i/*`, `/o/*`) remain viewable; checkout API rejects payment for banned merchants.
 
