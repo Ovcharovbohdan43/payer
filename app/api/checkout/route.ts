@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { isAccountBanned } from "@/lib/auth/account-status";
+import { logPlatformActivityAdmin } from "@/lib/admin/platform-activity";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createDirectChargeCheckoutSession } from "@/lib/stripe/connect";
 
@@ -104,6 +105,18 @@ export async function POST(request: Request) {
         { status: 500 }
       );
     }
+
+    void logPlatformActivityAdmin({
+      category: "billing",
+      action: "checkout.started",
+      userId: invoice.user_id,
+      meta: {
+        publicId,
+        invoiceId: invoice.id,
+        amountCents: chargeCents,
+        currency: invoice.currency,
+      },
+    });
 
     return NextResponse.json({ url: session.url });
   } catch (err) {

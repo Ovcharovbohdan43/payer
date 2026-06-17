@@ -195,6 +195,12 @@ export async function getAdminUserDetail(userId: string) {
     { data: recentInvoices },
     { data: auditLogs },
     { data: review },
+    { data: clients },
+    { data: payments },
+    { data: payouts },
+    { data: integrations },
+    { data: userActivity },
+    { data: adminActionsOnUser },
   ] = await Promise.all([
     admin.from("invoices").select("id", { count: "exact", head: true }).eq("user_id", userId),
     admin.from("clients").select("id", { count: "exact", head: true }).eq("user_id", userId),
@@ -231,6 +237,40 @@ export async function getAdminUserDetail(userId: string) {
       .select("rating, comment, created_at")
       .eq("user_id", userId)
       .maybeSingle(),
+    admin
+      .from("clients")
+      .select("id, name, email, phone, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(15),
+    admin
+      .from("payments")
+      .select("id, amount_cents, currency, paid_at, created_at, invoice_id, invoices!inner(user_id)")
+      .eq("invoices.user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(15),
+    admin
+      .from("payouts")
+      .select("id, amount_cents, currency, status, created_at, arrival_date")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(15),
+    admin
+      .from("integration_connections")
+      .select("id, provider, calendar_sync_enabled, external_user_id, created_at, updated_at")
+      .eq("user_id", userId),
+    admin
+      .from("platform_activity_log")
+      .select("id, category, action, path, ip_address, meta, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(30),
+    admin
+      .from("admin_actions_log")
+      .select("id, admin_id, action, meta, created_at")
+      .eq("target_user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(20),
   ]);
 
   return {
@@ -238,7 +278,8 @@ export async function getAdminUserDetail(userId: string) {
     email: authUser.user?.email ?? null,
     lastSignIn: authUser.user?.last_sign_in_at ?? null,
     emailConfirmed: authUser.user?.email_confirmed_at ?? null,
-    providers: authUser.user?.app_metadata?.providers ?? [],
+    createdAtAuth: authUser.user?.created_at ?? null,
+    providers: authUser.user?.app_metadata?.providers ?? authUser.user?.identities?.map((i) => i.provider) ?? [],
     counts: {
       invoices: invoiceCount ?? 0,
       clients: clientCount ?? 0,
@@ -250,6 +291,12 @@ export async function getAdminUserDetail(userId: string) {
     recentInvoices: recentInvoices ?? [],
     auditLogs: auditLogs ?? [],
     review,
+    clients: clients ?? [],
+    payments: payments ?? [],
+    payouts: payouts ?? [],
+    integrations: integrations ?? [],
+    userActivity: userActivity ?? [],
+    adminActionsOnUser: adminActionsOnUser ?? [],
   };
 }
 

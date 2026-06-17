@@ -10,12 +10,14 @@ import {
   BarChart3,
   ArrowLeft,
   Shield,
+  Activity,
 } from "lucide-react";
 import { signOut } from "@/app/login/actions";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/admin/users", label: "Users", icon: Users },
+  { href: "/admin/activity", label: "Live activity", icon: Activity },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
 ];
 

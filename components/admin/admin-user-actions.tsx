@@ -8,36 +8,74 @@ import {
   adminGrantPro,
   adminRevokePro,
   adminRevokeStripeForUser,
+  adminImpersonateUser,
+  adminDeleteUser,
 } from "@/lib/admin/actions";
 
 type AdminUserActionsProps = {
   userId: string;
+  userEmail?: string | null;
   accountStatus: string;
   subscriptionStatus: string | null;
   hasStripeConnect: boolean;
   hasStripeToRevoke: boolean;
+  isTargetAdmin?: boolean;
 };
 
 export function AdminUserActions({
   userId,
+  userEmail,
   accountStatus,
   subscriptionStatus,
   hasStripeConnect,
   hasStripeToRevoke,
+  isTargetAdmin,
 }: AdminUserActionsProps) {
   const [loading, setLoading] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [messageTone, setMessageTone] = useState<"success" | "warning" | "error">("success");
 
-  async function run(action: string, fn: () => Promise<{ error?: string }>) {
+  async function run(
+    action: string,
+    fn: () => Promise<{ error?: string; warning?: string; url?: string }>
+  ) {
     setLoading(action);
     setMessage(null);
     const result = await fn();
     setLoading(null);
     if (result.error) {
+      setMessageTone("error");
       setMessage(result.error);
+    } else if (result.url) {
+      setMessageTone("success");
+      setMessage("Opening sign-in link in a new tab…");
+      window.open(result.url, "_blank", "noopener,noreferrer");
+    } else if (result.warning) {
+      setMessageTone("warning");
+      setMessage(result.warning);
     } else {
+      setMessageTone("success");
       setMessage("Done");
       window.location.reload();
+    }
+  }
+
+  async function handleDelete() {
+    const label = userEmail ?? userId;
+    const confirmed = window.confirm(
+      `Permanently delete account ${label}?\n\nThis removes auth, profile, invoices, clients, and all related data. This cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    setLoading("delete");
+    setMessage(null);
+    const result = await adminDeleteUser(userId);
+    setLoading(null);
+    if (result.error) {
+      setMessageTone("error");
+      setMessage(result.error);
+    } else {
+      window.location.href = "/admin/users";
     }
   }
 
@@ -52,7 +90,7 @@ export function AdminUserActions({
           <Button
             size="sm"
             variant="outline"
-            disabled={!!loading}
+            disabled={!!loading || isTargetAdmin}
             onClick={() => run("unban", () => adminUnbanUser(userId))}
           >
             {loading === "unban" ? "…" : "Unban user"}
@@ -61,7 +99,7 @@ export function AdminUserActions({
           <Button
             size="sm"
             variant="destructive"
-            disabled={!!loading}
+            disabled={!!loading || isTargetAdmin}
             onClick={() => run("ban", () => adminBanUser(userId))}
           >
             {loading === "ban" ? "…" : "Ban user"}
@@ -99,9 +137,43 @@ export function AdminUserActions({
             {loading === "stripe" ? "…" : "Revoke Stripe Connect"}
           </Button>
         )}
+
+        {!isTargetAdmin && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="border-[#3B82F6]/40 text-[#3B82F6]"
+            disabled={!!loading}
+            onClick={() => run("impersonate", () => adminImpersonateUser(userId))}
+          >
+            {loading === "impersonate" ? "…" : "Sign in as user"}
+          </Button>
+        )}
+
+        {!isTargetAdmin && (
+          <Button
+            size="sm"
+            variant="destructive"
+            disabled={!!loading}
+            onClick={() => void handleDelete()}
+          >
+            {loading === "delete" ? "…" : "Delete account"}
+          </Button>
+        )}
       </div>
+      {isTargetAdmin && (
+        <p className="text-xs text-amber-400">Admin accounts cannot be banned, impersonated, or deleted here.</p>
+      )}
       {message && (
-        <p className={`text-sm ${message === "Done" ? "text-green-400" : "text-red-400"}`}>
+        <p
+          className={`text-sm ${
+            messageTone === "success"
+              ? "text-green-400"
+              : messageTone === "warning"
+                ? "text-amber-400"
+                : "text-red-400"
+          }`}
+        >
           {message}
         </p>
       )}

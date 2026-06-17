@@ -1,6 +1,7 @@
 "use server";
 
 import { assertNotBannedForAuth } from "@/lib/auth/ban-enforcement";
+import { logPlatformActivityRpc } from "@/lib/admin/platform-activity";
 import { getClientIpFromHeaders } from "@/lib/auth/client-ip";
 import { createClient } from "@/lib/supabase/server";
 import { registerSchema } from "@/lib/validations";
@@ -71,6 +72,13 @@ export async function signUpAction(formData: FormData) {
     return { error: toUserFacingError(msg, "sign-up") };
   }
   if (!data.user) return { error: "Sign up failed" };
+
+  await logPlatformActivityRpc(supabase, {
+    category: "auth",
+    action: "signup.completed",
+    ip: clientIp,
+    meta: { email: parsed.data.email, userId: data.user.id },
+  });
 
   if (data.session) {
     const logoFile = formData.get("logo") as File | null;

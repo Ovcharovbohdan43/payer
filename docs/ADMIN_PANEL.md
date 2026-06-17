@@ -21,6 +21,7 @@ Non-admins who open `/admin` are redirected to `/dashboard`.
 |---------|-----|-------------|
 | Overview | `/admin` | User counts, traffic summary, recent admin actions, manual Stripe ban cron |
 | Users | `/admin/users` | Search/filter users, open detail |
+| Live activity | `/admin/activity` | Auto-refreshing feed (page views, auth, billing, admin) |
 | User detail | `/admin/users/[id]` | Full profile, ban/unban, Pro grant/revoke, Stripe Connect revoke, IP log, invoices, audit |
 | Analytics | `/admin/analytics` | Daily page views, signups, top paths |
 
@@ -31,9 +32,34 @@ All mutations use the **service role** server-side after `requireAdmin()`:
 - **Ban / Unban** — `ban_user_account` / `unban_user_account` RPCs (IP/email blocklists + Stripe detach on ban)
 - **Grant / Revoke Pro** — `grant_pro_subscription` / `revoke_pro_subscription`
 - **Revoke Stripe Connect** — `stripe.accounts.del()` for the user's Connect account
+- **Sign in as user** — one-time magic link (Supabase `generateLink`) opens in new tab; logged in `admin_actions_log`
+- **Delete account** — `auth.admin.deleteUser()`; cascades profile and all user data; cannot target admins or self
 - **Run Stripe ban cron** — processes pending revocations for all banned users
 
-Actions are logged in `admin_actions_log`.
+Actions are logged in `admin_actions_log` and `platform_activity_log`.
+
+## Live activity
+
+`platform_activity_log` stores categorized events:
+
+| Category | Examples |
+|----------|----------|
+| `page` | Page views (middleware) |
+| `auth` | Sign-up, login, OAuth callback |
+| `billing` | Checkout started |
+| `admin` | Ban, impersonate, delete user |
+
+`/admin/activity` polls `/api/admin/activity-feed` every 5 seconds.
+
+Apply migration: `supabase/migrations/20250326000001_platform_activity_log.sql`
+
+## Impersonation
+
+**Sign in as user** generates a Supabase magic link for the target email. Open it in a new tab to browse the app as that user. Your admin session stays in the original tab. Cannot impersonate other admins or yourself.
+
+## Delete account
+
+Permanent deletion via Supabase Auth API. Removes `auth.users` row and cascades to `profiles`, invoices, clients, etc. Requires browser confirm dialog. Stripe Connect account is **not** auto-deleted — revoke separately if needed.
 
 ## Site analytics
 

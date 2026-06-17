@@ -34,6 +34,11 @@ export async function processPendingStripeRevocations(): Promise<{
       continue;
     }
 
+    if (result.mode === "pending_balance") {
+      errors.push(`${row.id}: pending balance (${result.currencies.join(", ") || "unknown"})`);
+      continue;
+    }
+
     const { error: updateErr } = await supabase
       .from("profiles")
       .update({

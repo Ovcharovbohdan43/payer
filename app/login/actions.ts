@@ -5,6 +5,7 @@ import { emailSchema } from "@/lib/validations";
 import { redirect } from "next/navigation";
 import { redirectIfBanned } from "@/lib/auth/account-status";
 import { assertNotBannedForAuth } from "@/lib/auth/ban-enforcement";
+import { logPlatformActivityRpc } from "@/lib/admin/platform-activity";
 import { getClientIpFromHeaders } from "@/lib/auth/client-ip";
 import { createAndSendOtp, verifyOtp } from "@/lib/auth/login-otp";
 import {
@@ -93,6 +94,12 @@ export async function signInWithPassword(formData: FormData) {
   if (!data.user) return { error: "Sign-in failed" };
 
   if (await isRememberedForUser(data.user.id)) {
+    await logPlatformActivityRpc(supabase, {
+      category: "auth",
+      action: "login.password",
+      ip: clientIp,
+      meta: { userId: data.user.id },
+    });
     await redirectIfBanned(supabase, data.user.id);
     redirect("/dashboard");
   }
@@ -134,6 +141,13 @@ export async function verifyOtpAction(
   if (remember) {
     await setRememberCookie(user.id);
   }
+
+  await logPlatformActivityRpc(supabase, {
+    category: "auth",
+    action: "login.otp_verified",
+    ip: await getClientIpFromHeaders(),
+    meta: { userId: user.id },
+  });
 
   await redirectIfBanned(supabase, user.id);
   redirect("/dashboard");

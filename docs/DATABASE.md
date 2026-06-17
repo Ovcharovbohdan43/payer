@@ -30,6 +30,7 @@ Run in order (Supabase SQL Editor or `supabase db push`):
 24. `supabase/migrations/20250323000001_account_ban.sql` — profiles.account_status (`active`/`banned`), ban/unban RPCs, trigger to prevent self-unban; see `docs/ACCOUNT_BAN.md`
 25. `supabase/migrations/20250324000001_account_ban_enforcement.sql` — user_ip_log, banned_ip_addresses, banned_emails, Stripe revoke columns, enhanced ban/unban RPCs; see `docs/ACCOUNT_BAN.md`
 26. `supabase/migrations/20250325000001_admin_panel.sql` — profiles.is_admin, site_analytics_events, admin_actions_log; see `docs/ADMIN_PANEL.md`
+27. `supabase/migrations/20250326000001_platform_activity_log.sql` — platform_activity_log, log_platform_activity RPC; see `docs/ADMIN_PANEL.md`
 
 **Planned (see docs/INTEGRATIONS_PLAN.md):** clients.external_id / external_source for CRM sync.
 

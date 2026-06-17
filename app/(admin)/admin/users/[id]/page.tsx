@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAdminUserDetail } from "@/lib/admin/queries";
 import { AdminUserActions } from "@/components/admin/admin-user-actions";
+import { LiveActivityFeed } from "@/components/admin/live-activity-feed";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { formatAmount } from "@/lib/invoices/utils";
@@ -44,10 +45,12 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
         </h2>
         <AdminUserActions
           userId={profile.id}
+          userEmail={email}
           accountStatus={profile.account_status}
           subscriptionStatus={profile.subscription_status}
           hasStripeConnect={!!profile.stripe_connect_account_id}
           hasStripeToRevoke={hasStripe}
+          isTargetAdmin={!!profile.is_admin}
         />
       </Card>
 
@@ -89,6 +92,22 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
             />
             <Field label="Onboarding" value={profile.onboarding_completed ? "Done" : "Pending"} />
             <Field label="Admin" value={profile.is_admin ? "Yes" : "No"} />
+            <Field
+              label="Email confirmed"
+              value={
+                detail.emailConfirmed
+                  ? new Date(detail.emailConfirmed).toLocaleString()
+                  : "Not confirmed"
+              }
+            />
+            <Field
+              label="Auth providers"
+              value={
+                Array.isArray(detail.providers) && detail.providers.length > 0
+                  ? detail.providers.join(", ")
+                  : "email"
+              }
+            />
           </dl>
         </Card>
 
@@ -133,6 +152,8 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
             <Field label="Company no." value={profile.company_number} />
             <Field label="Currency" value={profile.default_currency} />
             <Field label="Timezone" value={profile.timezone} />
+            <Field label="Address" value={profile.address} />
+            <Field label="Company type" value={profile.company_type} />
           </dl>
         </Card>
 
@@ -236,6 +257,118 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
             </table>
           </div>
         )}
+      </Card>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card className="border-white/[0.06] bg-[#121821]/90 p-5">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Clients ({detail.clients.length})
+          </h2>
+          {detail.clients.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No clients.</p>
+          ) : (
+            <ul className="space-y-2 text-sm">
+              {detail.clients.map((c) => (
+                <li key={c.id} className="flex justify-between gap-2 border-b border-white/[0.04] pb-2">
+                  <span className="text-white">{c.name}</span>
+                  <span className="truncate text-muted-foreground">{c.email ?? "—"}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+
+        <Card className="border-white/[0.06] bg-[#121821]/90 p-5">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Integrations
+          </h2>
+          {detail.integrations.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No integrations connected.</p>
+          ) : (
+            <ul className="space-y-2 text-sm">
+              {detail.integrations.map((i) => (
+                <li key={i.id} className="flex justify-between gap-2">
+                  <span className="text-white">{i.provider}</span>
+                  <span className="text-muted-foreground">
+                    {i.calendar_sync_enabled ? "sync on" : "sync off"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card className="border-white/[0.06] bg-[#121821]/90 p-5">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Payments
+          </h2>
+          {detail.payments.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No payments recorded.</p>
+          ) : (
+            <ul className="space-y-2 text-sm">
+              {detail.payments.map((p) => (
+                <li key={p.id} className="flex justify-between gap-2">
+                  <span className="text-white">
+                    {formatAmount(Number(p.amount_cents), p.currency)}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {new Date(p.paid_at ?? p.created_at).toLocaleDateString()}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+
+        <Card className="border-white/[0.06] bg-[#121821]/90 p-5">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Payouts
+          </h2>
+          {detail.payouts.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No payouts.</p>
+          ) : (
+            <ul className="space-y-2 text-sm">
+              {detail.payouts.map((p) => (
+                <li key={p.id} className="flex justify-between gap-2">
+                  <span className="text-white">
+                    {formatAmount(Number(p.amount_cents), p.currency)} · {p.status}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {new Date(p.created_at).toLocaleDateString()}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      </div>
+
+      <Card className="border-white/[0.06] bg-[#121821]/90 p-5">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          Admin actions on this user
+        </h2>
+        {detail.adminActionsOnUser.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No admin actions yet.</p>
+        ) : (
+          <ul className="space-y-2 text-sm">
+            {detail.adminActionsOnUser.map((a) => (
+              <li key={a.id} className="flex flex-wrap gap-2 text-muted-foreground">
+                <span>{new Date(a.created_at).toLocaleString()}</span>
+                <Badge variant="outline">{a.action}</Badge>
+                <span className="font-mono text-xs">{a.admin_id.slice(0, 8)}…</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+
+      <Card className="border-white/[0.06] bg-[#121821]/90 p-5">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          Live activity (this user)
+        </h2>
+        <LiveActivityFeed userId={profile.id} pollMs={8000} maxHeight="320px" />
       </Card>
 
       <Card className="border-white/[0.06] bg-[#121821]/90 p-5">

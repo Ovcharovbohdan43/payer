@@ -5,6 +5,7 @@ import {
   isAccountBanned,
 } from "@/lib/auth/account-status";
 import { isIpBanned, logUserIp } from "@/lib/auth/ban-enforcement";
+import { logPlatformActivityRpc } from "@/lib/admin/platform-activity";
 import { getClientIpFromRequest } from "@/lib/auth/client-ip";
 import { OTP_PENDING_COOKIE_NAME } from "@/lib/auth/constants";
 
@@ -149,6 +150,12 @@ export async function updateSession(request: NextRequest) {
       p_path: pathname,
       p_ip: clientIp,
       p_referrer: request.headers.get("referer"),
+    });
+    void logPlatformActivityRpc(supabase, {
+      category: "page",
+      action: "view",
+      path: pathname,
+      ip: clientIp,
     });
   }
 

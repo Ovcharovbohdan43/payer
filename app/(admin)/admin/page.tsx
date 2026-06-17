@@ -70,6 +70,9 @@ export default async function AdminOverviewPage() {
         <Button variant="outline" asChild>
           <Link href="/admin/analytics">View analytics</Link>
         </Button>
+        <Button variant="outline" asChild>
+          <Link href="/admin/activity">Live activity</Link>
+        </Button>
         <form action={adminRunStripeBanCronAction}>
           <Button variant="secondary" type="submit">
             Run Stripe ban cron now

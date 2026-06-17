@@ -4,6 +4,14 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2026-06-17] – Admin panel: live activity, impersonation, delete user
+
+- **Live feed:** `/admin/activity` with auto-refresh; `platform_activity_log` + logging from middleware, auth, checkout, admin actions.
+- **User detail:** clients, payments, payouts, integrations, admin action history, per-user activity feed.
+- **Sign in as user:** magic link via Supabase Admin API (new tab); audit logged.
+- **Delete account:** permanent `deleteUser` with confirm; blocks self/admin targets.
+- **Stripe revoke:** friendly warning when Connect account has non-zero balance (pending delete).
+
 ### [2026-06-17] – Cron: enforce-bans daily on Vercel Hobby
 
 - **Vercel:** Changed `enforce-bans` schedule from hourly to `0 9 * * *` (once per day) — Hobby plan limit.

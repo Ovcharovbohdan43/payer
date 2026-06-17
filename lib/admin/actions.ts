@@ -1,10 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/auth/require-admin";
+import { requireAdmin, isUserAdmin } from "@/lib/auth/require-admin";
 import { processPendingStripeRevocations } from "@/lib/auth/process-ban-stripe";
+import { logPlatformActivityAdmin } from "@/lib/admin/platform-activity";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revokeStripeConnectAccount } from "@/lib/stripe/revoke-connect-account";
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
 
 async function logAdminAction(
   adminId: string,
@@ -19,12 +22,35 @@ async function logAdminAction(
     target_user_id: targetUserId,
     meta,
   });
+  await logPlatformActivityAdmin({
+    category: "admin",
+    action,
+    actorId: adminId,
+    userId: targetUserId,
+    meta,
+  });
+}
+
+async function assertAdminTargetAllowed(
+  adminId: string,
+  targetUserId: string
+): Promise<{ error: string } | null> {
+  if (targetUserId === adminId) {
+    return { error: "This action cannot be performed on your own account" };
+  }
+  const admin = createAdminClient();
+  if (await isUserAdmin(admin, targetUserId)) {
+    return { error: "This action cannot be performed on another admin" };
+  }
+  return null;
 }
 
 export async function adminBanUser(userId: string): Promise<{ error?: string }> {
   const { user } = await requireAdmin();
-  const admin = createAdminClient();
+  const blocked = await assertAdminTargetAllowed(user.id, userId);
+  if (blocked) return blocked;
 
+  const admin = createAdminClient();
   const { error } = await admin.rpc("ban_user_account", { p_user_id: userId });
   if (error) return { error: error.message };
 
@@ -75,7 +101,7 @@ export async function adminRevokePro(userId: string): Promise<{ error?: string }
 
 export async function adminRevokeStripeForUser(
   userId: string
-): Promise<{ error?: string; ok?: boolean }> {
+): Promise<{ error?: string; ok?: boolean; warning?: string }> {
   const { user } = await requireAdmin();
   const admin = createAdminClient();
 
@@ -95,7 +121,19 @@ export async function adminRevokeStripeForUser(
   }
 
   const result = await revokeStripeConnectAccount(accountId);
-  if (!result.ok) return { error: result.error };
+
+  if (!result.ok) {
+    return { error: result.error };
+  }
+
+  if (result.mode === "pending_balance") {
+    await logAdminAction(user.id, "revoke_stripe_connect_pending", userId, {
+      accountId,
+      currencies: result.currencies,
+    });
+    revalidatePath(`/admin/users/${userId}`);
+    return { ok: true, warning: result.warning };
+  }
 
   await admin
     .from("profiles")
@@ -111,6 +149,58 @@ export async function adminRevokeStripeForUser(
   return { ok: true };
 }
 
+/** Generate a one-time magic link to sign in as the user (opens in new tab). */
+export async function adminImpersonateUser(
+  userId: string
+): Promise<{ error?: string; url?: string }> {
+  const { user } = await requireAdmin();
+  const blocked = await assertAdminTargetAllowed(user.id, userId);
+  if (blocked) return blocked;
+
+  const admin = createAdminClient();
+  const { data: authUser, error: fetchErr } = await admin.auth.admin.getUserById(userId);
+  if (fetchErr || !authUser.user?.email) {
+    return { error: "User email not found" };
+  }
+
+  const { data, error } = await admin.auth.admin.generateLink({
+    type: "magiclink",
+    email: authUser.user.email,
+    options: {
+      redirectTo: `${APP_URL}/auth/callback?next=/dashboard`,
+    },
+  });
+
+  if (error || !data.properties?.action_link) {
+    return { error: error?.message ?? "Could not generate sign-in link" };
+  }
+
+  await logAdminAction(user.id, "impersonate", userId, {
+    email: authUser.user.email,
+  });
+
+  return { url: data.properties.action_link };
+}
+
+/** Permanently delete auth user and cascaded data. */
+export async function adminDeleteUser(userId: string): Promise<{ error?: string }> {
+  const { user } = await requireAdmin();
+  const blocked = await assertAdminTargetAllowed(user.id, userId);
+  if (blocked) return blocked;
+
+  const admin = createAdminClient();
+  const { data: authUser } = await admin.auth.admin.getUserById(userId);
+  const email = authUser.user?.email ?? null;
+
+  const { error } = await admin.auth.admin.deleteUser(userId);
+  if (error) return { error: error.message };
+
+  await logAdminAction(user.id, "delete_user", userId, { email });
+  revalidatePath("/admin");
+  revalidatePath("/admin/users");
+  return {};
+}
+
 export async function adminRunStripeBanCron(): Promise<{
   processed: number;
   errors: string[];
@@ -122,7 +212,6 @@ export async function adminRunStripeBanCron(): Promise<{
   return result;
 }
 
-/** Form action wrapper (no return value). */
 export async function adminRunStripeBanCronAction(): Promise<void> {
   await adminRunStripeBanCron();
 }

@@ -1,5 +1,6 @@
 import { ACCOUNT_RESTRICTED_PATH, isUserBanned } from "@/lib/auth/account-status";
 import { assertNotBannedForAuth, logUserIp } from "@/lib/auth/ban-enforcement";
+import { logPlatformActivityRpc } from "@/lib/admin/platform-activity";
 import { getClientIpFromRequest } from "@/lib/auth/client-ip";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
@@ -43,6 +44,12 @@ export async function GET(request: Request) {
     }
 
     await logUserIp(supabase, clientIp);
+    await logPlatformActivityRpc(supabase, {
+      category: "auth",
+      action: "login.oauth_or_magic",
+      ip: clientIp,
+      meta: { userId: user.id, email: user.email },
+    });
     return NextResponse.redirect(`${origin}${next}`);
   } catch {
     return NextResponse.redirect(`${origin}/login?error=link_invalid`);
