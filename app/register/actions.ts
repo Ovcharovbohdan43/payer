@@ -1,5 +1,7 @@
 "use server";
 
+import { assertNotBannedForAuth } from "@/lib/auth/ban-enforcement";
+import { getClientIpFromHeaders } from "@/lib/auth/client-ip";
 import { createClient } from "@/lib/supabase/server";
 import { registerSchema } from "@/lib/validations";
 import { redirect } from "next/navigation";
@@ -36,6 +38,13 @@ export async function signUpAction(formData: FormData) {
   }
 
   const supabase = await createClient();
+  const clientIp = await getClientIpFromHeaders();
+  const banBlock = await assertNotBannedForAuth(supabase, {
+    email: parsed.data.email,
+    ip: clientIp,
+  });
+  if (banBlock) return { error: banBlock.error };
+
   const fullName = `${parsed.data.first_name.trim()} ${parsed.data.last_name.trim()}`;
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,

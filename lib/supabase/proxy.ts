@@ -4,6 +4,8 @@ import {
   ACCOUNT_RESTRICTED_PATH,
   isAccountBanned,
 } from "@/lib/auth/account-status";
+import { isIpBanned, logUserIp } from "@/lib/auth/ban-enforcement";
+import { getClientIpFromRequest } from "@/lib/auth/client-ip";
 import { OTP_PENDING_COOKIE_NAME } from "@/lib/auth/constants";
 
 const PROTECTED_PREFIXES = [
@@ -32,6 +34,12 @@ function isBanExemptPath(pathname: string) {
     pathname.startsWith("/login") ||
     pathname.startsWith("/register")
   );
+}
+
+const IP_BAN_AUTH_PATHS = ["/register", "/login", "/auth/callback", "/onboarding"];
+
+function isIpBanAuthPath(pathname: string) {
+  return IP_BAN_AUTH_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"));
 }
 
 function isProtectedPath(pathname: string) {
@@ -69,6 +77,11 @@ export async function updateSession(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const user = data?.claims;
   const pathname = request.nextUrl.pathname;
+  const clientIp = getClientIpFromRequest(request);
+
+  if (clientIp && isIpBanAuthPath(pathname) && (await isIpBanned(supabase, clientIp))) {
+    return NextResponse.redirect(new URL(ACCOUNT_RESTRICTED_PATH, request.url));
+  }
 
   if (!user && (isProtectedPath(pathname) || pathname === "/login/verify-otp")) {
     const redirectUrl = request.nextUrl.clone();
@@ -105,6 +118,10 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(new URL(ACCOUNT_RESTRICTED_PATH, request.url));
       }
     }
+  }
+
+  if (userId && clientIp) {
+    await logUserIp(supabase, clientIp);
   }
 
   return supabaseResponse;

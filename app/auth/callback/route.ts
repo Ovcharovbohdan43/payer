@@ -1,5 +1,7 @@
-import { createClient } from "@/lib/supabase/server";
 import { ACCOUNT_RESTRICTED_PATH, isUserBanned } from "@/lib/auth/account-status";
+import { assertNotBannedForAuth, logUserIp } from "@/lib/auth/ban-enforcement";
+import { getClientIpFromRequest } from "@/lib/auth/client-ip";
+import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 /**
@@ -30,10 +32,17 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${origin}/login?error=link_invalid`);
     }
 
-    if (await isUserBanned(supabase, user.id)) {
+    const clientIp = getClientIpFromRequest(request);
+    const banBlock = await assertNotBannedForAuth(supabase, {
+      email: user.email,
+      ip: clientIp,
+    });
+    if (banBlock || (await isUserBanned(supabase, user.id))) {
+      await supabase.auth.signOut();
       return NextResponse.redirect(`${origin}${ACCOUNT_RESTRICTED_PATH}`);
     }
 
+    await logUserIp(supabase, clientIp);
     return NextResponse.redirect(`${origin}${next}`);
   } catch {
     return NextResponse.redirect(`${origin}/login?error=link_invalid`);

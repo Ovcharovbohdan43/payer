@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { assertActiveAccount } from "@/lib/auth/account-status";
 import { createClient } from "@/lib/supabase/server";
 import {
   buildConnectAccountParams,
@@ -24,6 +25,11 @@ export async function POST() {
     } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Please sign in" }, { status: 401 });
+    }
+
+    const banned = await assertActiveAccount(supabase, user.id);
+    if (banned) {
+      return NextResponse.json({ error: banned.error }, { status: 403 });
     }
 
     const stripe = new Stripe(secret);

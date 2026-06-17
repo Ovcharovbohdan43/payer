@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { isAccountBanned } from "@/lib/auth/account-status";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createDirectChargeCheckoutSession } from "@/lib/stripe/connect";
 
@@ -42,9 +43,16 @@ export async function POST(request: Request) {
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("stripe_connect_account_id")
+      .select("stripe_connect_account_id, account_status")
       .eq("id", invoice.user_id)
       .single();
+
+    if (isAccountBanned(profile?.account_status)) {
+      return NextResponse.json(
+        { error: "Online payment is not available for this invoice." },
+        { status: 400 }
+      );
+    }
 
     const chargeCents = Number(invoice.amount_cents);
     const destination = profile?.stripe_connect_account_id ?? null;

@@ -4,6 +4,15 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2026-06-17] – Account ban enforcement (IP, email, Stripe)
+
+- **Ban RPC:** `ban_user_account()` now blocklists user email and known IPs, clears `stripe_connect_account_id`, and snapshots Connect id for API revocation.
+- **Unban RPC:** `unban_user_account()` removes email/IP blocklist entries for the user.
+- **Tables:** `user_ip_log`, `banned_ip_addresses`, `banned_emails`; `profiles.stripe_connect_account_id_at_ban`, `stripe_connect_revoked_at`.
+- **App:** Middleware blocks banned IPs on login/register/OAuth; register/login check email ban; checkout rejects banned merchants; Connect route blocked when banned.
+- **Cron:** `/api/cron/enforce-bans` (hourly) deletes Stripe Connect accounts via `accounts.del()`.
+- **Docs:** Updated `docs/ACCOUNT_BAN.md`, `docs/DATABASE.md`.
+
 ### [2026-06-17] – Google Calendar integration UI (Beta)
 
 - **Settings:** Professional Google Calendar card with how-it-works steps, Beta badge, and privacy notes; removed Outlook from the UI.

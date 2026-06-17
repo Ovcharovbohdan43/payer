@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { emailSchema } from "@/lib/validations";
 import { redirect } from "next/navigation";
 import { redirectIfBanned } from "@/lib/auth/account-status";
+import { assertNotBannedForAuth } from "@/lib/auth/ban-enforcement";
+import { getClientIpFromHeaders } from "@/lib/auth/client-ip";
 import { createAndSendOtp, verifyOtp } from "@/lib/auth/login-otp";
 import {
   isRememberedForUser,
@@ -38,6 +40,13 @@ export async function signInWithMagicLink(formData: FormData) {
     throw e;
   }
 
+  const clientIp = await getClientIpFromHeaders();
+  const banBlock = await assertNotBannedForAuth(supabase, {
+    email: parsed.data,
+    ip: clientIp,
+  });
+  if (banBlock) return { error: banBlock.error };
+
   const { error } = await supabase.auth.signInWithOtp({
     email: parsed.data,
     options: {
@@ -68,6 +77,13 @@ export async function signInWithPassword(formData: FormData) {
   }
 
   const supabase = await createClient();
+  const clientIp = await getClientIpFromHeaders();
+  const banBlock = await assertNotBannedForAuth(supabase, {
+    email: parsed.data,
+    ip: clientIp,
+  });
+  if (banBlock) return { error: banBlock.error };
+
   const { data, error } = await supabase.auth.signInWithPassword({
     email: parsed.data,
     password,
