@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 function parseAdminAllowlist(): Set<string> {
   const raw = process.env.ADMIN_USER_IDS?.trim();
@@ -27,6 +28,20 @@ export async function isUserAdmin(
     .single();
 
   return data?.is_admin === true;
+}
+
+/** True if email belongs to a platform admin (for ban bypass on login). */
+export async function isAdminEmail(email: string | null | undefined): Promise<boolean> {
+  if (!email?.trim()) return false;
+  const normalized = email.trim().toLowerCase();
+
+  const admin = createAdminClient();
+  const { data, error } = await admin.rpc("check_admin_email", { p_email: normalized });
+  if (error) {
+    console.error("[require-admin] check_admin_email", error.message);
+    return false;
+  }
+  return data === true;
 }
 
 /** Server pages/actions: require signed-in admin or redirect. */

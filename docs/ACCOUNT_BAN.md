@@ -115,6 +115,25 @@ Manual trigger after banning a user with Connect speeds up Stripe disconnection.
 7. If user had Stripe Connect, run enforce-bans cron → account deleted on Stripe
 8. Run `select unban_user_account('user-id');` → login works; Stripe must be reconnected manually
 
+## Unblock an IP (SQL Editor)
+
+If an admin IP was blocklisted after impersonating and banning a user:
+
+```sql
+-- See all blocked IPs
+select * from public.banned_ip_addresses order by banned_at desc;
+
+-- Remove one IP
+select public.unban_ip_address('YOUR.IP.HERE');
+
+-- Or remove all (emergency)
+delete from public.banned_ip_addresses;
+```
+
+Requires migration `20250327000001_ban_exclude_admin_ips.sql` for `unban_ip_address`. Without it, use `delete from public.banned_ip_addresses where ip_address = '...';`.
+
+Admins (`profiles.is_admin` or `ADMIN_USER_IDS`) bypass IP/email bans in middleware after the code deploy; apply the migration so future bans skip admin IPs.
+
 ## Limitations
 
 - **IP blocking** depends on `x-forwarded-for` / `x-real-ip` and only covers IPs logged before the ban. New IPs or VPNs can bypass until logged and re-banned manually.
@@ -125,9 +144,10 @@ Manual trigger after banning a user with Connect speeds up Stripe disconnection.
 
 ## Version
 
-- **2026-06-17** — IP/email blocklists, Stripe Connect revocation, enhanced ban RPCs
+- **2026-06-17** — IP/email blocklists, Stripe Connect revocation, enhanced ban RPCs; admin IP exemption
 
 ## Changelog
 
+- [2026-06-17] – Added: admin IP exemption on ban, `unban_ip_address` RPC, middleware bypass for admins.
 - [2026-06-17] – Added: IP/email blocklists, Stripe Connect detach + cron revoke, middleware and auth enforcement.
 - [2026-06-17] – Added: `profiles.account_status`, ban/unban RPCs, `/account-restricted` page, middleware and auth checks.

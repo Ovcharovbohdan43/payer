@@ -4,7 +4,8 @@ import {
   ACCOUNT_RESTRICTED_PATH,
   isAccountBanned,
 } from "@/lib/auth/account-status";
-import { isIpBanned, logUserIp } from "@/lib/auth/ban-enforcement";
+import { isIpBannedForRequest, logUserIp } from "@/lib/auth/ban-enforcement";
+import { isUserAdmin } from "@/lib/auth/require-admin";
 import { logPlatformActivityRpc } from "@/lib/admin/platform-activity";
 import { getClientIpFromRequest } from "@/lib/auth/client-ip";
 import { OTP_PENDING_COOKIE_NAME } from "@/lib/auth/constants";
@@ -92,7 +93,13 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const clientIp = getClientIpFromRequest(request);
 
-  if (clientIp && isIpBanAuthPath(pathname) && (await isIpBanned(supabase, clientIp))) {
+  const userId = typeof user?.sub === "string" ? user.sub : null;
+
+  if (
+    clientIp &&
+    isIpBanAuthPath(pathname) &&
+    (await isIpBannedForRequest(supabase, clientIp, userId))
+  ) {
     return NextResponse.redirect(new URL(ACCOUNT_RESTRICTED_PATH, request.url));
   }
 
@@ -116,7 +123,6 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(new URL("/login/verify-otp", request.url));
   }
 
-  const userId = typeof user?.sub === "string" ? user.sub : null;
   if (userId && !isBanExemptPath(pathname)) {
     if (pathname === ACCOUNT_RESTRICTED_PATH) {
       const { data: profile } = await supabase
@@ -129,20 +135,27 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(new URL("/dashboard", request.url));
       }
     } else if (isBanCheckedPath(pathname)) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("account_status")
-        .eq("id", userId)
-        .single();
+      const skipAccountBan =
+        isAdminPath(pathname) && userId && (await isUserAdmin(supabase, userId));
 
-      if (isAccountBanned(profile?.account_status)) {
-        return NextResponse.redirect(new URL(ACCOUNT_RESTRICTED_PATH, request.url));
+      if (!skipAccountBan) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("account_status")
+          .eq("id", userId)
+          .single();
+
+        if (isAccountBanned(profile?.account_status)) {
+          return NextResponse.redirect(new URL(ACCOUNT_RESTRICTED_PATH, request.url));
+        }
       }
     }
   }
 
   if (userId && clientIp) {
-    await logUserIp(supabase, clientIp);
+    if (!(await isUserAdmin(supabase, userId))) {
+      await logUserIp(supabase, clientIp);
+    }
   }
 
   if (shouldLogPageView(pathname, request.method)) {

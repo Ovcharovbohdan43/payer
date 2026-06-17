@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { isUserAdmin, isAdminEmail } from "@/lib/auth/require-admin";
 import { SUPPORT_EMAIL } from "@/lib/auth/account-status";
 
 export const BAN_BLOCKED_MESSAGE = `Access is restricted. Please contact support at ${SUPPORT_EMAIL}.`;
@@ -49,8 +50,14 @@ export async function logUserIp(
 
 export async function assertNotBannedForAuth(
   supabase: SupabaseClient,
-  options: { email?: string; ip?: string | null }
+  options: { email?: string; ip?: string | null; userId?: string | null }
 ): Promise<{ error: string } | null> {
+  if (options.userId && (await isUserAdmin(supabase, options.userId))) {
+    return null;
+  }
+  if (options.email && (await isAdminEmail(options.email))) {
+    return null;
+  }
   if (options.email && (await isEmailBanned(supabase, options.email))) {
     return { error: BAN_SIGNUP_BLOCKED_MESSAGE };
   }
@@ -58,4 +65,16 @@ export async function assertNotBannedForAuth(
     return { error: BAN_BLOCKED_MESSAGE };
   }
   return null;
+}
+
+/** Skip IP ban for authenticated platform admins. */
+export async function isIpBannedForRequest(
+  supabase: SupabaseClient,
+  ip: string | null | undefined,
+  userId: string | null | undefined
+): Promise<boolean> {
+  if (userId && (await isUserAdmin(supabase, userId))) {
+    return false;
+  }
+  return isIpBanned(supabase, ip);
 }
