@@ -4,6 +4,12 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2026-06-17] – Google Calendar integration UI (Beta)
+
+- **Settings:** Professional Google Calendar card with how-it-works steps, Beta badge, and privacy notes; removed Outlook from the UI.
+- **Landing:** New “Bill right after every session” section and feature card; pricing lists Calendar reminders (Beta).
+- **Help:** New Integrations FAQ category for Google Calendar.
+
 ### [2026-06-17] – Prohibited activities policy and registration consent
 
 - **Terms:** Expanded Section 5 with explicit prohibited activities (gambling, weapons, drugs, fraud, etc.) and Section 6 on permanent account deletion for violations.

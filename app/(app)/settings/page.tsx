@@ -20,8 +20,7 @@ export default async function SettingsPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [profileResult, googleCalendarConnection, microsoftCalendarConnection, visualTemplates] =
-    await Promise.all([
+  const [profileResult, googleCalendarConnection, visualTemplates] = await Promise.all([
       supabase
         .from("profiles")
         .select(
@@ -35,12 +34,6 @@ export default async function SettingsPage({
         .eq("user_id", user.id)
         .eq("provider", "google_calendar")
         .maybeSingle(),
-      supabase
-        .from("integration_connections")
-        .select("id, created_at")
-        .eq("user_id", user.id)
-        .eq("provider", "microsoft_calendar")
-        .maybeSingle(),
       listInvoiceVisualTemplates(),
     ]);
 
@@ -48,7 +41,7 @@ export default async function SettingsPage({
 
   const params = await searchParams;
   const isRecovery = params?.recovery === "1";
-  const integrationSuccess = params?.integration; // "google_calendar" | "microsoft_calendar"
+  const integrationSuccess = params?.integration;
   const integrationError = params?.integration_error === "calendar";
 
   return (
@@ -58,7 +51,6 @@ export default async function SettingsPage({
         <SettingsForm
           recovery={isRecovery}
           googleCalendarConnection={googleCalendarConnection.data ?? null}
-          microsoftCalendarConnection={microsoftCalendarConnection.data ?? null}
           integrationSuccess={integrationSuccess ?? null}
           integrationError={integrationError}
           visualTemplates={visualTemplates}

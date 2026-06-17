@@ -18,7 +18,7 @@ import { updateProfileAction, setPasswordAction, sendPasswordResetEmailAction, r
 import { maskEmail } from "@/lib/utils";
 import { ConnectStripeButton } from "./connect-stripe-button";
 import { useRouter } from "next/navigation";
-import { Calendar } from "lucide-react";
+import { GoogleCalendarIntegration } from "@/components/integrations/google-calendar-integration";
 import { INVOICE_DESIGNS, normalizeInvoiceDesign, type InvoiceDesignKey } from "@/lib/invoice-designs";
 import type { InvoiceVisualTemplateRow } from "@/lib/invoice-visual-config";
 
@@ -50,7 +50,6 @@ export function SettingsForm({
   profile,
   recovery = false,
   googleCalendarConnection = null,
-  microsoftCalendarConnection = null,
   integrationSuccess = null,
   integrationError = false,
   visualTemplates = [],
@@ -58,7 +57,6 @@ export function SettingsForm({
   profile: Profile;
   recovery?: boolean;
   googleCalendarConnection?: CalendarConnection;
-  microsoftCalendarConnection?: CalendarConnection;
   integrationSuccess?: string | null;
   integrationError?: boolean;
   visualTemplates?: InvoiceVisualTemplateRow[];
@@ -347,28 +345,16 @@ export function SettingsForm({
         id="integrations"
         className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6"
       >
-        <h2 className="mb-2 flex items-center gap-2 text-base font-semibold">
-          <Calendar className="size-4 text-[#3B82F6]" />
-          Integrations
-        </h2>
-        <p className="mb-3 text-sm text-muted-foreground">
-          Connect your calendar to get a reminder to issue an invoice after a session.
+        <h2 className="mb-1 text-base font-semibold">Integrations</h2>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Connect tools you already use so Puyer fits into your workflow.
         </p>
-        {integrationSuccess === "google_calendar" && (
-          <p className="mb-3 text-sm text-emerald-500">Google Calendar connected successfully.</p>
-        )}
-        {integrationSuccess === "microsoft_calendar" && (
-          <p className="mb-3 text-sm text-emerald-500">Microsoft Calendar connected successfully.</p>
-        )}
-        {integrationError && (
-          <p className="mb-3 text-sm text-amber-500">
-            Calendar connection failed. Please try again or use a different account.
-          </p>
-        )}
-        <CalendarIntegrations
-          googleCalendarConnection={googleCalendarConnection ?? null}
-          microsoftCalendarConnection={microsoftCalendarConnection ?? null}
+        <GoogleCalendarIntegration
+          connection={googleCalendarConnection ?? null}
+          integrationSuccess={integrationSuccess === "google_calendar"}
+          integrationError={integrationError}
           onDisconnect={() => router.refresh()}
+          variant="settings"
         />
       </section>
 
@@ -400,91 +386,6 @@ export function SettingsForm({
           </Link>
         </div>
       </section>
-    </div>
-  );
-}
-
-function CalendarIntegrations({
-  googleCalendarConnection,
-  microsoftCalendarConnection,
-  onDisconnect,
-}: {
-  googleCalendarConnection: CalendarConnection;
-  microsoftCalendarConnection: CalendarConnection;
-  onDisconnect: () => void;
-}) {
-  const [disconnectingProvider, setDisconnectingProvider] = useState<string | null>(null);
-
-  async function handleDisconnect(provider: "google_calendar" | "microsoft_calendar") {
-    setDisconnectingProvider(provider);
-    try {
-      const res = await fetch("/api/integrations/calendar/disconnect", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ provider }),
-      });
-      if (res.ok) onDisconnect();
-    } finally {
-      setDisconnectingProvider(null);
-    }
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-3">
-        {googleCalendarConnection ? (
-          <>
-            <div className="flex items-center gap-2 text-sm text-emerald-500">
-              <span className="size-2 rounded-full bg-emerald-500" />
-              Google Calendar connected
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={disconnectingProvider !== null}
-              onClick={() => handleDisconnect("google_calendar")}
-              className="rounded-lg"
-            >
-              {disconnectingProvider === "google_calendar" ? "Disconnecting…" : "Disconnect"}
-            </Button>
-          </>
-        ) : (
-          <a
-            href="/api/integrations/calendar/auth/google"
-            className="inline-flex h-10 items-center justify-center rounded-lg border border-white/10 bg-[#121821]/50 px-4 text-sm font-medium text-foreground hover:bg-white/5"
-          >
-            Connect Google Calendar
-          </a>
-        )}
-      </div>
-      <div className="flex flex-wrap items-center gap-3">
-        {microsoftCalendarConnection ? (
-          <>
-            <div className="flex items-center gap-2 text-sm text-emerald-500">
-              <span className="size-2 rounded-full bg-emerald-500" />
-              Microsoft Calendar (Outlook) connected
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={disconnectingProvider !== null}
-              onClick={() => handleDisconnect("microsoft_calendar")}
-              className="rounded-lg"
-            >
-              {disconnectingProvider === "microsoft_calendar" ? "Disconnecting…" : "Disconnect"}
-            </Button>
-          </>
-        ) : (
-          <a
-            href="/api/integrations/calendar/auth/microsoft"
-            className="inline-flex h-10 items-center justify-center rounded-lg border border-white/10 bg-[#121821]/50 px-4 text-sm font-medium text-foreground hover:bg-white/5"
-          >
-            Connect Microsoft Calendar (Outlook)
-          </a>
-        )}
-      </div>
     </div>
   );
 }

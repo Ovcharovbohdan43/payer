@@ -11,9 +11,11 @@ import {
   Smartphone,
   ArrowRight,
   Check,
+  Calendar,
 } from "lucide-react";
 import { ScreenshotGallery } from "@/components/screenshot-gallery";
 import { PublicReviewsSection } from "@/components/reviews/public-reviews-section";
+import { GoogleCalendarIntegration } from "@/components/integrations/google-calendar-integration";
 
 export default function HomePage() {
   return (
@@ -140,7 +142,32 @@ export default function HomePage() {
                   description="Minimal setup. Magic link sign-in. Start invoicing in under a minute."
                 />
               </AnimateInView>
+              <AnimateInView className="[transition-delay:450ms]">
+                <FeatureCard
+                  icon={<Calendar className="size-6 text-[#3B82F6]" />}
+                  title="Google Calendar"
+                  badge="Beta"
+                  description="Session ended? We email you a reminder to issue an invoice — so you never forget to bill after a call."
+                />
+              </AnimateInView>
             </div>
+          </div>
+        </section>
+
+        {/* Google Calendar integration */}
+        <section className="border-t border-white/5 px-4 py-12 sm:px-6 sm:py-20 min-[375px]:px-4">
+          <div className="mx-auto max-w-4xl">
+            <h2 className="text-center text-xl font-bold text-white min-[375px]:text-2xl sm:text-3xl">
+              Bill right after every session
+            </h2>
+            <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-white/60 min-[375px]:text-base">
+              Connect Google Calendar once. When a meeting ends, Puyer sends you a
+              professional reminder to create and send the invoice — read-only access,
+              no calendar edits.
+            </p>
+            <AnimateInView className="mt-10 sm:mt-12">
+              <GoogleCalendarIntegration connection={null} variant="marketing" />
+            </AnimateInView>
           </div>
         </section>
 
@@ -221,6 +248,7 @@ export default function HomePage() {
                     "Email invoices & reminders",
                     "PDF download",
                     "Stripe Connect payouts",
+                    "Google Calendar reminders (Beta)",
                   ].map((item) => (
                     <li key={item} className="flex items-center gap-3 text-white/80">
                       <Check className="size-5 shrink-0 text-[#3B82F6]" />
@@ -248,6 +276,7 @@ export default function HomePage() {
                   {[
                     "Unlimited invoices",
                     "All Free features",
+                    "Google Calendar reminders (Beta)",
                     "Premium tech support",
                     "Cancel anytime",
                   ].map((item) => (
@@ -365,10 +394,12 @@ function FeatureCard({
   icon,
   title,
   description,
+  badge,
 }: {
   icon: React.ReactNode;
   title: string;
   description: string;
+  badge?: string;
 }) {
   return (
     <div
@@ -377,7 +408,14 @@ function FeatureCard({
       <div className="flex size-12 items-center justify-center rounded-xl bg-[#3B82F6]/10 text-[#3B82F6]">
         {icon}
       </div>
-      <h3 className="mt-4 text-base font-semibold text-white min-[375px]:text-lg">{title}</h3>
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <h3 className="text-base font-semibold text-white min-[375px]:text-lg">{title}</h3>
+        {badge && (
+          <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-400">
+            {badge}
+          </span>
+        )}
+      </div>
       <p className="mt-2 text-sm text-white/60 min-[375px]:text-base">{description}</p>
     </div>
   );

@@ -10,6 +10,7 @@ import {
   Zap,
   Mail,
   ArrowRight,
+  Calendar,
 } from "lucide-react";
 
 export const metadata = {
@@ -128,6 +129,29 @@ const FAQ_CATEGORIES = [
       {
         q: "How do I delete my account?",
         a: "Contact support@puyer.org with your account email. We'll process the deletion request and confirm. Your invoices and data will be removed in line with our privacy practices.",
+      },
+    ],
+  },
+  {
+    id: "integrations",
+    title: "Integrations",
+    icon: Calendar,
+    items: [
+      {
+        q: "How does the Google Calendar integration work?",
+        a: "Connect Google Calendar in Settings → Integrations (Beta). Puyer uses read-only access to your primary calendar. When a scheduled session ends, you receive an email about 15 minutes later: “Session ended — issue an invoice?” with a link to create a new invoice. We send one reminder per calendar event.",
+      },
+      {
+        q: "Does Puyer change or create events in my calendar?",
+        a: "No. We only read your calendar to detect when sessions end. We never create, edit, or delete events. You can disconnect at any time in Settings → Integrations.",
+      },
+      {
+        q: "Which calendar is used?",
+        a: "Currently your Google primary calendar. Timed events (with a start and end time) work best. All-day events may not trigger reminders.",
+      },
+      {
+        q: "Is Outlook or Microsoft Calendar supported?",
+        a: "Not at this time. Google Calendar is available in Beta. Other providers may be added later based on demand.",
       },
     ],
   },
