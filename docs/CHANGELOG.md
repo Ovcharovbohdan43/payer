@@ -4,6 +4,13 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2026-06-17] – Stripe Connect: connected accounts pay processing fees
+
+- **Invoice payments:** Switched from destination charges (`transfer_data`) to **direct charges** (Checkout on connected account). Stripe payment processing fees are now billed to the connected account, not the platform.
+- **Connect helper:** Added `lib/stripe/connect.ts` for account creation and direct-charge Checkout.
+- **Webhooks:** Invoice `checkout.session.completed` must be enabled on the **Connect** webhook (`STRIPE_WEBHOOK_SECRET_CONNECT`); Pro subscriptions stay on the platform webhook.
+- **Docs:** Updated `docs/STRIPE_CONNECT.md` with charge types and webhook setup.
+
 ### [2026-06-17] – Account ban system
 
 - **Account ban:** `profiles.account_status` (`active` / `banned`). Set in Supabase via `ban_user_account(uuid)`, `unban_user_account(uuid)`, or direct SQL update.

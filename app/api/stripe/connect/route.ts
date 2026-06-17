@@ -1,15 +1,12 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
+import {
+  buildConnectAccountParams,
+  getConnectCountry,
+} from "@/lib/stripe/connect";
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
-
-/** Default country for Connect accounts. Use GB for UK Stripe, US for US Stripe. */
-function getConnectCountry(_profileBusinessName?: string | null): string {
-  const env = process.env.STRIPE_CONNECT_COUNTRY?.trim().toUpperCase();
-  if (env === "GB" || env === "US" || env === "DE" || env === "FR") return env;
-  return "GB";
-}
 
 export async function POST() {
   try {
@@ -39,17 +36,10 @@ export async function POST() {
     let accountId = profile?.stripe_connect_account_id;
 
     if (!accountId) {
-    const country = getConnectCountry(profile?.business_name);
-    const account = await stripe.accounts.create({
-      type: "express",
-      country,
-      email: user.email ?? undefined,
-      capabilities: {
-        card_payments: { requested: true },
-        transfers: { requested: true },
-      },
-        metadata: { supabase_user_id: user.id },
-      });
+      const country = getConnectCountry(profile?.business_name);
+      const account = await stripe.accounts.create(
+        buildConnectAccountParams(user.id, user.email ?? undefined, country)
+      );
       accountId = account.id;
 
       const { error } = await supabase

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createDirectChargeCheckoutSession } from "@/lib/stripe/connect";
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
 
@@ -77,11 +78,12 @@ export async function POST(request: Request) {
       metadata: { invoice_public_id: publicId },
     };
 
-    sessionParams.payment_intent_data = {
-      transfer_data: { destination },
-    };
-
-    const session = await stripe.checkout.sessions.create(sessionParams);
+    // Direct charge on the connected account — Stripe fees are billed to them, not the platform.
+    const session = await createDirectChargeCheckoutSession(
+      stripe,
+      destination,
+      sessionParams
+    );
 
     const { error: updateError } = await supabase
       .from("invoices")
