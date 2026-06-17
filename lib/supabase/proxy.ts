@@ -18,6 +18,10 @@ const PROTECTED_PREFIXES = [
   "/rate-us",
 ];
 
+function isAdminPath(pathname: string) {
+  return pathname === "/admin" || pathname.startsWith("/admin/");
+}
+
 const BAN_CHECK_PREFIXES = [
   ...PROTECTED_PREFIXES,
   "/api/",
@@ -32,7 +36,8 @@ function isBanExemptPath(pathname: string) {
     pathname === ACCOUNT_RESTRICTED_PATH ||
     pathname.startsWith("/auth/") ||
     pathname.startsWith("/login") ||
-    pathname.startsWith("/register")
+    pathname.startsWith("/register") ||
+    isAdminPath(pathname)
   );
 }
 
@@ -44,6 +49,13 @@ function isIpBanAuthPath(pathname: string) {
 
 function isProtectedPath(pathname: string) {
   return PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
+}
+
+function shouldLogPageView(pathname: string, method: string) {
+  if (method !== "GET") return false;
+  if (pathname.startsWith("/api/")) return false;
+  if (pathname.startsWith("/admin")) return false;
+  return true;
 }
 
 export async function updateSession(request: NextRequest) {
@@ -83,15 +95,23 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(new URL(ACCOUNT_RESTRICTED_PATH, request.url));
   }
 
-  if (!user && (isProtectedPath(pathname) || pathname === "/login/verify-otp")) {
+  if (!user && (isProtectedPath(pathname) || isAdminPath(pathname) || pathname === "/login/verify-otp")) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
-    if (isProtectedPath(pathname)) redirectUrl.searchParams.set("redirectTo", pathname);
+    if (isProtectedPath(pathname) || isAdminPath(pathname)) {
+      redirectUrl.searchParams.set("redirectTo", pathname);
+    }
     return NextResponse.redirect(redirectUrl);
   }
 
   const otpPending = request.cookies.get(OTP_PENDING_COOKIE_NAME)?.value;
-  if (user && otpPending && isProtectedPath(pathname) && pathname !== "/login/verify-otp") {
+  if (
+    user &&
+    otpPending &&
+    isProtectedPath(pathname) &&
+    !isAdminPath(pathname) &&
+    pathname !== "/login/verify-otp"
+  ) {
     return NextResponse.redirect(new URL("/login/verify-otp", request.url));
   }
 
@@ -122,6 +142,14 @@ export async function updateSession(request: NextRequest) {
 
   if (userId && clientIp) {
     await logUserIp(supabase, clientIp);
+  }
+
+  if (shouldLogPageView(pathname, request.method)) {
+    void supabase.rpc("log_site_page_view", {
+      p_path: pathname,
+      p_ip: clientIp,
+      p_referrer: request.headers.get("referer"),
+    });
   }
 
   return supabaseResponse;

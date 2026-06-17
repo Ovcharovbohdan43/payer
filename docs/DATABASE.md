@@ -29,6 +29,7 @@ Run in order (Supabase SQL Editor or `supabase db push`):
 23. `supabase/migrations/20250322000002_public_user_reviews_rpc.sql` — RPC `get_public_user_reviews()` for landing and community review list (business_name, logo_url; no user_id)
 24. `supabase/migrations/20250323000001_account_ban.sql` — profiles.account_status (`active`/`banned`), ban/unban RPCs, trigger to prevent self-unban; see `docs/ACCOUNT_BAN.md`
 25. `supabase/migrations/20250324000001_account_ban_enforcement.sql` — user_ip_log, banned_ip_addresses, banned_emails, Stripe revoke columns, enhanced ban/unban RPCs; see `docs/ACCOUNT_BAN.md`
+26. `supabase/migrations/20250325000001_admin_panel.sql` — profiles.is_admin, site_analytics_events, admin_actions_log; see `docs/ADMIN_PANEL.md`
 
 **Planned (see docs/INTEGRATIONS_PLAN.md):** clients.external_id / external_source for CRM sync.
 

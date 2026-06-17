@@ -4,6 +4,15 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2026-06-17] – Admin panel
+
+- **Access:** `profiles.is_admin` + optional `ADMIN_USER_IDS` env; route group `/admin`.
+- **Overview:** User/traffic stats, recent admin actions, manual Stripe ban cron trigger.
+- **Users:** Search, filter, detail view with profile, Stripe, IP log, invoices, audit.
+- **Actions:** Ban/unban, grant/revoke Pro, revoke Stripe Connect (server actions + audit log).
+- **Analytics:** Server-side page view tracking in `site_analytics_events`; charts at `/admin/analytics`.
+- **Docs:** Added `docs/ADMIN_PANEL.md`; updated `docs/DATABASE.md`.
+
 ### [2026-06-17] – Account ban enforcement (IP, email, Stripe)
 
 - **Ban RPC:** `ban_user_account()` now blocklists user email and known IPs, clears `stripe_connect_account_id`, and snapshots Connect id for API revocation.
