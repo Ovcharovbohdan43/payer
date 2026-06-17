@@ -27,6 +27,7 @@ Run in order (Supabase SQL Editor or `supabase db push`):
 21. `supabase/migrations/20250321000001_invoice_visual_templates.sql` — invoice_visual_templates, profiles.default_invoice_visual_template_id, invoices.invoice_design_config, get_public_invoice invoice_design_config field (saved visual templates + per-invoice snapshot)
 22. `supabase/migrations/20250322000001_user_reviews.sql` — user_reviews (Rate Us: star rating + comment, one per user); RLS by user_id
 23. `supabase/migrations/20250322000002_public_user_reviews_rpc.sql` — RPC `get_public_user_reviews()` for landing and community review list (business_name, logo_url; no user_id)
+24. `supabase/migrations/20250323000001_account_ban.sql` — profiles.account_status (`active`/`banned`), ban/unban RPCs, trigger to prevent self-unban; see `docs/ACCOUNT_BAN.md`
 
 **Planned (see docs/INTEGRATIONS_PLAN.md):** clients.external_id / external_source for CRM sync.
 

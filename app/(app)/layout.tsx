@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { redirectIfBanned } from "@/lib/auth/account-status";
 import { AppShell } from "@/components/layout/app-shell";
 
 export default async function AppLayout({
@@ -12,6 +13,8 @@ export default async function AppLayout({
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  await redirectIfBanned(supabase, user.id);
 
   const { data: profile } = await supabase
     .from("profiles")

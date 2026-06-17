@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { emailSchema } from "@/lib/validations";
 import { redirect } from "next/navigation";
+import { redirectIfBanned } from "@/lib/auth/account-status";
 import { createAndSendOtp, verifyOtp } from "@/lib/auth/login-otp";
 import {
   isRememberedForUser,
@@ -76,6 +77,7 @@ export async function signInWithPassword(formData: FormData) {
   if (!data.user) return { error: "Sign-in failed" };
 
   if (await isRememberedForUser(data.user.id)) {
+    await redirectIfBanned(supabase, data.user.id);
     redirect("/dashboard");
   }
 
@@ -117,6 +119,7 @@ export async function verifyOtpAction(
     await setRememberCookie(user.id);
   }
 
+  await redirectIfBanned(supabase, user.id);
   redirect("/dashboard");
 }
 

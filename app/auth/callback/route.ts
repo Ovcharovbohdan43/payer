@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { ACCOUNT_RESTRICTED_PATH, isUserBanned } from "@/lib/auth/account-status";
 import { NextResponse } from "next/server";
 
 /**
@@ -27,6 +28,10 @@ export async function GET(request: Request) {
     } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.redirect(`${origin}/login?error=link_invalid`);
+    }
+
+    if (await isUserBanned(supabase, user.id)) {
+      return NextResponse.redirect(`${origin}${ACCOUNT_RESTRICTED_PATH}`);
     }
 
     return NextResponse.redirect(`${origin}${next}`);

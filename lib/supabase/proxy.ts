@@ -1,8 +1,38 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import {
+  ACCOUNT_RESTRICTED_PATH,
+  isAccountBanned,
+} from "@/lib/auth/account-status";
 import { OTP_PENDING_COOKIE_NAME } from "@/lib/auth/constants";
 
-const PROTECTED_PREFIXES = ["/dashboard", "/invoices", "/clients", "/settings", "/onboarding"];
+const PROTECTED_PREFIXES = [
+  "/dashboard",
+  "/invoices",
+  "/clients",
+  "/settings",
+  "/onboarding",
+  "/offers",
+  "/rate-us",
+];
+
+const BAN_CHECK_PREFIXES = [
+  ...PROTECTED_PREFIXES,
+  "/api/",
+];
+
+function isBanCheckedPath(pathname: string) {
+  return BAN_CHECK_PREFIXES.some((p) => pathname === p || pathname.startsWith(p));
+}
+
+function isBanExemptPath(pathname: string) {
+  return (
+    pathname === ACCOUNT_RESTRICTED_PATH ||
+    pathname.startsWith("/auth/") ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/register")
+  );
+}
 
 function isProtectedPath(pathname: string) {
   return PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
@@ -50,6 +80,31 @@ export async function updateSession(request: NextRequest) {
   const otpPending = request.cookies.get(OTP_PENDING_COOKIE_NAME)?.value;
   if (user && otpPending && isProtectedPath(pathname) && pathname !== "/login/verify-otp") {
     return NextResponse.redirect(new URL("/login/verify-otp", request.url));
+  }
+
+  const userId = typeof user?.sub === "string" ? user.sub : null;
+  if (userId && !isBanExemptPath(pathname)) {
+    if (pathname === ACCOUNT_RESTRICTED_PATH) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("account_status")
+        .eq("id", userId)
+        .single();
+
+      if (!isAccountBanned(profile?.account_status)) {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      }
+    } else if (isBanCheckedPath(pathname)) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("account_status")
+        .eq("id", userId)
+        .single();
+
+      if (isAccountBanned(profile?.account_status)) {
+        return NextResponse.redirect(new URL(ACCOUNT_RESTRICTED_PATH, request.url));
+      }
+    }
   }
 
   return supabaseResponse;

@@ -4,6 +4,13 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2026-06-17] – Account ban system
+
+- **Account ban:** `profiles.account_status` (`active` / `banned`). Set in Supabase via `ban_user_account(uuid)`, `unban_user_account(uuid)`, or direct SQL update.
+- **Restricted UI:** Banned users see `/account-restricted` with message to contact support@puyer.org and can sign out.
+- **Enforcement:** Middleware blocks app routes and `/api/*` for banned users; login, OAuth callback, and app layout also check status.
+- **Docs:** Added `docs/ACCOUNT_BAN.md`; updated `docs/DATABASE.md`.
+
 ### [2026-06-16] – Resend sender uses puyer.org domain
 
 - **Email:** Default `EMAIL_FROM` is now `Puyer <noreply@puyer.org>` instead of `onboarding@resend.dev`. Set `EMAIL_FROM` in env (local + Vercel) if you use a different address on the verified domain.

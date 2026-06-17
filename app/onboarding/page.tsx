@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { redirectIfBanned } from "@/lib/auth/account-status";
 import { OnboardingForm } from "./onboarding-form";
 
 export default async function OnboardingPage() {
@@ -10,6 +11,8 @@ export default async function OnboardingPage() {
   if (!user) {
     redirect("/login");
   }
+
+  await redirectIfBanned(supabase, user.id);
 
   const { data: profile } = await supabase
     .from("profiles")
