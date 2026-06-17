@@ -8,7 +8,6 @@ import {
   adminGrantPro,
   adminRevokePro,
   adminRevokeStripeForUser,
-  adminImpersonateUser,
   adminDeleteUser,
 } from "@/lib/admin/actions";
 
@@ -37,7 +36,7 @@ export function AdminUserActions({
 
   async function run(
     action: string,
-    fn: () => Promise<{ error?: string; warning?: string; url?: string }>
+    fn: () => Promise<{ error?: string; warning?: string }>
   ) {
     setLoading(action);
     setMessage(null);
@@ -46,10 +45,6 @@ export function AdminUserActions({
     if (result.error) {
       setMessageTone("error");
       setMessage(result.error);
-    } else if (result.url) {
-      setMessageTone("success");
-      setMessage("Opening sign-in link in a new tab…");
-      window.open(result.url, "_blank", "noopener,noreferrer");
     } else if (result.warning) {
       setMessageTone("warning");
       setMessage(result.warning);
@@ -144,9 +139,19 @@ export function AdminUserActions({
             variant="outline"
             className="border-[#3B82F6]/40 text-[#3B82F6]"
             disabled={!!loading}
-            onClick={() => run("impersonate", () => adminImpersonateUser(userId))}
+            onClick={() => {
+              setMessageTone("success");
+              setMessage(
+                "Opening a new tab as this user. Both tabs share the same login — sign in again to return to admin."
+              );
+              window.open(
+                `/api/admin/impersonate?userId=${encodeURIComponent(userId)}`,
+                "_blank",
+                "noopener,noreferrer"
+              );
+            }}
           >
-            {loading === "impersonate" ? "…" : "Sign in as user"}
+            Sign in as user
           </Button>
         )}
 

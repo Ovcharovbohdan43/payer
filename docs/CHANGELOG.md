@@ -4,6 +4,10 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2026-06-17] – Fix admin impersonation (Sign in as user)
+
+- **Impersonation:** Replaced magic `action_link` with `/api/admin/impersonate` using server-side `verifyOtp` + `hashed_token` (PKCE-safe).
+
 ### [2026-06-17] – Admin panel: live activity, impersonation, delete user
 
 - **Live feed:** `/admin/activity` with auto-refresh; `platform_activity_log` + logging from middleware, auth, checkout, admin actions.

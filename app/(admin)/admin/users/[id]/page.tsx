@@ -7,7 +7,18 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { formatAmount } from "@/lib/invoices/utils";
 
-type PageProps = { params: Promise<{ id: string }> };
+type PageProps = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
+};
+
+const IMPERSONATE_ERRORS: Record<string, string> = {
+  impersonate_verify: "Could not start user session. Try again or use password login for that user.",
+  impersonate_link: "Could not generate impersonation token.",
+  no_email: "User has no email on file.",
+  admin_impersonate: "Cannot impersonate another admin.",
+  self_impersonate: "Cannot impersonate yourself.",
+};
 
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -20,8 +31,9 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-export default async function AdminUserDetailPage({ params }: PageProps) {
+export default async function AdminUserDetailPage({ params, searchParams }: PageProps) {
   const { id } = await params;
+  const { error: impersonateError } = await searchParams;
   const detail = await getAdminUserDetail(id);
   if (!detail) notFound();
 
@@ -37,6 +49,11 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
           {profile.business_name || email || "User"}
         </h1>
         <p className="mt-1 font-mono text-xs text-muted-foreground">{profile.id}</p>
+        {impersonateError && IMPERSONATE_ERRORS[impersonateError] && (
+          <p className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-400">
+            {IMPERSONATE_ERRORS[impersonateError]}
+          </p>
+        )}
       </div>
 
       <Card className="border-white/[0.06] bg-[#121821]/90 p-5">

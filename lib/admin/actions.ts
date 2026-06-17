@@ -7,8 +7,6 @@ import { logPlatformActivityAdmin } from "@/lib/admin/platform-activity";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revokeStripeConnectAccount } from "@/lib/stripe/revoke-connect-account";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
-
 async function logAdminAction(
   adminId: string,
   action: string,
@@ -147,39 +145,6 @@ export async function adminRevokeStripeForUser(
   await logAdminAction(user.id, "revoke_stripe_connect", userId, { accountId });
   revalidatePath(`/admin/users/${userId}`);
   return { ok: true };
-}
-
-/** Generate a one-time magic link to sign in as the user (opens in new tab). */
-export async function adminImpersonateUser(
-  userId: string
-): Promise<{ error?: string; url?: string }> {
-  const { user } = await requireAdmin();
-  const blocked = await assertAdminTargetAllowed(user.id, userId);
-  if (blocked) return blocked;
-
-  const admin = createAdminClient();
-  const { data: authUser, error: fetchErr } = await admin.auth.admin.getUserById(userId);
-  if (fetchErr || !authUser.user?.email) {
-    return { error: "User email not found" };
-  }
-
-  const { data, error } = await admin.auth.admin.generateLink({
-    type: "magiclink",
-    email: authUser.user.email,
-    options: {
-      redirectTo: `${APP_URL}/auth/callback?next=/dashboard`,
-    },
-  });
-
-  if (error || !data.properties?.action_link) {
-    return { error: error?.message ?? "Could not generate sign-in link" };
-  }
-
-  await logAdminAction(user.id, "impersonate", userId, {
-    email: authUser.user.email,
-  });
-
-  return { url: data.properties.action_link };
 }
 
 /** Permanently delete auth user and cascaded data. */

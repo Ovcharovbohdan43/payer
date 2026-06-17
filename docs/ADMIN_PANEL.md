@@ -55,7 +55,7 @@ Apply migration: `supabase/migrations/20250326000001_platform_activity_log.sql`
 
 ## Impersonation
 
-**Sign in as user** generates a Supabase magic link for the target email. Open it in a new tab to browse the app as that user. Your admin session stays in the original tab. Cannot impersonate other admins or yourself.
+**Sign in as user** opens `/api/admin/impersonate?userId=…` in a new tab. The server exchanges a Supabase `hashed_token` for a session (PKCE-safe). Both browser tabs share the same auth cookies — sign in again to return to admin.
 
 ## Delete account
 
