@@ -4,6 +4,11 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2026-06-17] – Stripe: fee disclaimer and direct-charge checkout breakdown
+
+- **Checkout:** Direct charges only (no `transfer_data`); line items split when processing fee is included; Stripe `custom_text` states fees are paid by seller, not platform.
+- **Public invoice:** Fee disclaimer shown before Pay button.
+
 ### [2026-06-17] – Fix admin impersonation (Sign in as user)
 
 - **Impersonation:** Replaced magic `action_link` with `/api/admin/impersonate` using server-side `verifyOtp` + `hashed_token` (PKCE-safe).

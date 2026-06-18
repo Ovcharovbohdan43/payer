@@ -23,6 +23,10 @@ Puyer uses **Stripe Connect Express** so that:
 
 Invoice payments use **direct charges**: Checkout is created on the connected account (`Stripe-Account` header). Funds and Stripe processing fees go to/from the connected account.
 
+Previously Puyer used **destination charges** (`transfer_data`), which transferred the **full** charge to the connected account while Stripe billed processing fees to the **platform** — causing a negative platform balance. Direct charges are equivalent to “transfer only the net amount”: the connected account receives the charge minus Stripe fees automatically.
+
+Before checkout, clients see a disclaimer that card fees are paid by the seller (connected account), not Puyer. Stripe Checkout also shows `custom_text` with the same notice.
+
 Previously Puyer used **destination charges** (`transfer_data`), which always bill Stripe fees to the platform account regardless of Connect fee settings.
 
 | Flow | Who pays Stripe processing fees |

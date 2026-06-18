@@ -3,7 +3,10 @@ import Stripe from "stripe";
 import { isAccountBanned } from "@/lib/auth/account-status";
 import { logPlatformActivityAdmin } from "@/lib/admin/platform-activity";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createDirectChargeCheckoutSession } from "@/lib/stripe/connect";
+import {
+  buildInvoiceCheckoutSessionParams,
+  createDirectChargeCheckoutSession,
+} from "@/lib/stripe/connect";
 
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
 
@@ -29,7 +32,9 @@ export async function POST(request: Request) {
     const supabase = createAdminClient();
     const { data: invoice, error: fetchError } = await supabase
       .from("invoices")
-      .select("id, user_id, amount_cents, currency, vat_included")
+      .select(
+        "id, user_id, amount_cents, currency, vat_included, payment_processing_fee_included, payment_processing_fee_cents"
+      )
       .eq("public_id", publicId)
       .in("status", ["draft", "sent", "viewed", "overdue"])
       .is("paid_at", null)
@@ -44,7 +49,7 @@ export async function POST(request: Request) {
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("stripe_connect_account_id, account_status")
+      .select("stripe_connect_account_id, account_status, business_name")
       .eq("id", invoice.user_id)
       .single();
 
@@ -66,28 +71,18 @@ export async function POST(request: Request) {
     }
 
     const stripe = new Stripe(secret);
-    const sessionParams: Stripe.Checkout.SessionCreateParams = {
-      mode: "payment",
-      line_items: [
-        {
-          price_data: {
-            currency: (invoice.currency as string).toLowerCase(),
-            unit_amount: chargeCents,
-            product_data: {
-              name: "Invoice payment",
-              description: "Invoice payment",
-            },
-          },
-          quantity: 1,
-        },
-      ],
-      success_url: `${baseUrl}/i/${publicId}?paid=1`,
-      cancel_url: `${baseUrl}/i/${publicId}`,
-      client_reference_id: invoice.id,
-      metadata: { invoice_public_id: publicId },
-    };
+    const sessionParams = buildInvoiceCheckoutSessionParams({
+      publicId,
+      invoiceId: invoice.id,
+      amountCents: chargeCents,
+      currency: invoice.currency as string,
+      businessName: profile?.business_name,
+      paymentProcessingFeeIncluded: invoice.payment_processing_fee_included,
+      paymentProcessingFeeCents: invoice.payment_processing_fee_cents,
+      successUrl: `${baseUrl}/i/${publicId}?paid=1`,
+      cancelUrl: `${baseUrl}/i/${publicId}`,
+    });
 
-    // Direct charge on the connected account — Stripe fees are billed to them, not the platform.
     const session = await createDirectChargeCheckoutSession(
       stripe,
       destination,

@@ -3,6 +3,7 @@ import { formatAmount, getDisplayAmountCents } from "@/lib/invoices/utils";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { PayButton } from "./pay-button";
+import { CheckoutFeeDisclaimer } from "@/components/checkout-fee-disclaimer";
 import { DownloadPdfLink } from "./download-pdf-placeholder";
 import { InvoiceQrCode } from "@/components/invoice-qr-code";
 import { DemoPayArea } from "./demo-pay-area";
@@ -353,6 +354,10 @@ export default async function PublicInvoicePage({
                 />
                 <DownloadPdfLink publicId={publicId} />
               </div>
+              <CheckoutFeeDisclaimer
+                businessName={invoice.business_name}
+                className={`mt-4 text-center text-xs leading-relaxed ${mutedTextClass}`}
+              />
             </>
           )}
 
