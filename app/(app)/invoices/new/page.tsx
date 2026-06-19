@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { NewInvoiceForm } from "@/app/invoices/new/new-invoice-form";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { describeInvoiceCreationLimit } from "@/lib/invoices/creation-limit";
 import { getDefaultVisualConfig } from "@/lib/invoice-visual-config";
 import { normalizeInvoiceDesign } from "@/lib/invoice-designs";
 
@@ -16,18 +17,27 @@ export default async function NewInvoicePage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [profile, clients, templates, visualTemplates] = await Promise.all([
+  const [profile, clients, templates, visualTemplates, invoiceCountResult] = await Promise.all([
     supabase
       .from("profiles")
       .select(
-        "default_currency, default_invoice_design, default_invoice_visual_template_id, business_name, logo_url, address, phone, company_number, vat_number"
+        "default_currency, default_invoice_design, default_invoice_visual_template_id, business_name, logo_url, address, phone, company_number, vat_number, created_at, invoice_creation_limit, invoice_creation_reviewed_at, is_admin"
       )
       .eq("id", user.id)
       .single(),
     listClients(),
     listInvoiceTemplates(),
     listInvoiceVisualTemplates(),
+    supabase
+      .from("invoices")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id),
   ]);
+
+  const invoiceCount = invoiceCountResult.count ?? 0;
+  const creationCheck = profile?.data
+    ? describeInvoiceCreationLimit(profile.data, invoiceCount)
+    : { allowed: true, code: "allowed" as const, message: null, maxInvoices: null };
 
   const defaultCurrency = profile?.data?.default_currency ?? "USD";
   const defaultInvoiceDesign = profile?.data?.default_invoice_design ?? "classic";
@@ -50,6 +60,16 @@ export default async function NewInvoicePage() {
           </Button>
         </div>
         <h1 className="mb-4 text-lg font-semibold sm:mb-6 sm:text-xl">Create invoice</h1>
+        {!creationCheck.allowed && creationCheck.message && (
+          <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+            {creationCheck.message}
+          </div>
+        )}
+        {creationCheck.allowed && creationCheck.message && (
+          <div className="mb-4 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-muted-foreground">
+            {creationCheck.message}
+          </div>
+        )}
         <NewInvoiceForm
           defaultCurrency={defaultCurrency}
           initialVisualConfig={initialVisualConfig}
@@ -62,6 +82,7 @@ export default async function NewInvoicePage() {
           clients={clients}
           templates={templates}
           visualTemplates={visualTemplates}
+          creationBlocked={!creationCheck.allowed}
         />
       </div>
     </div>

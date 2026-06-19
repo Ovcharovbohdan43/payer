@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { assertUserCanCreateInvoice } from "@/lib/invoices/creation-limit";
 import { sendInvoiceEmail } from "@/lib/email/send";
 import { formatAmount, getDisplayAmountCents } from "@/lib/invoices/utils";
 import { normalizeInvoiceDesign } from "@/lib/invoice-designs";
@@ -111,6 +112,13 @@ export async function runRecurringInvoices(): Promise<{
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + 14);
     const dueDateStr = dueDate.toISOString().slice(0, 10);
+
+    const creationBlocked = await assertUserCanCreateInvoice(supabase, t.user_id);
+    if (creationBlocked) {
+      console.warn("[recurring] skipped — invoice limit:", t.user_id, creationBlocked.error);
+      errors++;
+      continue;
+    }
 
     const { data: newInvoice, error: insertError } = await supabase
       .from("invoices")

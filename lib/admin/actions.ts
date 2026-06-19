@@ -166,6 +166,36 @@ export async function adminDeleteUser(userId: string): Promise<{ error?: string 
   return {};
 }
 
+export async function adminSetInvoiceCreationLimit(
+  userId: string,
+  limit: number | null,
+  note?: string
+): Promise<{ error?: string }> {
+  const { user } = await requireAdmin();
+  const blocked = await assertAdminTargetAllowed(user.id, userId);
+  if (blocked) return blocked;
+
+  if (limit !== null && limit < -1) {
+    return { error: "Limit must be null (auto), -1 (unlimited), 0 (blocked), or a positive number" };
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin.rpc("set_invoice_creation_limit", {
+    p_user_id: userId,
+    p_limit: limit,
+    p_note: note?.trim() || null,
+  });
+  if (error) return { error: error.message };
+
+  await logAdminAction(user.id, "set_invoice_creation_limit", userId, {
+    limit,
+    note: note?.trim() || null,
+  });
+  revalidatePath(`/admin/users/${userId}`);
+  revalidatePath("/admin/users");
+  return {};
+}
+
 export async function adminRunStripeBanCron(): Promise<{
   processed: number;
   errors: string[];

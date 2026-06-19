@@ -92,6 +92,7 @@ type NewInvoiceFormProps = {
   clients: ClientRow[];
   templates?: InvoiceTemplateRow[];
   visualTemplates?: InvoiceVisualTemplateRow[];
+  creationBlocked?: boolean;
 };
 
 export function NewInvoiceForm({
@@ -106,6 +107,7 @@ export function NewInvoiceForm({
   clients,
   templates = [],
   visualTemplates = [],
+  creationBlocked = false,
 }: NewInvoiceFormProps) {
   const router = useRouter();
   const [selectedClient, setSelectedClient] = useState<ClientRow | null>(null);
@@ -878,7 +880,7 @@ export function NewInvoiceForm({
           type="submit"
           name="intent"
           value="copy"
-          disabled={isPending}
+          disabled={isPending || creationBlocked}
           className="h-12 min-h-12 w-full rounded-xl bg-[#3B82F6] font-semibold hover:bg-[#2563EB] sm:min-w-[200px] sm:w-auto"
         >
           {isPending ? "Creating…" : "Create invoice"}
@@ -889,7 +891,7 @@ export function NewInvoiceForm({
             name="intent"
             value="email"
             variant="secondary"
-            disabled={isPending}
+            disabled={isPending || creationBlocked}
             className="h-12 min-h-12 min-w-[180px]"
           >
             {isPending ? "Creating…" : "Create & send email"}

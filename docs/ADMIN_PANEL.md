@@ -35,8 +35,35 @@ All mutations use the **service role** server-side after `requireAdmin()`:
 - **Sign in as user** — one-time magic link (Supabase `generateLink`) opens in new tab; logged in `admin_actions_log`
 - **Delete account** — `auth.admin.deleteUser()`; cascades profile and all user data; cannot target admins or self
 - **Run Stripe ban cron** — processes pending revocations for all banned users
+- **Invoice creation limit** — approve unlimited (`-1`), partial cap (`N`), block (`0`), or reset to auto policy (`NULL`); RPC `set_invoice_creation_limit`
 
 Actions are logged in `admin_actions_log` and `platform_activity_log`.
+
+## Invoice creation limits
+
+Apply migration `supabase/migrations/20250328000001_invoice_creation_limits.sql`.
+
+**Default (auto policy):** new accounts may create **1 invoice** in the first **24 hours**. After that, creation is frozen until Puyer support reviews the account.
+
+**Admin controls** on `/admin/users/[id]`:
+
+| Action | `invoice_creation_limit` | Effect |
+|--------|--------------------------|--------|
+| Approve unlimited | `-1` | No security cap (subscription plan limits still apply) |
+| Set partial | `N` (e.g. 5) | Max **N** total invoices |
+| Block invoices | `0` | Cannot create invoices |
+| Reset to auto | `NULL` | Back to day-1 / pending-review rules |
+
+SQL Editor:
+
+```sql
+select set_invoice_creation_limit('user-uuid', -1, 'Verified business');
+select set_invoice_creation_limit('user-uuid', 5, 'Partial access');
+select set_invoice_creation_limit('user-uuid', 0, 'Suspicious activity');
+select set_invoice_creation_limit('user-uuid', null, 'Reset to auto');
+```
+
+Enforced in `createInvoiceAction`, offer accept → invoice, and recurring invoice cron.
 
 ## Live activity
 

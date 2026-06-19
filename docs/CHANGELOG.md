@@ -4,6 +4,12 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2026-06-17] – Invoice creation limits for new accounts
+
+- **New users:** Max 1 invoice in first 24 hours; then frozen until support review.
+- **Admin:** `/admin/users/[id]` — approve unlimited, partial limit, block, or reset to auto policy.
+- **Enforced in:** create invoice, offer accept, recurring cron.
+
 ### [2026-06-17] – Stripe Connect: seller pays fees on new accounts
 
 - **Account creation:** `buildConnectAccountParams` uses `controller.fees.payer = account`, `losses.payments = stripe`, Full Dashboard — not `type: express`.

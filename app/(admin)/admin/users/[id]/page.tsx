@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAdminUserDetail } from "@/lib/admin/queries";
 import { AdminUserActions } from "@/components/admin/admin-user-actions";
+import { AdminInvoiceLimitControls } from "@/components/admin/admin-invoice-limit-controls";
+import { formatInvoiceLimitAdminSummary } from "@/lib/invoices/creation-limit";
 import { LiveActivityFeed } from "@/components/admin/live-activity-feed";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -67,6 +69,21 @@ export default async function AdminUserDetailPage({ params, searchParams }: Page
           subscriptionStatus={profile.subscription_status}
           hasStripeConnect={!!profile.stripe_connect_account_id}
           hasStripeToRevoke={hasStripe}
+          isTargetAdmin={!!profile.is_admin}
+        />
+      </Card>
+
+      <Card className="border-white/[0.06] bg-[#121821]/90 p-5">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          Invoice creation limit
+        </h2>
+        <AdminInvoiceLimitControls
+          userId={profile.id}
+          invoiceCount={counts.invoices}
+          statusSummary={formatInvoiceLimitAdminSummary(profile, counts.invoices)}
+          currentLimit={profile.invoice_creation_limit ?? null}
+          limitNote={profile.invoice_creation_limit_note ?? null}
+          reviewedAt={profile.invoice_creation_reviewed_at ?? null}
           isTargetAdmin={!!profile.is_admin}
         />
       </Card>
