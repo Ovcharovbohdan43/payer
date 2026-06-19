@@ -73,8 +73,13 @@ export function OnboardingForm({
     }
     if (step === 2) {
       const company = (form.querySelector("#onb_business_name") as HTMLInputElement)?.value?.trim() ?? "";
+      const phone = (form.querySelector("#onb_phone") as HTMLInputElement)?.value?.trim() ?? "";
       if (!company) {
         setStepError("Please enter your company name.");
+        return;
+      }
+      if (!phone) {
+        setStepError("Please enter your phone number.");
         return;
       }
     }
@@ -184,12 +189,15 @@ export function OnboardingForm({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="onb_phone">Phone</Label>
+          <Label htmlFor="onb_phone">
+            Phone <RequiredStar />
+          </Label>
           <Input
             id="onb_phone"
             name="phone"
             type="tel"
             placeholder="+44 20 7123 4567"
+            required
             disabled={isPending}
             className="h-11"
           />

@@ -10,7 +10,10 @@ import {
 import { getPublicOfferUrl } from "@/lib/offers/utils";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { assertUserCanCreateInvoice } from "@/lib/invoices/creation-limit";
+import {
+  assertUserCanCreateInvoice,
+  assertUserCanCreateInvoiceAmount,
+} from "@/lib/invoices/creation-limit";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
 const VAT_RATE = 0.2;
@@ -279,6 +282,16 @@ export async function acceptOfferAction(publicId: string): Promise<AcceptOfferRe
   const admin = createAdminClient();
   const creationBlocked = await assertUserCanCreateInvoice(admin, offer.user_id);
   if (creationBlocked) {
+    return { error: "This business cannot accept new invoices at the moment. Please contact them directly." };
+  }
+
+  const amountBlocked = await assertUserCanCreateInvoiceAmount(
+    admin,
+    offer.user_id,
+    Number(offer.amount_cents),
+    offer.currency as string
+  );
+  if (amountBlocked) {
     return { error: "This business cannot accept new invoices at the moment. Please contact them directly." };
   }
 

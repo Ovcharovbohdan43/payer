@@ -15,6 +15,8 @@ export type AdminUserRow = {
   created_at: string;
   onboarding_completed: boolean | null;
   is_admin: boolean;
+  invoice_creation_limit: number | null;
+  invoice_creation_reviewed_at: string | null;
 };
 
 export type AdminOverviewStats = {
@@ -100,9 +102,11 @@ export async function getAdminOverviewStats(): Promise<AdminOverviewStats> {
   };
 }
 
+import { isAccountPendingReview } from "@/lib/invoices/creation-limit";
+
 export async function listAdminUsers(options: {
   search?: string;
-  status?: "all" | "active" | "banned";
+  status?: "all" | "active" | "banned" | "pending_review";
   limit?: number;
   offset?: number;
 }): Promise<{ users: AdminUserRow[]; total: number }> {
@@ -114,7 +118,7 @@ export async function listAdminUsers(options: {
   let query = admin
     .from("profiles")
     .select(
-      "id, business_name, first_name, last_name, account_status, subscription_status, stripe_connect_account_id, stripe_connect_account_id_at_ban, stripe_connect_revoked_at, country, created_at, onboarding_completed, is_admin",
+      "id, business_name, first_name, last_name, account_status, subscription_status, stripe_connect_account_id, stripe_connect_account_id_at_ban, stripe_connect_revoked_at, country, created_at, onboarding_completed, is_admin, invoice_creation_limit, invoice_creation_reviewed_at",
       { count: "exact" }
     )
     .order("created_at", { ascending: false })
@@ -124,6 +128,11 @@ export async function listAdminUsers(options: {
     query = query.eq("account_status", "active");
   } else if (options.status === "banned") {
     query = query.eq("account_status", "banned");
+  } else if (options.status === "pending_review") {
+    query = query
+      .eq("is_admin", false)
+      .is("invoice_creation_reviewed_at", null)
+      .or("invoice_creation_limit.is.null,invoice_creation_limit.gt.0");
   }
 
   if (search) {

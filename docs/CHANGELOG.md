@@ -4,6 +4,12 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2026-06-17] – Stricter new-account review rules
+
+- **First invoice:** Max 20 GBP/USD/EUR while account is under review.
+- **UI:** Yellow review banner in app shell; admin "New" badge and pending_review filter.
+- **Profile:** First name, last name, phone required in onboarding and settings.
+
 ### [2026-06-17] – Invoice creation limits for new accounts
 
 - **New users:** Max 1 invoice in first 24 hours; then frozen until support review.

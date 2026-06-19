@@ -26,9 +26,10 @@ type AppShellProps = {
   /** Stripe connected = verified (ID verification required by Stripe) */
   isVerified?: boolean;
   isPro?: boolean;
+  accountReviewBanner?: string | null;
 };
 
-export function AppShell({ children, businessName, logoUrl, isVerified, isPro }: AppShellProps) {
+export function AppShell({ children, businessName, logoUrl, isVerified, isPro, accountReviewBanner }: AppShellProps) {
   const pathname = usePathname();
   const [logoError, setLogoError] = useState(false);
   const showLogo = logoUrl && !logoError;
@@ -127,6 +128,15 @@ export function AppShell({ children, businessName, logoUrl, isVerified, isPro }:
             </form>
           </div>
         </header>
+
+        {accountReviewBanner ? (
+          <div
+            className="border-b border-amber-500/30 bg-amber-500/15 px-4 py-3 text-center text-sm text-amber-100 sm:px-6"
+            role="status"
+          >
+            {accountReviewBanner}
+          </div>
+        ) : null}
 
         <main className="flex-1 pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0">{children}</main>
         <MobileNav />

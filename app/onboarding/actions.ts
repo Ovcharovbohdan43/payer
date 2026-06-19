@@ -26,6 +26,7 @@ export async function submitOnboarding(formData: FormData) {
       first.first_name?.[0] ??
       first.last_name?.[0] ??
       first.email?.[0] ??
+      first.phone?.[0] ??
       first.business_name?.[0] ??
       first.default_currency?.[0] ??
       "Invalid fields";
@@ -48,7 +49,7 @@ export async function submitOnboarding(formData: FormData) {
         first_name: parsed.data.first_name,
         last_name: parsed.data.last_name,
         business_name: parsed.data.business_name,
-        phone: parsed.data.phone?.trim() || null,
+        phone: parsed.data.phone.trim(),
         address: parsed.data.address?.trim() || null,
         website: parsed.data.website?.trim() || null,
         company_type: parsed.data.company_type?.trim() || null,

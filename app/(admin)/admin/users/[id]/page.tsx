@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getAdminUserDetail } from "@/lib/admin/queries";
 import { AdminUserActions } from "@/components/admin/admin-user-actions";
 import { AdminInvoiceLimitControls } from "@/components/admin/admin-invoice-limit-controls";
-import { formatInvoiceLimitAdminSummary } from "@/lib/invoices/creation-limit";
+import { formatInvoiceLimitAdminSummary, isAccountPendingReview } from "@/lib/invoices/creation-limit";
 import { LiveActivityFeed } from "@/components/admin/live-activity-feed";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -49,6 +49,9 @@ export default async function AdminUserDetailPage({ params, searchParams }: Page
         <ButtonBack />
         <h1 className="mt-2 text-2xl font-bold text-white">
           {profile.business_name || email || "User"}
+          {isAccountPendingReview(profile) && (
+            <Badge className="ml-3 align-middle bg-yellow-500/20 text-yellow-300">New — pending review</Badge>
+          )}
         </h1>
         <p className="mt-1 font-mono text-xs text-muted-foreground">{profile.id}</p>
         {impersonateError && IMPERSONATE_ERRORS[impersonateError] && (

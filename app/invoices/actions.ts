@@ -9,7 +9,7 @@ import {
   calcPaymentProcessingFeeCents,
 } from "@/lib/invoices/utils";
 import { canCreateInvoice } from "@/lib/subscription";
-import { assertUserCanCreateInvoice } from "@/lib/invoices/creation-limit";
+import { assertUserCanCreateInvoice, assertUserCanCreateInvoiceAmount } from "@/lib/invoices/creation-limit";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { sendInvoiceEmail, sendReminderEmail } from "@/lib/email/send";
@@ -191,12 +191,20 @@ export async function createInvoiceAction(
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("subscription_status, default_invoice_design")
+    .select("subscription_status, default_invoice_design, first_name, last_name, phone")
     .eq("id", user.id)
     .single();
 
   const creationBlocked = await assertUserCanCreateInvoice(supabase, user.id);
   if (creationBlocked) return { error: creationBlocked.error };
+
+  const amountBlocked = await assertUserCanCreateInvoiceAmount(
+    supabase,
+    user.id,
+    amountCents,
+    currency
+  );
+  if (amountBlocked) return { error: amountBlocked.error };
 
   const { count } = await supabase
     .from("invoices")

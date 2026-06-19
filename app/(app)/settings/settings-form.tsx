@@ -26,6 +26,8 @@ const CURRENCIES = ["USD", "EUR", "GBP"];
 
 type Profile = {
   business_name: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
   default_currency: string;
   country: string | null;
   timezone: string | null;
@@ -222,6 +224,40 @@ export function SettingsForm({
               Contact & legal (shown on invoices)
             </h3>
             <div className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="first_name">
+                    First name <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="first_name"
+                    name="first_name"
+                    required
+                    disabled={isPending}
+                    defaultValue={profile.first_name ?? ""}
+                    className="h-10"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="last_name">
+                    Last name <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="last_name"
+                    name="last_name"
+                    required
+                    disabled={isPending}
+                    defaultValue={profile.last_name ?? ""}
+                    className="h-10"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Email</Label>
+                <div className="rounded-lg border border-white/10 bg-[#121821]/50 px-3 py-2.5 text-sm text-foreground">
+                  {profile.email ? maskEmail(profile.email) : "—"}
+                </div>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="address">Address (optional)</Label>
                 <Input
@@ -234,11 +270,14 @@ export function SettingsForm({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone (optional)</Label>
+                <Label htmlFor="phone">
+                  Phone <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="phone"
                   name="phone"
                   type="tel"
+                  required
                   placeholder="+44 123 456 7890"
                   disabled={isPending}
                   defaultValue={profile.phone ?? ""}

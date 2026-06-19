@@ -24,7 +24,7 @@ export default async function SettingsPage({
       supabase
         .from("profiles")
         .select(
-          "business_name, default_currency, country, timezone, default_invoice_design, default_invoice_visual_template_id, stripe_connect_account_id, stripe_customer_id, subscription_status, password_set_at, address, phone, company_number, vat_number, logo_url, escalation_cc_owner"
+          "business_name, first_name, last_name, default_currency, country, timezone, default_invoice_design, default_invoice_visual_template_id, stripe_connect_account_id, stripe_customer_id, subscription_status, password_set_at, address, phone, company_number, vat_number, logo_url, escalation_cc_owner"
         )
         .eq("id", user.id)
         .single(),
@@ -56,6 +56,8 @@ export default async function SettingsPage({
           visualTemplates={visualTemplates}
           profile={{
             business_name: profile?.business_name ?? null,
+            first_name: profile?.first_name ?? null,
+            last_name: profile?.last_name ?? null,
             default_currency: profile?.default_currency ?? "USD",
             country: profile?.country ?? null,
             timezone: profile?.timezone ?? "UTC",

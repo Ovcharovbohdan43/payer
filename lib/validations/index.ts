@@ -62,7 +62,7 @@ export const onboardingSchema = z.object({
   last_name: z.string().min(1, "Last name is required").max(100),
   email: z.string().min(1, "Email is required").email("Invalid email address"),
   business_name: z.string().min(1, "Company name is required").max(200),
-  phone: z.string().max(50).optional().or(z.literal("")),
+  phone: z.string().min(1, "Phone is required").max(50),
   address: z.string().max(500).optional().or(z.literal("")),
   website: z.string().max(500).optional().or(z.literal("")),
   company_type: z.string().max(100).optional().or(z.literal("")),
@@ -87,8 +87,10 @@ export const profileUpdateSchema = z.object({
 });
 
 export const profileContactSchema = z.object({
+  first_name: z.string().min(1, "First name is required").max(100),
+  last_name: z.string().min(1, "Last name is required").max(100),
+  phone: z.string().min(1, "Phone is required").max(50),
   address: z.string().max(500).optional().or(z.literal("")),
-  phone: z.string().max(50).optional().or(z.literal("")),
   company_number: z.string().max(50).optional().or(z.literal("")),
   vat_number: z.string().max(50).optional().or(z.literal("")),
 });

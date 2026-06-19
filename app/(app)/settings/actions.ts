@@ -48,13 +48,24 @@ export async function updateProfileAction(formData: FormData) {
   }
 
   const contactRaw = {
+    first_name: formData.get("first_name") ?? "",
+    last_name: formData.get("last_name") ?? "",
     address: formData.get("address") ?? "",
     phone: formData.get("phone") ?? "",
     company_number: formData.get("company_number") ?? "",
     vat_number: formData.get("vat_number") ?? "",
   };
   const contactParsed = profileContactSchema.safeParse(contactRaw);
-  const contact = contactParsed.success ? contactParsed.data : {};
+  if (!contactParsed.success) {
+    const first = contactParsed.error.flatten().fieldErrors;
+    const msg =
+      first.first_name?.[0] ??
+      first.last_name?.[0] ??
+      first.phone?.[0] ??
+      "Invalid contact fields";
+    return { error: msg };
+  }
+  const contact = contactParsed.data;
 
   const escalationCcOwner = formData.get("escalation_cc_owner") === "on";
 
@@ -95,8 +106,10 @@ export async function updateProfileAction(formData: FormData) {
       default_invoice_visual_template_id: defaultVisualTemplateId,
       country: parsed.data.country || null,
       timezone: parsed.data.timezone || "UTC",
+      first_name: contact.first_name.trim(),
+      last_name: contact.last_name.trim(),
       address: contact.address || null,
-      phone: contact.phone || null,
+      phone: contact.phone.trim(),
       company_number: contact.company_number || null,
       vat_number: contact.vat_number || null,
       escalation_cc_owner: escalationCcOwner,

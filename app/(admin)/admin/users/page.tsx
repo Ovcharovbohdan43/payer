@@ -3,6 +3,7 @@ import { listAdminUsers } from "@/lib/admin/queries";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { isAccountPendingReview } from "@/lib/invoices/creation-limit";
 
 type PageProps = {
   searchParams: Promise<{ q?: string; status?: string; page?: string }>;
@@ -12,7 +13,9 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const search = params.q ?? "";
   const status =
-    params.status === "banned" || params.status === "active"
+    params.status === "banned" ||
+    params.status === "active" ||
+    params.status === "pending_review"
       ? params.status
       : "all";
   const page = Math.max(1, Number(params.page) || 1);
@@ -53,6 +56,7 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
         >
           <option value="all">All statuses</option>
           <option value="active">Active</option>
+          <option value="pending_review">New — pending review</option>
           <option value="banned">Banned</option>
         </select>
         <Button type="submit">Search</Button>
@@ -91,6 +95,9 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
                       {u.business_name || "—"}
                       {u.is_admin && (
                         <Badge className="ml-2 bg-amber-500/20 text-amber-400">Admin</Badge>
+                      )}
+                      {isAccountPendingReview(u) && (
+                        <Badge className="ml-2 bg-yellow-500/20 text-yellow-300">New</Badge>
                       )}
                     </Link>
                   </td>

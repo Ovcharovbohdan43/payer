@@ -43,7 +43,7 @@ Actions are logged in `admin_actions_log` and `platform_activity_log`.
 
 Apply migration `supabase/migrations/20250328000001_invoice_creation_limits.sql`.
 
-**Default (auto policy):** new accounts may create **1 invoice** in the first **24 hours**. After that, creation is frozen until Puyer support reviews the account.
+**Default (auto policy):** new accounts may create **1 invoice** in the first **24 hours** (max **20** in GBP, USD, or EUR). After that, creation is frozen until Puyer support reviews the account. Users see a yellow banner; admins see a **New** badge and can filter **New — pending review** on `/admin/users`.
 
 **Admin controls** on `/admin/users/[id]`:
 
