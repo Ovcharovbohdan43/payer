@@ -1,11 +1,28 @@
 # Stripe Connect Setup
 
-Puyer uses **Stripe Connect Express** so that:
+Puyer uses **Stripe Connect** so that:
 
 - Users receive payments directly to their Stripe account
 - Puyer does not store or process bank details
 - Payouts to users' banks are handled by Stripe
-- **Connected accounts pay their own Stripe payment processing fees** (direct charges)
+- **Connected accounts pay their own Stripe payment processing fees** (direct charges + `controller.fees.payer = account`)
+
+## Connected account creation
+
+New accounts are created in `lib/stripe/connect.ts` via `buildConnectAccountParams()` with explicit controller settings (not `type: express`):
+
+```ts
+controller: {
+  fees: { payer: "account" },           // seller pays Stripe processing fees
+  losses: { payments: "stripe" },     // Stripe liable for connected-account losses
+  requirement_collection: "stripe",
+  stripe_dashboard: { type: "full" },
+}
+```
+
+**Existing Express accounts** created before this change keep their original fee payer (`application_express` or platform defaults). Only **new** Connect onboarding uses the updated configuration. To migrate a seller, they must connect a new Stripe account (or contact Stripe Support).
+
+Run `node scripts/check-stripe-connect-fees.mjs` to audit `controller.fees.payer` per account.
 
 ## Configuration
 
@@ -36,11 +53,9 @@ Previously Puyer used **destination charges** (`transfer_data`), which always bi
 
 ## Express accounts and fees
 
-New Connect accounts are created as `type: express`. With direct charges, Express accounts (`fees.payer: application_express`) have **payment processing fees** billed to the connected account.
+New Connect accounts use `controller.fees.payer = account` and Full Stripe Dashboard (`stripe_dashboard.type = full`). Connected accounts pay Stripe payment processing fees on direct charges; Puyer is not billed for those fees.
 
-`controller.fees.payer = account` cannot be combined with Express Dashboard per Stripe API rules. Direct charges are the correct approach for Express SaaS platforms.
-
-**Existing connected accounts** do not need to be recreated for this fee change — only the charge type (direct vs destination) matters.
+Legacy Express accounts (`type: express`, `application_express`) may still exist from earlier onboarding — audit with `scripts/check-stripe-connect-fees.mjs`.
 
 ## Flow
 

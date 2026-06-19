@@ -8,14 +8,12 @@ export function getConnectCountry(_profileBusinessName?: string | null): string 
 }
 
 /**
- * Create an Express connected account.
+ * Create a connected account where the seller pays Stripe fees (controller.fees.payer = account).
  *
- * Express accounts use fees.payer `application_express`. With **direct charges**
- * (Checkout created on the connected account), Stripe payment processing fees
- * are billed to the connected account, not the platform.
+ * Matches Stripe Connect platform setup for SaaS + direct charges: connected accounts pay
+ * processing fees; Stripe (not Puyer) is liable for connected-account payment losses.
  *
- * Note: `controller.fees.payer = account` is incompatible with Express Dashboard
- * per Stripe API rules. Direct charges are the supported way for Express SaaS.
+ * Do not set `type: express` — that defaults to application_express fee billing on many platforms.
  */
 export function buildConnectAccountParams(
   userId: string,
@@ -23,9 +21,20 @@ export function buildConnectAccountParams(
   country: string
 ): Stripe.AccountCreateParams {
   return {
-    type: "express",
     country,
     email,
+    controller: {
+      fees: {
+        payer: "account",
+      },
+      losses: {
+        payments: "stripe",
+      },
+      requirement_collection: "stripe",
+      stripe_dashboard: {
+        type: "full",
+      },
+    },
     capabilities: {
       card_payments: { requested: true },
       transfers: { requested: true },

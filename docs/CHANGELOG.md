@@ -4,6 +4,11 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2026-06-17] – Stripe Connect: seller pays fees on new accounts
+
+- **Account creation:** `buildConnectAccountParams` uses `controller.fees.payer = account`, `losses.payments = stripe`, Full Dashboard — not `type: express`.
+- **Docs:** Updated `docs/STRIPE_CONNECT.md`; audit script expects `fees.payer = account`.
+
 ### [2026-06-17] – Terms: account blocking on suspected violations
 
 - **Terms of Service (`/terms`):** Section 5–6 now explicitly state that Puyer may block, suspend, or restrict an account when it reasonably suspects a breach of platform rules or Terms.
