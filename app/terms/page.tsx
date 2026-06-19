@@ -110,15 +110,25 @@ export default function TermsOfServicePage() {
             </p>
             <p className="mt-3">
               We may monitor use of the Service for compliance, cooperate with payment
-              providers and authorities, and investigate suspected violations. You are
-              solely responsible for ensuring that your business and every invoice you
-              create complies with these restrictions.
+              providers and authorities, and investigate suspected violations. If we
+              reasonably suspect a breach of these Terms or platform rules, we may block
+              or limit your account pending investigation. You are solely responsible for
+              ensuring that your business and every invoice you create complies with
+              these restrictions.
             </p>
           </section>
 
           <section>
             <h2 className="text-lg font-semibold text-white">6. Enforcement and Account Termination</h2>
             <p className="mt-2">
+              If Puyer reasonably suspects that your account or use of the Service
+              violates these Terms, our platform rules, or applicable law — including
+              payment provider policies — we reserve the right to{" "}
+              <strong className="text-white">block, suspend, or restrict your account</strong>{" "}
+              at any time, with or without prior notice, while we review the matter or
+              take further action.
+            </p>
+            <p className="mt-3">
               If we discover, reasonably suspect, or are notified of a violation of these
               Terms — including use of the Service for any prohibited activity described
               in Section 5 — we may, at our sole discretion and without prior notice:

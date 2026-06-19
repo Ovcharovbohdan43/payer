@@ -4,6 +4,10 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2026-06-17] – Terms: account blocking on suspected violations
+
+- **Terms of Service (`/terms`):** Section 5–6 now explicitly state that Puyer may block, suspend, or restrict an account when it reasonably suspects a breach of platform rules or Terms.
+
 ### [2026-06-17] – Stripe: fee disclaimer and direct-charge checkout breakdown
 
 - **Checkout:** Direct charges only (no `transfer_data`); line items split when processing fee is included; Stripe `custom_text` states fees are paid by seller, not platform.
