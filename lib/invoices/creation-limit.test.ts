@@ -126,6 +126,15 @@ describe("isAccountPendingReview", () => {
       })
     ).toBe(false);
   });
+
+  it("is false when payments are enabled", () => {
+    expect(
+      isAccountPendingReview({
+        ...baseProfile,
+        payments_enabled: true,
+      })
+    ).toBe(false);
+  });
 });
 
 describe("checkRequiredProfileFields", () => {

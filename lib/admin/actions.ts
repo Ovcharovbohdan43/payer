@@ -233,6 +233,8 @@ export async function adminApproveSellerPayments(
 
   await logAdminAction(user.id, "approve_seller_payments", userId, { note: note?.trim() || null });
   revalidatePath(`/admin/users/${userId}`);
+  revalidatePath("/admin/users");
+  revalidatePath("/settings");
   return {};
 }
 

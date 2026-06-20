@@ -74,6 +74,14 @@ export default async function SettingsPage({
             vat_number: profile?.vat_number ?? null,
             logo_url: profile?.logo_url ?? null,
             escalation_cc_owner: profile?.escalation_cc_owner ?? true,
+            business_description: profile?.business_description ?? null,
+            website: profile?.website ?? null,
+            company_type: profile?.company_type ?? null,
+            payments_enabled: profile?.payments_enabled ?? false,
+            payment_risk_status: profile?.payment_risk_status ?? null,
+            payment_risk_notes: profile?.payment_risk_notes ?? null,
+            payments_verified_at: profile?.payments_verified_at ?? null,
+            payout_hold_until: profile?.payout_hold_until ?? null,
           }}
         />
       </div>

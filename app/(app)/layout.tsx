@@ -23,7 +23,7 @@ export default async function AppLayout({
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "business_name, logo_url, stripe_connect_account_id, subscription_status, invoice_creation_limit, invoice_creation_reviewed_at, is_admin"
+      "business_name, logo_url, stripe_connect_account_id, subscription_status, invoice_creation_limit, invoice_creation_reviewed_at, payments_enabled, payment_risk_status, is_admin"
     )
     .eq("id", user.id)
     .single();

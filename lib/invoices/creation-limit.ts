@@ -17,6 +17,8 @@ export type InvoiceCreationProfile = {
   first_name?: string | null;
   last_name?: string | null;
   phone?: string | null;
+  payments_enabled?: boolean | null;
+  payment_risk_status?: string | null;
 };
 
 export type InvoiceCreationCheckCode =
@@ -37,6 +39,8 @@ export type InvoiceCreationCheck = {
 /** Account awaiting Puyer support review (banner + admin "New" badge). */
 export function isAccountPendingReview(profile: InvoiceCreationProfile): boolean {
   if (profile.is_admin) return false;
+  if (profile.payments_enabled) return false;
+  if (profile.payment_risk_status === "active") return false;
   if (profile.invoice_creation_limit === UNLIMITED_INVOICE_LIMIT) return false;
   if (profile.invoice_creation_limit === 0) return false;
   return !profile.invoice_creation_reviewed_at;
