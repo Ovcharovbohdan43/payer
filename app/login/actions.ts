@@ -14,6 +14,7 @@ import {
   clearOtpPendingCookie,
   setRememberCookie,
 } from "@/lib/auth/remember-cookie";
+import { getPostAuthRedirectPath } from "@/lib/auth/post-auth-redirect";
 import { toUserFacingError } from "@/lib/errors/user-facing";
 
 export async function signInWithMagicLink(formData: FormData) {
@@ -150,7 +151,7 @@ export async function verifyOtpAction(
   });
 
   await redirectIfBanned(supabase, user.id);
-  redirect("/dashboard");
+  redirect(await getPostAuthRedirectPath(supabase, user.id));
 }
 
 export async function signOut() {

@@ -2,12 +2,13 @@ import { ACCOUNT_RESTRICTED_PATH, isUserBanned } from "@/lib/auth/account-status
 import { assertNotBannedForAuth, logUserIp } from "@/lib/auth/ban-enforcement";
 import { logPlatformActivityRpc } from "@/lib/admin/platform-activity";
 import { getClientIpFromRequest } from "@/lib/auth/client-ip";
+import { getPostAuthRedirectPath } from "@/lib/auth/post-auth-redirect";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 /**
  * Supabase Auth callback: exchange code for session, then redirect.
- * Always redirect to dashboard (or next). Onboarding is only shown after registration (see register actions).
+ * New OAuth / magic-link users without a completed profile go to /onboarding first.
  * Ensure Supabase Dashboard → Authentication → URL Configuration has this path in Redirect URLs.
  */
 export async function GET(request: Request) {
@@ -50,7 +51,9 @@ export async function GET(request: Request) {
       ip: clientIp,
       meta: { userId: user.id, email: user.email },
     });
-    return NextResponse.redirect(`${origin}${next}`);
+
+    const redirectPath = await getPostAuthRedirectPath(supabase, user.id, next);
+    return NextResponse.redirect(`${origin}${redirectPath}`);
   } catch {
     return NextResponse.redirect(`${origin}/login?error=link_invalid`);
   }

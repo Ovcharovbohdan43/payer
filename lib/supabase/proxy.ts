@@ -8,6 +8,7 @@ import { isIpBannedForRequest, logUserIp } from "@/lib/auth/ban-enforcement";
 import { isUserAdmin } from "@/lib/auth/require-admin";
 import { logPlatformActivityRpc } from "@/lib/admin/platform-activity";
 import { getClientIpFromRequest } from "@/lib/auth/client-ip";
+import { profileNeedsOnboarding } from "@/lib/auth/post-auth-redirect";
 import { OTP_PENDING_COOKIE_NAME } from "@/lib/auth/constants";
 
 const PROTECTED_PREFIXES = [
@@ -121,6 +122,23 @@ export async function updateSession(request: NextRequest) {
     pathname !== "/login/verify-otp"
   ) {
     return NextResponse.redirect(new URL("/login/verify-otp", request.url));
+  }
+
+  if (
+    userId &&
+    isProtectedPath(pathname) &&
+    pathname !== "/onboarding" &&
+    !isAdminPath(pathname)
+  ) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("onboarding_completed, business_name, first_name, last_name")
+      .eq("id", userId)
+      .single();
+
+    if (profileNeedsOnboarding(profile)) {
+      return NextResponse.redirect(new URL("/onboarding", request.url));
+    }
   }
 
   if (userId && !isBanExemptPath(pathname)) {

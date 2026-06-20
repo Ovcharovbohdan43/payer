@@ -20,3 +20,11 @@
 - **Authentication** → **Providers** → **Google**: включите провайдер и укажите Client ID и Client Secret из Google Cloud (Credentials → OAuth 2.0 Client IDs).
 - **Authorized redirect URIs** в Google Cloud для этого клиента должен содержать:  
   `https://<ваш-project-ref>.supabase.co/auth/v1/callback`
+
+## Завершение регистрации после Google
+
+После первого входа через Google пользователь перенаправляется на **`/onboarding`**, а не сразу в dashboard. Пока профиль не заполнен (company name, phone, business description и т.д.), доступ к `/dashboard`, `/invoices`, `/settings` и другим защищённым разделам блокируется middleware.
+
+Имя и фамилия подставляются из Google (`given_name` / `family_name` или `full_name`). Поле **business name** остаётся пустым до прохождения onboarding — в настройках не показывается прочерк вместо названия компании.
+
+Примените миграцию `20250620000002_oauth_onboarding_profile.sql` в Supabase, если ещё не применена.
