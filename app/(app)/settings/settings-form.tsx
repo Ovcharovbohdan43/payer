@@ -28,6 +28,7 @@ import {
 } from "@/lib/stripe/connect-status";
 import { INVOICE_DESIGNS, normalizeInvoiceDesign, type InvoiceDesignKey } from "@/lib/invoice-designs";
 import type { InvoiceVisualTemplateRow } from "@/lib/invoice-visual-config";
+import { SettingsCollapsibleSection } from "@/components/settings/settings-collapsible-section";
 
 const CURRENCIES = ["USD", "EUR", "GBP"];
 
@@ -116,8 +117,10 @@ export function SettingsForm({
       <SettingsStripeReturnToast stripeConnectReturn={stripeConnectReturn} />
       <form action={formAction} className="space-y-6">
         <FormErrorToast state={state} />
-        <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
-          <h2 className="mb-4 text-base font-semibold">Business profile</h2>
+        <SettingsCollapsibleSection
+          title="Business profile"
+          description="Currency, invoice design, and contact details for invoices"
+        >
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>Company name</Label>
@@ -377,10 +380,12 @@ export function SettingsForm({
             </div>
           </div>
         </div>
-        </section>
+        </SettingsCollapsibleSection>
 
-        <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
-          <h2 className="mb-4 text-base font-semibold">Reminders</h2>
+        <SettingsCollapsibleSection
+          title="Reminders"
+          description="Overdue invoice reminder notifications"
+        >
           <label className="flex cursor-pointer items-center gap-3">
             <input
               type="checkbox"
@@ -397,7 +402,7 @@ export function SettingsForm({
           <p className="mt-2 text-xs text-muted-foreground">
             When an invoice is 7+ days overdue, we send one overdue reminder to the client. If enabled, a copy is sent to your account email.
           </p>
-        </section>
+        </SettingsCollapsibleSection>
 
         {state && !state.error && (
           <p className="text-sm text-emerald-500">Settings saved.</p>
@@ -414,8 +419,11 @@ export function SettingsForm({
 
       <LogoSection profile={profile} />
 
-      <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
-        <h2 className="mb-2 text-base font-semibold">Account security</h2>
+      <SettingsCollapsibleSection
+        title="Account security"
+        description="Password and sign-in options"
+        defaultOpen={recovery}
+      >
         <p className="mb-4 text-sm text-muted-foreground">
           Set a password so you can always sign in with email and password, even if
           magic links don&apos;t work.
@@ -425,15 +433,19 @@ export function SettingsForm({
           email={profile.email ?? null}
           recovery={recovery}
         />
-      </section>
+      </SettingsCollapsibleSection>
 
       <SubscriptionSection
         subscriptionStatus={profile.subscription_status ?? "free"}
         hasStripeCustomer={!!profile.stripe_customer_id}
       />
 
-        <section id="payments" className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
-        <h2 className="mb-2 text-base font-semibold">Payments</h2>
+        <SettingsCollapsibleSection
+          id="payments"
+          title="Payments"
+          description="Stripe Connect and card payment approval"
+          defaultOpen={!!stripeConnectReturn}
+        >
         <p className="mb-3 text-sm text-muted-foreground">
           Connect Stripe to receive payments directly. Card fees are paid by you (the seller), not by Puyer.
           New accounts are verified before accepting payments.
@@ -487,13 +499,14 @@ export function SettingsForm({
         ) : (
           <ConnectStripeButton />
         )}
-      </section>
+      </SettingsCollapsibleSection>
 
-      <section
+      <SettingsCollapsibleSection
         id="integrations"
-        className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6"
+        title="Integrations"
+        description="Google Calendar and other connected tools"
+        defaultOpen={integrationSuccess === "google_calendar" || integrationError}
       >
-        <h2 className="mb-1 text-base font-semibold">Integrations</h2>
         <p className="mb-4 text-sm text-muted-foreground">
           Connect tools you already use so Puyer fits into your workflow.
         </p>
@@ -504,10 +517,12 @@ export function SettingsForm({
           onDisconnect={() => router.refresh()}
           variant="settings"
         />
-      </section>
+      </SettingsCollapsibleSection>
 
-      <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
-        <h2 className="mb-2 text-base font-semibold">Support</h2>
+      <SettingsCollapsibleSection
+        title="Support"
+        description="Help, FAQ, and contact"
+      >
         <p className="mb-3 text-sm text-muted-foreground">
           Need help? Check our FAQ or contact us.
         </p>
@@ -533,7 +548,7 @@ export function SettingsForm({
             Terms
           </Link>
         </div>
-      </section>
+      </SettingsCollapsibleSection>
     </div>
   );
 }
@@ -591,8 +606,14 @@ function SubscriptionSection({
   }
 
   return (
-    <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
-      <h2 className="mb-2 text-base font-semibold">Subscription</h2>
+    <SettingsCollapsibleSection
+      title="Subscription"
+      description={
+        isPro
+          ? "Pro plan — unlimited invoices"
+          : "Free plan — upgrade for unlimited invoices"
+      }
+    >
       <p className="mb-3 text-sm text-muted-foreground">
         {isPro
           ? "You're on Pro — unlimited invoices."
@@ -618,7 +639,7 @@ function SubscriptionSection({
           {loading ? "Opening checkout…" : "Upgrade to Pro ($9.99/month)"}
         </Button>
       )}
-    </section>
+    </SettingsCollapsibleSection>
   );
 }
 
@@ -678,7 +699,10 @@ function LogoSection({ profile }: { profile: Profile }) {
   }
 
   return (
-    <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-5">
+    <SettingsCollapsibleSection
+      title="Company logo"
+      description="Shown on invoices and payment pages · PNG, JPEG, WebP, max 10MB"
+    >
       <FormErrorToast state={logoState} />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
@@ -698,12 +722,6 @@ function LogoSection({ profile }: { profile: Profile }) {
                 <ImagePlus className="size-5" />
               </div>
             )}
-          </div>
-          <div>
-            <h2 className="text-sm font-semibold">Company logo</h2>
-            <p className="text-xs text-muted-foreground">
-              Header, invoices, payment page · PNG, JPEG, WebP, max 10MB
-            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -750,7 +768,7 @@ function LogoSection({ profile }: { profile: Profile }) {
           )}
         </div>
       </div>
-    </section>
+    </SettingsCollapsibleSection>
   );
 }
 
