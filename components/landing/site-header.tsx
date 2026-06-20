@@ -51,7 +51,7 @@ export function SiteHeader() {
             href="/register"
             className={cn(
               buttonVariants(),
-              "h-9 bg-brand px-4 font-medium text-primary-foreground hover:bg-brand-hover"
+              "h-9 border border-brand/25 bg-brand px-4 font-medium text-primary-foreground shadow-none hover:bg-brand-hover"
             )}
           >
             Sign up

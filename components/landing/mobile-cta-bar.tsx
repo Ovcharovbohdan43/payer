@@ -27,7 +27,7 @@ export function MobileCtaBar() {
         href="/register"
         className={cn(
           buttonVariants(),
-          'h-12 w-full bg-brand text-base font-medium text-primary-foreground hover:bg-brand-hover',
+          'h-12 w-full border border-brand/25 bg-brand text-base font-medium text-primary-foreground shadow-none hover:bg-brand-hover',
         )}
       >
         Start free — invoice in 15s <ArrowRight className="ml-1.5 h-4 w-4" />

@@ -122,9 +122,9 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 8%);
   --sidebar-ring: oklch(0.55 0.2 250);
-  --brand: oklch(0.62 0.19 258);
-  --brand-hover: oklch(0.55 0.2 260);
-  --brand-soft: oklch(0.62 0.19 258 / 12%);
+  --brand: oklch(0.58 0.13 258);
+  --brand-hover: oklch(0.52 0.14 260);
+  --brand-soft: oklch(0.58 0.13 258 / 10%);
   --surface: oklch(0.2 0.022 250);
   --amber: oklch(0.83 0.16 84);
 }

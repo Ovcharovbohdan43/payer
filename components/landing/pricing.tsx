@@ -59,7 +59,7 @@ export function Pricing() {
               className={cn(
                 "flex h-full flex-col rounded-3xl p-7 pt-8",
                 plan.highlight
-                  ? "border border-brand/40 bg-gradient-to-b from-brand/10 to-card/60 shadow-[0_0_60px_-20px_var(--brand)]"
+                  ? "border border-brand/30 bg-gradient-to-b from-brand/8 to-card/60"
                   : "border border-white/8 bg-card/60"
               )}
             >
@@ -91,7 +91,7 @@ export function Pricing() {
                   buttonVariants(),
                   "mt-6 h-11 w-full shrink-0 font-medium",
                   plan.highlight
-                    ? "bg-brand text-primary-foreground hover:bg-brand-hover"
+                    ? "border border-brand/25 bg-brand text-primary-foreground shadow-none hover:bg-brand-hover"
                     : "border border-white/15 bg-white/[0.02] text-white hover:bg-white/5"
                 )}
               >

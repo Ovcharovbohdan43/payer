@@ -25,7 +25,7 @@ export function Hero() {
             href="/register"
             className={cn(
               buttonVariants(),
-              'h-12 w-full bg-brand px-6 text-base font-medium text-primary-foreground shadow-[0_0_40px_-8px_var(--brand)] hover:bg-brand-hover sm:w-auto',
+              'h-12 w-full border border-brand/25 bg-brand px-6 text-base font-medium text-primary-foreground shadow-none hover:bg-brand-hover sm:w-auto',
             )}
           >
             Start free <ArrowRight className="ml-1.5 h-4 w-4" />
