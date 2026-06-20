@@ -14,6 +14,10 @@ import {
   type InvoiceTemplateItemRow,
 } from "../template-actions";
 import { showErrorToast } from "@/components/ui/form-error-toast";
+import {
+  showStripeConnectReminderToast,
+  STRIPE_CONNECT_SETTINGS_HREF,
+} from "@/lib/stripe/connect-reminder";
 import { useActionState, useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -267,7 +271,14 @@ export function NewInvoiceForm({
       ) {
         toast.success("Invoice created and sent by email");
       }
-      router.push(`/invoices/${state.invoiceId}`);
+      if (state.stripeNotConnected) {
+        showStripeConnectReminderToast(() => router.push(STRIPE_CONNECT_SETTINGS_HREF));
+      }
+      router.push(
+        state.stripeNotConnected
+          ? `/invoices/${state.invoiceId}?connectStripe=1`
+          : `/invoices/${state.invoiceId}`
+      );
     }
   }, [state, router]);
 

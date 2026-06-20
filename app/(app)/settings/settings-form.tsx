@@ -413,7 +413,7 @@ export function SettingsForm({
         hasStripeCustomer={!!profile.stripe_customer_id}
       />
 
-      <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
+        <section id="payments" className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
         <h2 className="mb-2 text-base font-semibold">Payments</h2>
         <p className="mb-3 text-sm text-muted-foreground">
           Connect Stripe to receive payments directly. Card fees are paid by you (the seller), not by Puyer.

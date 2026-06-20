@@ -14,6 +14,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { sendInvoiceEmail, sendReminderEmail } from "@/lib/email/send";
 import { DEFAULT_INVOICE_DESIGN, normalizeInvoiceDesign, type InvoiceDesignKey } from "@/lib/invoice-designs";
+import { shouldRemindStripeConnect } from "@/lib/stripe/connect-reminder";
 import {
   getDefaultVisualConfig,
   normalizeInvoiceVisualConfig,
@@ -103,6 +104,7 @@ export type CreateResult =
       number: string;
       intent: string;
       emailSent?: boolean;
+      stripeNotConnected?: boolean;
     };
 
 export async function createInvoiceAction(
@@ -284,6 +286,12 @@ export async function createInvoiceAction(
 
   if (lineItemsError) return { error: lineItemsError.message };
 
+  const { data: paymentProfile } = await supabase
+    .from("profiles")
+    .select("stripe_connect_account_id, is_admin")
+    .eq("id", user.id)
+    .single();
+
   revalidatePath("/invoices");
   revalidatePath("/dashboard");
 
@@ -324,6 +332,7 @@ export async function createInvoiceAction(
     publicUrl,
     number: invoice.number,
     intent,
+    stripeNotConnected: shouldRemindStripeConnect(paymentProfile),
     ...(emailSent !== undefined && { emailSent }),
   };
 }

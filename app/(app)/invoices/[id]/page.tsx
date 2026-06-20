@@ -12,6 +12,8 @@ import {
 } from "@/lib/invoices/utils";
 import { InvoiceDetailClient } from "./invoice-detail-client";
 import { InvoiceQrCode } from "@/components/invoice-qr-code";
+import { StripeConnectBanner } from "@/components/stripe/stripe-connect-banner";
+import { shouldRemindStripeConnect } from "@/lib/stripe/connect-reminder";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
 
@@ -31,6 +33,16 @@ export default async function InvoiceDetailPage({
   if (!invoice) notFound();
 
   const status = invoice.status as InvoiceStatus;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("stripe_connect_account_id, is_admin")
+    .eq("id", user.id)
+    .single();
+
+  const showStripeConnectBanner =
+    shouldRemindStripeConnect(profile) && status !== "paid" && status !== "void";
+
   const statusVariant =
     status === "paid"
       ? "bg-emerald-500/20 text-emerald-400"
@@ -107,6 +119,8 @@ export default async function InvoiceDetailPage({
           {invoice.notes && (
             <p className="text-sm text-muted-foreground">Notes: {invoice.notes}</p>
           )}
+
+          {showStripeConnectBanner && <StripeConnectBanner />}
 
           <Timeline invoice={invoice} />
 
