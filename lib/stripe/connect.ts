@@ -1,4 +1,5 @@
-import type Stripe from "stripe";
+import Stripe from "stripe";
+import { newAccountStripeSettings } from "@/lib/stripe/account-controls";
 
 /** Default country for Connect accounts. Use GB for UK Stripe, US for US Stripe. */
 export function getConnectCountry(_profileBusinessName?: string | null): string {
@@ -40,6 +41,7 @@ export function buildConnectAccountParams(
       transfers: { requested: true },
     },
     metadata: { supabase_user_id: userId },
+    settings: newAccountStripeSettings(),
   };
 }
 

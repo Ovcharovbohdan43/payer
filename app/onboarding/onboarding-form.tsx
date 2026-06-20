@@ -82,6 +82,12 @@ export function OnboardingForm({
         setStepError("Please enter your phone number.");
         return;
       }
+      const description =
+        (form.querySelector("#onb_business_description") as HTMLTextAreaElement)?.value?.trim() ?? "";
+      if (description.length < 20) {
+        setStepError("Please describe your business (at least 20 characters).");
+        return;
+      }
     }
 
     if (step < 3) setStep((s) => s + 1);
@@ -187,6 +193,28 @@ export function OnboardingForm({
             className="h-11"
             defaultValue={initialBusinessName ?? ""}
           />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="onb_business_description">
+            What does your business sell or do? <RequiredStar />
+          </Label>
+          <textarea
+            id="onb_business_description"
+            name="business_description"
+            required
+            minLength={20}
+            maxLength={2000}
+            rows={4}
+            disabled={isPending}
+            placeholder="e.g. Plumbing repairs and boiler servicing for homes in London."
+            className={cn(
+              "flex w-full rounded-md border border-[#3B82F6]/40 bg-[#121821] px-3 py-2 text-sm text-white",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3B82F6] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0F14]"
+            )}
+          />
+          <p className="text-xs text-muted-foreground">
+            Minimum 20 characters. Prohibited goods and services are not allowed.
+          </p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="onb_phone">

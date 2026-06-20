@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { profileUpdateSchema, passwordSchema, profileContactSchema } from "@/lib/validations";
 import { revalidatePath } from "next/cache";
 import { DEFAULT_INVOICE_DESIGN, normalizeInvoiceDesign } from "@/lib/invoice-designs";
+import { scanProfileForProhibitedContent } from "@/lib/risk/engine";
 
 const LOGO_BUCKET = "logos";
 
@@ -54,6 +55,9 @@ export async function updateProfileAction(formData: FormData) {
     phone: formData.get("phone") ?? "",
     company_number: formData.get("company_number") ?? "",
     vat_number: formData.get("vat_number") ?? "",
+    business_description: formData.get("business_description") ?? "",
+    website: formData.get("website") ?? "",
+    company_type: formData.get("company_type") ?? "",
   };
   const contactParsed = profileContactSchema.safeParse(contactRaw);
   if (!contactParsed.success) {
@@ -112,12 +116,18 @@ export async function updateProfileAction(formData: FormData) {
       phone: contact.phone.trim(),
       company_number: contact.company_number || null,
       vat_number: contact.vat_number || null,
+      business_description: contact.business_description.trim(),
+      website: contact.website?.trim() || null,
+      company_type: contact.company_type?.trim() || null,
       escalation_cc_owner: escalationCcOwner,
       updated_at: new Date().toISOString(),
     })
     .eq("id", user.id);
 
   if (error) return { error: error.message };
+
+  await scanProfileForProhibitedContent(user.id);
+
   revalidatePath("/settings");
   revalidatePath("/dashboard");
   revalidatePath("/invoices");

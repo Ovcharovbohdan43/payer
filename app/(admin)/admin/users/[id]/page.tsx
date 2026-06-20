@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getAdminUserDetail } from "@/lib/admin/queries";
 import { AdminUserActions } from "@/components/admin/admin-user-actions";
 import { AdminInvoiceLimitControls } from "@/components/admin/admin-invoice-limit-controls";
+import { AdminPaymentRiskControls } from "@/components/admin/admin-payment-risk-controls";
 import { formatInvoiceLimitAdminSummary, isAccountPendingReview } from "@/lib/invoices/creation-limit";
 import { LiveActivityFeed } from "@/components/admin/live-activity-feed";
 import { Badge } from "@/components/ui/badge";
@@ -72,6 +73,22 @@ export default async function AdminUserDetailPage({ params, searchParams }: Page
           subscriptionStatus={profile.subscription_status}
           hasStripeConnect={!!profile.stripe_connect_account_id}
           hasStripeToRevoke={hasStripe}
+          isTargetAdmin={!!profile.is_admin}
+        />
+      </Card>
+
+      <Card className="border-white/[0.06] bg-[#121821]/90 p-5">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          Payment risk & verification
+        </h2>
+        <AdminPaymentRiskControls
+          userId={profile.id}
+          paymentsEnabled={!!profile.payments_enabled}
+          paymentRiskStatus={profile.payment_risk_status ?? "pending_verification"}
+          paymentRiskNotes={profile.payment_risk_notes ?? null}
+          paymentsVerifiedAt={profile.payments_verified_at ?? null}
+          payoutHoldUntil={profile.payout_hold_until ?? null}
+          stripeConnected={hasStripe}
           isTargetAdmin={!!profile.is_admin}
         />
       </Card>

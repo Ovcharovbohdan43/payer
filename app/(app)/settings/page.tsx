@@ -24,7 +24,7 @@ export default async function SettingsPage({
       supabase
         .from("profiles")
         .select(
-          "business_name, first_name, last_name, default_currency, country, timezone, default_invoice_design, default_invoice_visual_template_id, stripe_connect_account_id, stripe_customer_id, subscription_status, password_set_at, address, phone, company_number, vat_number, logo_url, escalation_cc_owner"
+          "business_name, first_name, last_name, default_currency, country, timezone, default_invoice_design, default_invoice_visual_template_id, stripe_connect_account_id, stripe_customer_id, subscription_status, password_set_at, address, phone, company_number, vat_number, logo_url, escalation_cc_owner, business_description, website, company_type, payments_enabled, payment_risk_status, payment_risk_notes, payments_verified_at, payout_hold_until"
         )
         .eq("id", user.id)
         .single(),

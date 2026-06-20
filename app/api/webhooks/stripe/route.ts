@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendPayoutNotificationEmail } from "@/lib/email/send";
 import { formatAmount } from "@/lib/invoices/utils";
+import { runPostPaymentRiskCheck, flagSellerForReview } from "@/lib/risk/engine";
 
 export async function POST(request: Request) {
   const secret = process.env.STRIPE_SECRET_KEY?.trim();
@@ -172,6 +173,76 @@ export async function POST(request: Request) {
     if (insertError && insertError.code !== "23505") {
       console.error("[webhook stripe] insert payment", insertError);
     }
+
+    const { data: invoiceOwner } = await supabase
+      .from("invoices")
+      .select("user_id")
+      .eq("id", invoice.id)
+      .single();
+
+    if (invoiceOwner?.user_id) {
+      void runPostPaymentRiskCheck(
+        invoiceOwner.user_id,
+        amount,
+        currency
+      );
+    }
+
+    return NextResponse.json({ received: true });
+  }
+
+  if (ev.type === "account.updated") {
+    const account = ev.data.object as Stripe.Account;
+    const accountId = account.id;
+    const userId = account.metadata?.supabase_user_id as string | undefined;
+
+    const disabledReason = account.requirements?.disabled_reason;
+    const hasRestrictions =
+      !!disabledReason ||
+      account.charges_enabled === false ||
+      (account.requirements?.past_due?.length ?? 0) > 0;
+
+    if (hasRestrictions && userId) {
+      await flagSellerForReview(
+        userId,
+        "stripe_account_warning",
+        {
+          disabledReason: disabledReason ?? null,
+          charges_enabled: account.charges_enabled,
+          past_due: account.requirements?.past_due ?? [],
+        },
+        "paused"
+      );
+    }
+
+    return NextResponse.json({ received: true });
+  }
+
+  if (
+    ev.type === "charge.dispute.created" ||
+    ev.type === "charge.dispute.funds_withdrawn"
+  ) {
+    const dispute = ev.data.object as Stripe.Dispute;
+    const chargeId =
+      typeof dispute.charge === "string" ? dispute.charge : dispute.charge?.id;
+
+    if (chargeId && ev.account) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("stripe_connect_account_id", ev.account)
+        .single();
+
+      if (profile?.id) {
+        await flagSellerForReview(
+          profile.id,
+          "dispute_opened",
+          { disputeId: dispute.id, chargeId, reason: dispute.reason },
+          "paused"
+        );
+      }
+    }
+
     return NextResponse.json({ received: true });
   }
 

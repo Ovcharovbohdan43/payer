@@ -196,6 +196,78 @@ export async function adminSetInvoiceCreationLimit(
   return {};
 }
 
+export async function adminApproveSellerPayments(
+  userId: string,
+  note?: string
+): Promise<{ error?: string }> {
+  const { user } = await requireAdmin();
+  const blocked = await assertAdminTargetAllowed(user.id, userId);
+  if (blocked) return blocked;
+
+  const admin = createAdminClient();
+  const { error } = await admin.rpc("approve_seller_payments", {
+    p_user_id: userId,
+    p_note: note?.trim() || null,
+  });
+  if (error) return { error: error.message };
+
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("stripe_connect_account_id, payout_hold_until")
+    .eq("id", userId)
+    .single();
+
+  if (profile?.stripe_connect_account_id) {
+    const holdExpired =
+      !profile.payout_hold_until ||
+      new Date(profile.payout_hold_until).getTime() <= Date.now();
+    if (holdExpired) {
+      const { releaseSellerStripePayouts } = await import("@/lib/stripe/account-controls");
+      try {
+        await releaseSellerStripePayouts(profile.stripe_connect_account_id);
+      } catch (e) {
+        console.error("[admin approve payments] stripe release", e);
+      }
+    }
+  }
+
+  await logAdminAction(user.id, "approve_seller_payments", userId, { note: note?.trim() || null });
+  revalidatePath(`/admin/users/${userId}`);
+  return {};
+}
+
+export async function adminFlagSellerPayments(
+  userId: string,
+  reason: string
+): Promise<{ error?: string }> {
+  const { user } = await requireAdmin();
+  const blocked = await assertAdminTargetAllowed(user.id, userId);
+  if (blocked) return blocked;
+
+  const admin = createAdminClient();
+  const { error } = await admin.rpc("flag_seller_payments", {
+    p_user_id: userId,
+    p_reason: reason.trim(),
+    p_status: "flagged",
+  });
+  if (error) return { error: error.message };
+
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("stripe_connect_account_id")
+    .eq("id", userId)
+    .single();
+
+  if (profile?.stripe_connect_account_id) {
+    const { pauseSellerStripeAccount } = await import("@/lib/stripe/account-controls");
+    await pauseSellerStripeAccount(profile.stripe_connect_account_id, reason.trim());
+  }
+
+  await logAdminAction(user.id, "flag_seller_payments", userId, { reason: reason.trim() });
+  revalidatePath(`/admin/users/${userId}`);
+  return {};
+}
+
 export async function adminRunStripeBanCron(): Promise<{
   processed: number;
   errors: string[];

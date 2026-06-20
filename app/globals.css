@@ -45,6 +45,14 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-surface: var(--surface);
+  --color-amber: var(--amber);
+  --animate-star-fall: star-fall linear infinite;
+  --animate-pulse-ring: pulse-ring 2.4s ease-out infinite;
+  --animate-review-carousel-in: review-carousel-in 0.55s ease-out both;
 }
 
 :root {
@@ -114,6 +122,11 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 8%);
   --sidebar-ring: oklch(0.55 0.2 250);
+  --brand: oklch(0.62 0.19 258);
+  --brand-hover: oklch(0.55 0.2 260);
+  --brand-soft: oklch(0.62 0.19 258 / 12%);
+  --surface: oklch(0.2 0.022 250);
+  --amber: oklch(0.83 0.16 84);
 }
 
 @keyframes step-connector-draw {
@@ -140,24 +153,65 @@
 
 @keyframes star-fall {
   0% {
-    transform: translateY(-10%) translateX(0) rotate(0deg);
+    transform: translateY(-10vh) translateX(0);
     opacity: 0;
   }
   10% {
-    opacity: 0.6;
+    opacity: 0.8;
   }
   90% {
-    opacity: 0.3;
+    opacity: 0.8;
   }
   100% {
-    transform: translateY(110vh) translateX(20px) rotate(180deg);
+    transform: translateY(110vh) translateX(20px);
     opacity: 0;
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 oklch(0.62 0.19 258 / 45%);
+  }
+  70% {
+    box-shadow: 0 0 0 12px oklch(0.62 0.19 258 / 0%);
+  }
+  100% {
+    box-shadow: 0 0 0 0 oklch(0.62 0.19 258 / 0%);
+  }
+}
+
+@keyframes review-carousel-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer components {
+  .bg-brand {
+    background-color: var(--brand);
+  }
+  .hover\:bg-brand-hover:hover {
+    background-color: var(--brand-hover);
+  }
+  .from-brand {
+    --tw-gradient-from: var(--brand);
+  }
+  .to-brand {
+    --tw-gradient-to: var(--brand);
   }
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
+  }
+  html {
+    scroll-behavior: smooth;
   }
   body {
     @apply bg-background text-foreground;

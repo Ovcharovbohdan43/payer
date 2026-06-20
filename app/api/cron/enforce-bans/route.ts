@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { processPendingStripeRevocations } from "@/lib/auth/process-ban-stripe";
+import { releaseDuePayoutHolds } from "@/lib/stripe/account-controls";
 
 /**
- * Cron: revoke Stripe Connect accounts for banned users.
- * Secured by CRON_SECRET. Runs once daily on Vercel Hobby (see vercel.json).
+ * Cron: revoke Stripe Connect for banned users + release payout holds after review period.
  */
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
@@ -14,6 +14,14 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { processed, errors } = await processPendingStripeRevocations();
-  return NextResponse.json({ ok: true, processed, errors });
+  const [revoke, payouts] = await Promise.all([
+    processPendingStripeRevocations(),
+    releaseDuePayoutHolds(),
+  ]);
+
+  return NextResponse.json({
+    ok: true,
+    revoke,
+    payoutHolds: payouts,
+  });
 }

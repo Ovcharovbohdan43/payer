@@ -34,6 +34,14 @@ type Profile = {
   default_invoice_design?: string | null;
   default_invoice_visual_template_id?: string | null;
   stripe_connect_account_id: string | null;
+  payments_enabled?: boolean | null;
+  payment_risk_status?: string | null;
+  payment_risk_notes?: string | null;
+  payments_verified_at?: string | null;
+  payout_hold_until?: string | null;
+  business_description?: string | null;
+  website?: string | null;
+  company_type?: string | null;
   stripe_customer_id?: string | null;
   subscription_status?: string | null;
   hasPassword?: boolean;
@@ -285,6 +293,45 @@ export function SettingsForm({
                 />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="business_description">
+                  Business description <span className="text-red-500">*</span>
+                </Label>
+                <textarea
+                  id="business_description"
+                  name="business_description"
+                  required
+                  minLength={20}
+                  maxLength={2000}
+                  rows={4}
+                  disabled={isPending}
+                  defaultValue={profile.business_description ?? ""}
+                  placeholder="What you sell or do, and who your customers are."
+                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="website">Website (optional)</Label>
+                <Input
+                  id="website"
+                  name="website"
+                  type="url"
+                  placeholder="https://example.com"
+                  disabled={isPending}
+                  defaultValue={profile.website ?? ""}
+                  className="h-10"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="company_type">Industry (optional if website provided)</Label>
+                <Input
+                  id="company_type"
+                  name="company_type"
+                  disabled={isPending}
+                  defaultValue={profile.company_type ?? ""}
+                  className="h-10"
+                />
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="company_number">Company / Registration number (optional)</Label>
                 <Input
                   id="company_number"
@@ -368,8 +415,28 @@ export function SettingsForm({
       <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
         <h2 className="mb-2 text-base font-semibold">Payments</h2>
         <p className="mb-3 text-sm text-muted-foreground">
-          Connect Stripe to receive payments directly. Puyer does not store bank details.
+          Connect Stripe to receive payments directly. Card fees are paid by you (the seller), not by Puyer.
+          New accounts are verified before accepting payments.
         </p>
+        {profile.payments_enabled ? (
+          <p className="mb-3 text-sm text-emerald-500">Approved to accept invoice payments</p>
+        ) : (
+          <p className="mb-3 text-sm text-amber-400">
+            Payments disabled until Puyer verifies your business
+            {profile.payment_risk_status ? ` (${profile.payment_risk_status.replace(/_/g, " ")})` : ""}.
+          </p>
+        )}
+        {profile.payment_risk_notes && (
+          <p className="mb-3 text-xs text-muted-foreground">{profile.payment_risk_notes}</p>
+        )}
+        {profile.payout_hold_until && profile.payments_enabled && (
+          <p className="mb-3 text-xs text-muted-foreground">
+            Automatic payouts unlock after{" "}
+            {new Date(profile.payout_hold_until).toLocaleDateString(undefined, {
+              dateStyle: "medium",
+            })}
+          </p>
+        )}
         {profile.stripe_connect_account_id ? (
           <div className="flex items-center gap-2 text-sm text-emerald-500">
             <span className="size-2 rounded-full bg-emerald-500" />

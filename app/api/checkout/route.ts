@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { isAccountBanned } from "@/lib/auth/account-status";
 import { logPlatformActivityAdmin } from "@/lib/admin/platform-activity";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { assertCheckoutAllowed } from "@/lib/risk/payment-guard";
 import {
   buildInvoiceCheckoutSessionParams,
   createDirectChargeCheckoutSession,
@@ -49,7 +50,9 @@ export async function POST(request: Request) {
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("stripe_connect_account_id, account_status, business_name")
+      .select(
+        "id, stripe_connect_account_id, account_status, business_name, payments_enabled, payment_risk_status, onboarding_completed, business_description, phone, website, company_type, country, default_currency, first_name, last_name, created_at, payments_verified_at, is_admin"
+      )
       .eq("id", invoice.user_id)
       .single();
 
@@ -63,11 +66,25 @@ export async function POST(request: Request) {
     const chargeCents = Number(invoice.amount_cents);
     const destination = profile?.stripe_connect_account_id ?? null;
 
-    if (!destination) {
+    if (!destination || !profile) {
       return NextResponse.json(
         { error: "Online payment is not available for this invoice." },
         { status: 400 }
       );
+    }
+
+    const { data: authUser } = await supabase.auth.admin.getUserById(invoice.user_id);
+    const emailConfirmed = !!authUser?.user?.email_confirmed_at;
+
+    const blocked = await assertCheckoutAllowed(
+      supabase,
+      profile,
+      chargeCents,
+      invoice.currency as string,
+      emailConfirmed
+    );
+    if (blocked) {
+      return NextResponse.json({ error: blocked.error }, { status: 400 });
     }
 
     const stripe = new Stripe(secret);

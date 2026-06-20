@@ -18,6 +18,7 @@ describe("buildConnectAccountParams", () => {
     expect(params.controller?.stripe_dashboard?.type).toBe("full");
     expect(params.capabilities?.card_payments?.requested).toBe(true);
     expect(params.capabilities?.transfers?.requested).toBe(true);
+    expect(params.settings?.payouts?.schedule?.interval).toBe("manual");
     expect((params.metadata as Record<string, string> | undefined)?.supabase_user_id).toBe("user-123");
   });
 

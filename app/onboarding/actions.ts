@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { onboardingSchema } from "@/lib/validations";
 import { redirect } from "next/navigation";
+import { scanProfileForProhibitedContent } from "@/lib/risk/engine";
 
 export async function submitOnboarding(formData: FormData) {
   const raw = {
@@ -14,6 +15,7 @@ export async function submitOnboarding(formData: FormData) {
     address: formData.get("address") ?? "",
     website: formData.get("website") ?? "",
     company_type: formData.get("company_type") ?? "",
+    business_description: formData.get("business_description") ?? "",
     default_currency: formData.get("default_currency") ?? "USD",
     country: formData.get("country") ?? "",
     timezone: formData.get("timezone") ?? "",
@@ -53,6 +55,7 @@ export async function submitOnboarding(formData: FormData) {
         address: parsed.data.address?.trim() || null,
         website: parsed.data.website?.trim() || null,
         company_type: parsed.data.company_type?.trim() || null,
+        business_description: parsed.data.business_description.trim(),
         default_currency: parsed.data.default_currency,
         country: parsed.data.country?.trim() || null,
         timezone: parsed.data.timezone?.trim() || "UTC",
@@ -65,6 +68,8 @@ export async function submitOnboarding(formData: FormData) {
   if (error) {
     return { error: error.message };
   }
+
+  await scanProfileForProhibitedContent(user.id);
 
   redirect("/dashboard");
 }

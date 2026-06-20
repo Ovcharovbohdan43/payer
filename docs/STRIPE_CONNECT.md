@@ -24,6 +24,12 @@ controller: {
 
 Run `node scripts/check-stripe-connect-fees.mjs` to audit `controller.fees.payer` per account.
 
+## Seller verification & risk
+
+Invoice Checkout is blocked until `profiles.payments_enabled = true` and risk status is `active`. See **[PAYMENT_RISK.md](./PAYMENT_RISK.md)**.
+
+Connect webhook should also listen for: `account.updated`, `charge.dispute.created`, `charge.dispute.funds_withdrawn`.
+
 ## Configuration
 
 1. **Stripe Dashboard** → Connect → Get started

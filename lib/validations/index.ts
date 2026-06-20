@@ -66,6 +66,10 @@ export const onboardingSchema = z.object({
   address: z.string().max(500).optional().or(z.literal("")),
   website: z.string().max(500).optional().or(z.literal("")),
   company_type: z.string().max(100).optional().or(z.literal("")),
+  business_description: z
+    .string()
+    .min(20, "Describe your business in at least 20 characters")
+    .max(2000),
   default_currency: z.string().length(3).toUpperCase(),
   country: z.string().max(100).optional().or(z.literal("")),
   timezone: z.string().max(50).optional().or(z.literal("")),
@@ -93,6 +97,12 @@ export const profileContactSchema = z.object({
   address: z.string().max(500).optional().or(z.literal("")),
   company_number: z.string().max(50).optional().or(z.literal("")),
   vat_number: z.string().max(50).optional().or(z.literal("")),
+  business_description: z
+    .string()
+    .min(20, "Business description must be at least 20 characters")
+    .max(2000),
+  website: z.string().max(500).optional().or(z.literal("")),
+  company_type: z.string().max(100).optional().or(z.literal("")),
 });
 
 export const clientSchema = z.object({
