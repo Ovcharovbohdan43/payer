@@ -304,7 +304,7 @@ export function EditInvoiceForm({
 
   return (
     <form action={formAction} className="space-y-6">
-      <FormErrorToast error={state && "error" in state ? state.error : null} />
+      <FormErrorToast state={state && "error" in state ? state : null} />
       <input type="hidden" name="invoiceId" value={invoice.id} />
       <input type="hidden" name="currency" value={defaultCurrency} />
       <input type="hidden" name="invoiceDesign" value={visualConfig.baseDesign} />

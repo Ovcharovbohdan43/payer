@@ -96,7 +96,7 @@ export function SettingsForm({
   return (
     <div className="space-y-6" key={profile.default_currency}>
       <form action={formAction} className="space-y-6">
-        <FormErrorToast error={state?.error} />
+        <FormErrorToast state={state} />
         <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
           <h2 className="mb-4 text-base font-semibold">Business profile</h2>
         <div className="space-y-4">
@@ -638,7 +638,7 @@ function LogoSection({ profile }: { profile: Profile }) {
 
   return (
     <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-5">
-      <FormErrorToast error={logoState?.error} />
+      <FormErrorToast state={logoState} />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white/5">
@@ -796,7 +796,7 @@ function SetPasswordForm({
         </p>
       )}
       <form action={formAction} className="space-y-3">
-        <FormErrorToast error={state?.error} />
+        <FormErrorToast state={state} />
         <input type="hidden" name="has_password" value={hasPassword ? "true" : "false"} />
         <input type="hidden" name="recovery" value={recovery ? "true" : "false"} />
         {requireOldPassword && (

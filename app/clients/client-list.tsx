@@ -128,7 +128,7 @@ function EditClientDialog({ client, onClose }: { client: ClientRow | null; onClo
           <DialogTitle>Edit client</DialogTitle>
         </DialogHeader>
         <form action={formAction}>
-          <FormErrorToast error={state?.error} />
+          <FormErrorToast state={state} />
           <input type="hidden" name="clientId" value={client.id} />
           <div className="grid gap-4 py-4">
             <div className="space-y-2">

@@ -17,7 +17,7 @@ export function AddClientForm() {
 
   return (
     <form action={formAction} className="min-w-0 space-y-3 overflow-hidden rounded-[14px] border border-white/5 bg-[#121821]/80 p-3 sm:rounded-[20px] sm:p-6">
-      <FormErrorToast error={state?.error} />
+      <FormErrorToast state={state} />
       <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="space-y-1.5">
           <Label htmlFor="name">Name</Label>

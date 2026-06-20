@@ -13,7 +13,7 @@ import {
   type InvoiceTemplateRow,
   type InvoiceTemplateItemRow,
 } from "../template-actions";
-import { FormErrorToast } from "@/components/ui/form-error-toast";
+import { showErrorToast } from "@/components/ui/form-error-toast";
 import { useActionState, useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -231,12 +231,17 @@ export function NewInvoiceForm({
   const [state, formAction, isPending] = useActionState(
     async (_prev: CreateResult | null, formData: FormData) => {
       if (totalCents < 100) {
-        toast.error("Minimum invoice amount is £1 (or equivalent in your currency)");
-        return { error: "Minimum invoice amount is £1 (or equivalent in your currency)" };
+        const msg = "Minimum invoice amount is £1 (or equivalent in your currency)";
+        showErrorToast(msg);
+        return { error: msg };
       }
       const intent = formData.get("intent");
       const markSent = intent === "copy" || intent === "email";
-      return await createInvoiceAction(formData, { markSent });
+      const result = await createInvoiceAction(formData, { markSent });
+      if ("error" in result) {
+        showErrorToast(result.error);
+      }
+      return result;
     },
     null as CreateResult | null
   );
@@ -246,8 +251,8 @@ export function NewInvoiceForm({
     if (state.invoiceId && state.publicUrl) {
       if (state.intent === "copy") {
         navigator.clipboard.writeText(state.publicUrl).catch(() => {});
-      }
-      if (
+        toast.success("Invoice created — link copied to clipboard");
+      } else if (
         state.intent === "email" &&
         "emailSent" in state &&
         state.emailSent === false
@@ -287,7 +292,6 @@ export function NewInvoiceForm({
 
   return (
     <form action={formAction} className="space-y-6">
-      <FormErrorToast error={state && "error" in state ? state.error : null} />
       <input type="hidden" name="currency" value={defaultCurrency} />
       <input type="hidden" name="invoiceDesign" value={visualConfig.baseDesign} />
       <input

@@ -55,7 +55,7 @@ export function RegisterForm() {
 
   return (
     <form ref={formRef} action={formAction} className="space-y-6">
-      <FormErrorToast error={state?.error} />
+      <FormErrorToast state={state} />
       {/* Progress bar */}
       <div className="flex items-center gap-1">
         {STEPS.map((s) => (

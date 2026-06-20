@@ -155,7 +155,7 @@ function AddClientDialog({
           <DialogTitle>Add client</DialogTitle>
         </DialogHeader>
         <form action={formAction}>
-          <FormErrorToast error={state?.error} />
+          <FormErrorToast state={state} />
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="ac-name">Name</Label>

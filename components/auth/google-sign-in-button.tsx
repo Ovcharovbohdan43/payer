@@ -50,7 +50,7 @@ export function GoogleSignInButton({ label = "Continue with Google" }: Props) {
 
   return (
     <div className="space-y-2">
-      <FormErrorToast error={state?.error} />
+      <FormErrorToast state={state} />
       <form action={action}>
         <button
           type="submit"

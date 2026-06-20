@@ -209,6 +209,7 @@
 [data-sonner-toaster][data-x-position="right"] {
   --offset-top: 1rem;
   --offset-right: 1rem;
+  z-index: 9999;
 }
 
 [data-sonner-toast][data-type="error"],

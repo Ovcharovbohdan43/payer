@@ -1,35 +1,42 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { toast } from "sonner";
 
 const ERROR_TOAST_DURATION_MS = 7000;
+const ERROR_TOAST_ID = "app-form-error";
 
-/** Show a red error toast in the top-right corner. */
+/** Show a red error toast in the top-right corner (replaces the previous form error). */
 export function showErrorToast(message: string) {
   const trimmed = message.trim();
   if (!trimmed) return;
-  toast.error(trimmed, { duration: ERROR_TOAST_DURATION_MS });
+  toast.error(trimmed, { duration: ERROR_TOAST_DURATION_MS, id: ERROR_TOAST_ID });
 }
 
+type ActionState = { error?: string } | null | undefined;
+
 type Props = {
+  /** Full useActionState value — required so repeated submits re-show the same error. */
+  state?: ActionState;
+  /** Legacy: pass only the error string (may not re-toast on repeat submit). */
   error?: string | null;
 };
 
-/** Renders nothing; shows `error` as a toast when it changes. */
-export function FormErrorToast({ error }: Props) {
-  const lastShown = useRef<string | null>(null);
+function resolveError(state?: ActionState, error?: string | null): string | null {
+  if (state && "error" in state && state.error?.trim()) {
+    return state.error.trim();
+  }
+  if (error?.trim()) return error.trim();
+  return null;
+}
 
+/** Renders nothing; shows action errors as a toast when state updates. */
+export function FormErrorToast({ state, error }: Props) {
   useEffect(() => {
-    const msg = error?.trim();
-    if (!msg) {
-      lastShown.current = null;
-      return;
-    }
-    if (lastShown.current === msg) return;
-    lastShown.current = msg;
+    const msg = resolveError(state, error);
+    if (!msg) return;
     showErrorToast(msg);
-  }, [error]);
+  }, [state, error]);
 
   return null;
 }

@@ -19,7 +19,7 @@ export function VerifyOtpForm() {
 
   return (
     <form action={formAction} className="space-y-4">
-      <FormErrorToast error={state?.error} />
+      <FormErrorToast state={state} />
       <div className="space-y-2">
         <Label htmlFor="code">Code</Label>
         <Input

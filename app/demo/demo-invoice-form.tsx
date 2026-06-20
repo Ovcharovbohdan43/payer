@@ -116,7 +116,7 @@ export function DemoInvoiceForm({ action }: DemoInvoiceFormProps) {
       action={formAction}
       className="rounded-2xl border border-white/10 bg-[#121821]/80 p-6 shadow-xl sm:p-8"
     >
-      <FormErrorToast error={state?.error} />
+      <FormErrorToast state={state} />
       <div className="space-y-4">
         <div className="space-y-1">
           <Label htmlFor="clientName" className="text-muted-foreground">Client name</Label>

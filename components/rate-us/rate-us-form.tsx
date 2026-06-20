@@ -29,7 +29,7 @@ export function RateUsForm({ existingReview }: RateUsFormProps) {
 
   return (
     <form action={formAction} className="space-y-6">
-      <FormErrorToast error={state?.error} />
+      <FormErrorToast state={state} />
       <input type="hidden" name="rating" value={rating > 0 ? String(rating) : ""} />
 
       <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">

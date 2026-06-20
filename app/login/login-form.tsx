@@ -36,8 +36,8 @@ export function LoginForm() {
 
   return (
     <div className="space-y-4">
-      <FormErrorToast error={magicState?.error} />
-      <FormErrorToast error={pwdState?.error} />
+      <FormErrorToast state={magicState} />
+      <FormErrorToast state={pwdState} />
       <div className="flex gap-2 rounded-lg border border-white/10 bg-white/5 p-1">
         <button
           type="button"
