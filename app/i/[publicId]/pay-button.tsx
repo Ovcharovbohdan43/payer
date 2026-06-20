@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { showErrorToast } from "@/components/ui/form-error-toast";
 
 type Props = {
   publicId: string;
@@ -11,11 +12,9 @@ type Props = {
 
 export function PayButton({ publicId, accentColor = "#3B82F6", buttonStyle = "filled" }: Props) {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   async function handlePay() {
     setLoading(true);
-    setError(null);
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
@@ -24,16 +23,16 @@ export function PayButton({ publicId, accentColor = "#3B82F6", buttonStyle = "fi
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data.error ?? "Something went wrong");
+        showErrorToast(data.error ?? "Something went wrong");
         return;
       }
       if (data.url) {
         window.location.href = data.url;
         return;
       }
-      setError("No payment link received");
+      showErrorToast("No payment link received");
     } catch {
-      setError("Network error");
+      showErrorToast("Network error");
     } finally {
       setLoading(false);
     }
@@ -61,9 +60,6 @@ export function PayButton({ publicId, accentColor = "#3B82F6", buttonStyle = "fi
       >
         {loading ? "Redirecting…" : "Pay"}
       </Button>
-      {error && (
-        <p className="mt-2 text-sm text-destructive">{error}</p>
-      )}
     </div>
   );
 }

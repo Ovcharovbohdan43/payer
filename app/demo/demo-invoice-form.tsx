@@ -1,5 +1,6 @@
 "use client";
 
+import { FormErrorToast } from "@/components/ui/form-error-toast";
 import { useActionState, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -115,6 +116,7 @@ export function DemoInvoiceForm({ action }: DemoInvoiceFormProps) {
       action={formAction}
       className="rounded-2xl border border-white/10 bg-[#121821]/80 p-6 shadow-xl sm:p-8"
     >
+      <FormErrorToast error={state?.error} />
       <div className="space-y-4">
         <div className="space-y-1">
           <Label htmlFor="clientName" className="text-muted-foreground">Client name</Label>
@@ -389,10 +391,6 @@ export function DemoInvoiceForm({ action }: DemoInvoiceFormProps) {
             : ""
         }
       />
-
-      {state?.error && (
-        <p className="mt-4 text-sm text-destructive">{state.error}</p>
-      )}
 
       <Button
         type="submit"

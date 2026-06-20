@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { showErrorToast } from "@/components/ui/form-error-toast";
 import {
   adminApproveSellerPayments,
   adminFlagSellerPayments,
@@ -31,7 +32,6 @@ export function AdminPaymentRiskControls({
 }: Props) {
   const [note, setNote] = useState(paymentRiskNotes ?? "");
   const [loading, setLoading] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
 
   if (isTargetAdmin) {
     return (
@@ -41,14 +41,13 @@ export function AdminPaymentRiskControls({
 
   async function run(action: "approve" | "flag") {
     setLoading(action);
-    setMessage(null);
     const result =
       action === "approve"
         ? await adminApproveSellerPayments(userId, note || undefined)
         : await adminFlagSellerPayments(userId, note || "Manual review");
     setLoading(null);
     if (result.error) {
-      setMessage(result.error);
+      showErrorToast(result.error);
       return;
     }
     window.location.reload();
@@ -111,8 +110,6 @@ export function AdminPaymentRiskControls({
           {loading === "flag" ? "Flagging…" : "Flag & pause payments"}
         </Button>
       </div>
-
-      {message && <p className="text-sm text-destructive">{message}</p>}
     </div>
   );
 }

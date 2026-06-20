@@ -4,6 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { StarRating } from "@/components/rate-us/star-rating";
+import { FormErrorToast } from "@/components/ui/form-error-toast";
 import { submitUserReviewAction, type UserReviewRow } from "@/app/rate-us/actions";
 import { useRouter } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
@@ -28,6 +29,7 @@ export function RateUsForm({ existingReview }: RateUsFormProps) {
 
   return (
     <form action={formAction} className="space-y-6">
+      <FormErrorToast error={state?.error} />
       <input type="hidden" name="rating" value={rating > 0 ? String(rating) : ""} />
 
       <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
@@ -65,12 +67,6 @@ export function RateUsForm({ existingReview }: RateUsFormProps) {
           </p>
         </div>
       </section>
-
-      {state?.error && (
-        <p className="text-sm text-red-400" role="alert">
-          {state.error}
-        </p>
-      )}
 
       {state?.success && (
         <div

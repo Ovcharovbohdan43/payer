@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useActionState, useState } from "react";
+import { FormErrorToast } from "@/components/ui/form-error-toast";
 import { signInWithMagicLink, signInWithPassword } from "./actions";
 
 export function LoginForm() {
@@ -35,6 +36,8 @@ export function LoginForm() {
 
   return (
     <div className="space-y-4">
+      <FormErrorToast error={magicState?.error} />
+      <FormErrorToast error={pwdState?.error} />
       <div className="flex gap-2 rounded-lg border border-white/10 bg-white/5 p-1">
         <button
           type="button"
@@ -78,9 +81,6 @@ export function LoginForm() {
           <Button type="submit" className="w-full" size="lg" disabled={isPending}>
             {isPending ? "Sending…" : "Send magic link"}
           </Button>
-          {magicState?.error && (
-            <p className="text-center text-sm text-destructive">{magicState.error}</p>
-          )}
         </form>
       ) : (
         <form action={pwdAction} className="space-y-4">
@@ -113,9 +113,6 @@ export function LoginForm() {
           <Button type="submit" className="w-full" size="lg" disabled={isPending}>
             {isPending ? "Signing in…" : "Sign in"}
           </Button>
-          {pwdState?.error && (
-            <p className="text-center text-sm text-destructive">{pwdState.error}</p>
-          )}
         </form>
       )}
     </div>

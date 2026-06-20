@@ -13,6 +13,7 @@ import {
   type InvoiceTemplateRow,
   type InvoiceTemplateItemRow,
 } from "../template-actions";
+import { FormErrorToast } from "@/components/ui/form-error-toast";
 import { useActionState, useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -286,6 +287,7 @@ export function NewInvoiceForm({
 
   return (
     <form action={formAction} className="space-y-6">
+      <FormErrorToast error={state && "error" in state ? state.error : null} />
       <input type="hidden" name="currency" value={defaultCurrency} />
       <input type="hidden" name="invoiceDesign" value={visualConfig.baseDesign} />
       <input
@@ -870,10 +872,6 @@ export function NewInvoiceForm({
           </div>
         )}
       </div>
-
-      {state && "error" in state && (
-        <p className="text-sm text-destructive">{state.error}</p>
-      )}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
         <Button

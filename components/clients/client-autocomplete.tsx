@@ -10,6 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { ClientRow } from "@/app/clients/actions";
+import { FormErrorToast } from "@/components/ui/form-error-toast";
 import { createClientAction } from "@/app/clients/actions";
 import { useActionState, useRef, useState } from "react";
 
@@ -154,6 +155,7 @@ function AddClientDialog({
           <DialogTitle>Add client</DialogTitle>
         </DialogHeader>
         <form action={formAction}>
+          <FormErrorToast error={state?.error} />
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="ac-name">Name</Label>
@@ -183,7 +185,6 @@ function AddClientDialog({
                 <Input id="ac-vat_number" name="vat_number" placeholder="GB123456789" disabled={isPending} className="h-10" />
               </div>
             </div>
-            {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
           </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>

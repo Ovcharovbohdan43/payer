@@ -7,6 +7,7 @@ import { ClientAutocomplete } from "@/components/clients/client-autocomplete";
 import type { ClientRow } from "@/app/clients/actions";
 import { listClients } from "@/app/clients/actions";
 import { createOfferAction, type CreateOfferResult } from "@/app/offers/actions";
+import { FormErrorToast } from "@/components/ui/form-error-toast";
 import { useActionState, useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -163,6 +164,7 @@ export function NewOfferForm({ defaultCurrency, clients }: Props) {
 
   return (
     <form action={formAction} className="space-y-6">
+      <FormErrorToast error={state && "error" in state ? state.error : null} />
       <input type="hidden" name="currency" value={defaultCurrency} />
       <input type="hidden" name="clientId" value={selectedClient?.id ?? ""} />
       <input type="hidden" name="clientName" value={selectedClient?.name ?? ""} />
@@ -427,10 +429,6 @@ export function NewOfferForm({ defaultCurrency, clients }: Props) {
           </div>
         )}
       </div>
-
-      {state && "error" in state && (
-        <p className="text-sm text-destructive">{state.error}</p>
-      )}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
         <Button

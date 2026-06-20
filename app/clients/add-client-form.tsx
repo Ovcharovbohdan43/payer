@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useActionState } from "react";
+import { FormErrorToast } from "@/components/ui/form-error-toast";
 import { createClientAction } from "./actions";
 
 export function AddClientForm() {
@@ -16,6 +17,7 @@ export function AddClientForm() {
 
   return (
     <form action={formAction} className="min-w-0 space-y-3 overflow-hidden rounded-[14px] border border-white/5 bg-[#121821]/80 p-3 sm:rounded-[20px] sm:p-6">
+      <FormErrorToast error={state?.error} />
       <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="space-y-1.5">
           <Label htmlFor="name">Name</Label>
@@ -49,7 +51,6 @@ export function AddClientForm() {
           {isPending ? "Adding…" : "Add client"}
         </Button>
       </div>
-      {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
     </form>
   );
 }

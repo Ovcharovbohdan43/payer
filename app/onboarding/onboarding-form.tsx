@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useActionState, useState, useRef } from "react";
+import { FormErrorToast, showErrorToast } from "@/components/ui/form-error-toast";
 import { submitOnboarding } from "./actions";
 import { cn } from "@/lib/utils";
 
@@ -50,7 +51,6 @@ export function OnboardingForm({
 }: Props) {
   const formRef = useRef<HTMLFormElement>(null);
   const [step, setStep] = useState(1);
-  const [stepError, setStepError] = useState<string | null>(null);
   const [state, formAction, isPending] = useActionState(
     async (_prev: { error?: string } | null, formData: FormData) => {
       return await submitOnboarding(formData);
@@ -59,7 +59,6 @@ export function OnboardingForm({
   );
 
   const goNext = () => {
-    setStepError(null);
     const form = formRef.current;
     if (!form) return;
 
@@ -67,7 +66,7 @@ export function OnboardingForm({
       const first = (form.querySelector("#onb_first_name") as HTMLInputElement)?.value?.trim() ?? "";
       const last = (form.querySelector("#onb_last_name") as HTMLInputElement)?.value?.trim() ?? "";
       if (!first || !last) {
-        setStepError("Please fill in first name and last name.");
+        showErrorToast("Please fill in first name and last name.");
         return;
       }
     }
@@ -75,17 +74,17 @@ export function OnboardingForm({
       const company = (form.querySelector("#onb_business_name") as HTMLInputElement)?.value?.trim() ?? "";
       const phone = (form.querySelector("#onb_phone") as HTMLInputElement)?.value?.trim() ?? "";
       if (!company) {
-        setStepError("Please enter your company name.");
+        showErrorToast("Please enter your company name.");
         return;
       }
       if (!phone) {
-        setStepError("Please enter your phone number.");
+        showErrorToast("Please enter your phone number.");
         return;
       }
       const description =
         (form.querySelector("#onb_business_description") as HTMLTextAreaElement)?.value?.trim() ?? "";
       if (description.length < 20) {
-        setStepError("Please describe your business (at least 20 characters).");
+        showErrorToast("Please describe your business (at least 20 characters).");
         return;
       }
     }
@@ -94,12 +93,12 @@ export function OnboardingForm({
   };
 
   const goBack = () => {
-    setStepError(null);
     if (step > 1) setStep((s) => s - 1);
   };
 
   return (
     <form ref={formRef} action={formAction} className="space-y-6">
+      <FormErrorToast error={state?.error} />
       {/* Progress bar */}
       <div className="flex items-center gap-1">
         {STEPS.map((s) => (
@@ -164,9 +163,6 @@ export function OnboardingForm({
             className="h-11"
           />
         </div>
-        {stepError && step === 1 && (
-          <p className="text-center text-sm text-destructive">{stepError}</p>
-        )}
         <Button
           type="button"
           className="h-11 w-full rounded-xl bg-[#3B82F6] font-semibold hover:bg-[#2563EB]"
@@ -270,9 +266,6 @@ export function OnboardingForm({
             ))}
           </select>
         </div>
-        {stepError && step === 2 && (
-          <p className="text-center text-sm text-destructive">{stepError}</p>
-        )}
         <div className="flex gap-2">
           <Button
             type="button"
@@ -356,10 +349,6 @@ export function OnboardingForm({
           </Button>
         </div>
       </div>
-
-      {state?.error && (
-        <p className="text-center text-sm text-destructive">{state.error}</p>
-      )}
     </form>
   );
 }

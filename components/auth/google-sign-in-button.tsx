@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { FormErrorToast } from "@/components/ui/form-error-toast";
 import { signInWithGoogleAction } from "@/app/login/actions";
 
 function GoogleIcon({ className }: { className?: string }) {
@@ -49,6 +50,7 @@ export function GoogleSignInButton({ label = "Continue with Google" }: Props) {
 
   return (
     <div className="space-y-2">
+      <FormErrorToast error={state?.error} />
       <form action={action}>
         <button
           type="submit"
@@ -59,9 +61,6 @@ export function GoogleSignInButton({ label = "Continue with Google" }: Props) {
           {isPending ? "Redirecting…" : label}
         </button>
       </form>
-      {state?.error && (
-        <p className="text-center text-sm text-destructive">{state.error}</p>
-      )}
     </div>
   );
 }

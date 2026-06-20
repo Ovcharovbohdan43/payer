@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { Pencil, Building2, ImagePlus, Trash2 } from "lucide-react";
+import { FormErrorToast, showErrorToast } from "@/components/ui/form-error-toast";
 import { updateProfileAction, setPasswordAction, sendPasswordResetEmailAction, removeLogoAction } from "./actions";
 import { maskEmail } from "@/lib/utils";
 import { ConnectStripeButton } from "./connect-stripe-button";
@@ -95,6 +96,7 @@ export function SettingsForm({
   return (
     <div className="space-y-6" key={profile.default_currency}>
       <form action={formAction} className="space-y-6">
+        <FormErrorToast error={state?.error} />
         <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
           <h2 className="mb-4 text-base font-semibold">Business profile</h2>
         <div className="space-y-4">
@@ -378,7 +380,6 @@ export function SettingsForm({
           </p>
         </section>
 
-        {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
         {state && !state.error && (
           <p className="text-sm text-emerald-500">Settings saved.</p>
         )}
@@ -607,7 +608,9 @@ function LogoSection({ profile }: { profile: Profile }) {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setLogoState({ error: data.error ?? "Upload failed" });
+        const msg = data.error ?? "Upload failed";
+        showErrorToast(msg);
+        setLogoState({ error: msg });
         return;
       }
       if (typeof data.url === "string") {
@@ -626,6 +629,7 @@ function LogoSection({ profile }: { profile: Profile }) {
     const result = await removeLogoAction();
     setRemovePending(false);
     if (result?.error) {
+      showErrorToast(result.error);
       setLogoState({ error: result.error });
       return;
     }
@@ -634,6 +638,7 @@ function LogoSection({ profile }: { profile: Profile }) {
 
   return (
     <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-5">
+      <FormErrorToast error={logoState?.error} />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full border border-white/10 bg-white/5">
@@ -704,7 +709,6 @@ function LogoSection({ profile }: { profile: Profile }) {
           )}
         </div>
       </div>
-      {logoState?.error && <p className="mt-2 text-xs text-destructive">{logoState.error}</p>}
     </section>
   );
 }
@@ -722,7 +726,6 @@ function SetPasswordForm({
   const [isEditing, setIsEditing] = useState(recovery);
   const [resetSent, setResetSent] = useState(false);
   const [resetPending, setResetPending] = useState(false);
-  const [resetError, setResetError] = useState<string | null>(null);
   const [state, formAction, isPending] = useActionState(
     async (_prev: { error?: string; success?: boolean } | null, formData: FormData) => {
       return await setPasswordAction(formData);
@@ -747,11 +750,10 @@ function SetPasswordForm({
 
   const handleResetPassword = async () => {
     setResetPending(true);
-    setResetError(null);
     const result = await sendPasswordResetEmailAction();
     setResetPending(false);
     if (result?.error) {
-      setResetError(result.error);
+      showErrorToast(result.error);
       return;
     }
     setResetSent(true);
@@ -794,6 +796,7 @@ function SetPasswordForm({
         </p>
       )}
       <form action={formAction} className="space-y-3">
+        <FormErrorToast error={state?.error} />
         <input type="hidden" name="has_password" value={hasPassword ? "true" : "false"} />
         <input type="hidden" name="recovery" value={recovery ? "true" : "false"} />
         {requireOldPassword && (
@@ -876,12 +879,8 @@ function SetPasswordForm({
                   : "Confirm via email"}
             </button>{" "}
             — we&apos;ll send a reset link to {maskedEmail}.
-            {resetError && (
-              <span className="mt-1 block text-destructive">{resetError}</span>
-            )}
           </p>
         )}
-        {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
         {state?.success && (
           <p className="text-sm text-emerald-500">
             Password updated. Confirmation sent to your email.

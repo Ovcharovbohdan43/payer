@@ -1,3 +1,4 @@
+import { LoginQueryToast } from "@/components/auth/login-query-toast";
 import { LoginForm } from "./login-form";
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 import Link from "next/link";
@@ -18,11 +19,7 @@ export default async function LoginPage({
             Use magic link or password. Create an account if you don&apos;t have one.
           </p>
         </div>
-        {queryError === "link_invalid" && (
-          <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-center text-sm text-amber-700 dark:text-amber-400">
-            That sign-in link is invalid or has expired. Try again below or sign in with password.
-          </p>
-        )}
+        {queryError === "link_invalid" && <LoginQueryToast queryError={queryError} />}
         {message === "check_email" && (
           <p className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-center text-sm text-emerald-700 dark:text-emerald-400">
             Check your email to confirm your account, then sign in.

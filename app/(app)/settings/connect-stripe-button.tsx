@@ -1,15 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { showErrorToast } from "@/components/ui/form-error-toast";
 import { useState } from "react";
 
 export function ConnectStripeButton() {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const handleConnect = async () => {
     setLoading(true);
-    setError(null);
     try {
       const res = await fetch("/api/stripe/connect", { method: "POST" });
       const text = await res.text();
@@ -27,13 +26,12 @@ export function ConnectStripeButton() {
       throw new Error(data.error ?? "No redirect URL received");
     } catch (err) {
       console.error(err);
-      setError(err instanceof Error ? err.message : "Connect failed");
+      showErrorToast(err instanceof Error ? err.message : "Connect failed");
       setLoading(false);
     }
   };
 
   return (
-    <div className="space-y-2">
     <Button
       type="button"
       variant="outline"
@@ -43,9 +41,5 @@ export function ConnectStripeButton() {
     >
       {loading ? "Connecting…" : "Connect Stripe account"}
     </Button>
-    {error && (
-      <p className="text-sm text-destructive">{error}</p>
-    )}
-    </div>
   );
 }

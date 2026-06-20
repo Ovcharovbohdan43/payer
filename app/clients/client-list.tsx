@@ -18,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { ClientRow } from "./actions";
+import { FormErrorToast } from "@/components/ui/form-error-toast";
 import { deleteClientAction, updateClientAction } from "./actions";
 import { useActionState, useState } from "react";
 import { MoreHorizontalIcon, PencilIcon, Trash2Icon } from "lucide-react";
@@ -127,6 +128,7 @@ function EditClientDialog({ client, onClose }: { client: ClientRow | null; onClo
           <DialogTitle>Edit client</DialogTitle>
         </DialogHeader>
         <form action={formAction}>
+          <FormErrorToast error={state?.error} />
           <input type="hidden" name="clientId" value={client.id} />
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
@@ -197,7 +199,6 @@ function EditClientDialog({ client, onClose }: { client: ClientRow | null; onClo
                 />
               </div>
             </div>
-            {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose} disabled={isPending}>

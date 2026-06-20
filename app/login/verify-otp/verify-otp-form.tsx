@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useActionState, useState } from "react";
+import { FormErrorToast } from "@/components/ui/form-error-toast";
 import { verifyOtpAction } from "../actions";
 
 export function VerifyOtpForm() {
@@ -18,6 +19,7 @@ export function VerifyOtpForm() {
 
   return (
     <form action={formAction} className="space-y-4">
+      <FormErrorToast error={state?.error} />
       <div className="space-y-2">
         <Label htmlFor="code">Code</Label>
         <Input
@@ -61,9 +63,6 @@ export function VerifyOtpForm() {
       >
         {isPending ? "Verifying…" : "Continue"}
       </Button>
-      {state?.error && (
-        <p className="text-center text-sm text-destructive">{state.error}</p>
-      )}
     </form>
   );
 }

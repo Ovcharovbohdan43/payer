@@ -118,7 +118,7 @@ export default function RootLayout({
         />
         <ThemeProvider>
           {children}
-          <Toaster richColors position="top-center" />
+          <Toaster />
           <Analytics />
         </ThemeProvider>
       </body>
