@@ -4,7 +4,11 @@ import { Button } from "@/components/ui/button";
 import { showErrorToast } from "@/components/ui/form-error-toast";
 import { useState } from "react";
 
-export function ConnectStripeButton() {
+type Props = {
+  label?: string;
+};
+
+export function ConnectStripeButton({ label = "Connect Stripe account" }: Props) {
   const [loading, setLoading] = useState(false);
 
   const handleConnect = async () => {
@@ -39,7 +43,7 @@ export function ConnectStripeButton() {
       disabled={loading}
       className="h-10"
     >
-      {loading ? "Connecting…" : "Connect Stripe account"}
+      {loading ? "Connecting…" : label}
     </Button>
   );
 }

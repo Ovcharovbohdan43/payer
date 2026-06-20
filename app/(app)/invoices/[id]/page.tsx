@@ -14,6 +14,7 @@ import { InvoiceDetailClient } from "./invoice-detail-client";
 import { InvoiceQrCode } from "@/components/invoice-qr-code";
 import { StripeConnectBanner } from "@/components/stripe/stripe-connect-banner";
 import { shouldRemindStripeConnect } from "@/lib/stripe/connect-reminder";
+import { fetchAndSyncStripeConnectState } from "@/lib/stripe/connect-status";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://puyer.org";
 
@@ -36,12 +37,21 @@ export default async function InvoiceDetailPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("stripe_connect_account_id, is_admin")
+    .select("stripe_connect_account_id, is_admin, payments_enabled, payment_risk_status, invoice_creation_limit, invoice_creation_reviewed_at")
     .eq("id", user.id)
     .single();
 
+  let stripeConnectStatus = profile?.stripe_connect_account_id ? "setup_incomplete" : "not_connected";
+  if (profile?.stripe_connect_account_id) {
+    stripeConnectStatus =
+      (await fetchAndSyncStripeConnectState(user.id, profile.stripe_connect_account_id)) ??
+      stripeConnectStatus;
+  }
+
   const showStripeConnectBanner =
-    shouldRemindStripeConnect(profile) && status !== "paid" && status !== "void";
+    (shouldRemindStripeConnect(profile) || stripeConnectStatus !== "connected") &&
+    status !== "paid" &&
+    status !== "void";
 
   const statusVariant =
     status === "paid"

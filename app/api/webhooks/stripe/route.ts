@@ -5,6 +5,10 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { sendPayoutNotificationEmail } from "@/lib/email/send";
 import { formatAmount } from "@/lib/invoices/utils";
 import { runPostPaymentRiskCheck, flagSellerForReview } from "@/lib/risk/engine";
+import {
+  clearIncompleteStripeOnboardingFlag,
+  shouldFlagStripeAccountRestrictions,
+} from "@/lib/stripe/connect-status";
 
 export async function POST(request: Request) {
   const secret = process.env.STRIPE_SECRET_KEY?.trim();
@@ -194,15 +198,24 @@ export async function POST(request: Request) {
   if (ev.type === "account.updated") {
     const account = ev.data.object as Stripe.Account;
     const accountId = account.id;
-    const userId = account.metadata?.supabase_user_id as string | undefined;
+    let userId = account.metadata?.supabase_user_id as string | undefined;
 
-    const disabledReason = account.requirements?.disabled_reason;
-    const hasRestrictions =
-      !!disabledReason ||
-      account.charges_enabled === false ||
-      (account.requirements?.past_due?.length ?? 0) > 0;
+    if (!userId) {
+      const { data: profileRow } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("stripe_connect_account_id", accountId)
+        .maybeSingle();
+      userId = profileRow?.id;
+    }
 
-    if (hasRestrictions && userId) {
+    if (userId && !shouldFlagStripeAccountRestrictions(account)) {
+      await clearIncompleteStripeOnboardingFlag(userId);
+      return NextResponse.json({ received: true });
+    }
+
+    if (userId && shouldFlagStripeAccountRestrictions(account)) {
+      const disabledReason = account.requirements?.disabled_reason;
       await flagSellerForReview(
         userId,
         "stripe_account_warning",

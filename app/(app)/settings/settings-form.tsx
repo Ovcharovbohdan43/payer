@@ -20,6 +20,12 @@ import { maskEmail } from "@/lib/utils";
 import { ConnectStripeButton } from "./connect-stripe-button";
 import { useRouter } from "next/navigation";
 import { GoogleCalendarIntegration } from "@/components/integrations/google-calendar-integration";
+import { SettingsStripeReturnToast } from "@/components/stripe/settings-stripe-return-toast";
+import {
+  getStripeConnectUserMessage,
+  isInternalStripeWarningNote,
+  type StripeConnectDisplayStatus,
+} from "@/lib/stripe/connect-status";
 import { INVOICE_DESIGNS, normalizeInvoiceDesign, type InvoiceDesignKey } from "@/lib/invoice-designs";
 import type { InvoiceVisualTemplateRow } from "@/lib/invoice-visual-config";
 
@@ -63,6 +69,8 @@ export function SettingsForm({
   googleCalendarConnection = null,
   integrationSuccess = null,
   integrationError = false,
+  stripeConnectReturn = null,
+  stripeConnectStatus = "not_connected",
   visualTemplates = [],
 }: {
   profile: Profile;
@@ -70,6 +78,8 @@ export function SettingsForm({
   googleCalendarConnection?: CalendarConnection;
   integrationSuccess?: string | null;
   integrationError?: boolean;
+  stripeConnectReturn?: string | null;
+  stripeConnectStatus?: StripeConnectDisplayStatus;
   visualTemplates?: InvoiceVisualTemplateRow[];
 }) {
   const router = useRouter();
@@ -93,8 +103,17 @@ export function SettingsForm({
     }
   }, [state, router]);
 
+  const stripeStatusMessage = getStripeConnectUserMessage(
+    stripeConnectStatus,
+    profile.payment_risk_status
+  );
+  const showInternalRiskNote =
+    profile.payment_risk_notes &&
+    !isInternalStripeWarningNote(profile.payment_risk_notes);
+
   return (
     <div className="space-y-6" key={profile.default_currency}>
+      <SettingsStripeReturnToast stripeConnectReturn={stripeConnectReturn} />
       <form action={formAction} className="space-y-6">
         <FormErrorToast state={state} />
         <section className="rounded-[16px] border border-white/5 bg-[#121821]/80 p-4 backdrop-blur sm:rounded-[20px] sm:p-6">
@@ -423,11 +442,17 @@ export function SettingsForm({
           <p className="mb-3 text-sm text-emerald-500">Approved to accept invoice payments</p>
         ) : (
           <p className="mb-3 text-sm text-amber-400">
-            Payments disabled until Puyer verifies your business
-            {profile.payment_risk_status ? ` (${profile.payment_risk_status.replace(/_/g, " ")})` : ""}.
+            Puyer has not approved card payments on your account yet
+            {profile.payment_risk_status && profile.payment_risk_status !== "paused"
+              ? ` (${profile.payment_risk_status.replace(/_/g, " ")})`
+              : ""}
+            .
           </p>
         )}
-        {profile.payment_risk_notes && (
+        {stripeStatusMessage && (
+          <p className="mb-3 text-sm text-amber-200">{stripeStatusMessage}</p>
+        )}
+        {showInternalRiskNote && (
           <p className="mb-3 text-xs text-muted-foreground">{profile.payment_risk_notes}</p>
         )}
         {profile.payout_hold_until && profile.payments_enabled && (
@@ -438,10 +463,26 @@ export function SettingsForm({
             })}
           </p>
         )}
-        {profile.stripe_connect_account_id ? (
+        {stripeConnectStatus === "connected" ? (
           <div className="flex items-center gap-2 text-sm text-emerald-500">
             <span className="size-2 rounded-full bg-emerald-500" />
-            Stripe connected
+            Stripe connected — ready to accept card payments
+          </div>
+        ) : stripeConnectStatus === "setup_incomplete" ? (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-sm text-amber-400">
+              <span className="size-2 rounded-full bg-amber-400" />
+              Stripe setup incomplete
+            </div>
+            <ConnectStripeButton label="Continue Stripe setup" />
+          </div>
+        ) : stripeConnectStatus === "restricted" ? (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-sm text-red-400">
+              <span className="size-2 rounded-full bg-red-400" />
+              Stripe account needs review
+            </div>
+            <ConnectStripeButton label="Open Stripe setup" />
           </div>
         ) : (
           <ConnectStripeButton />

@@ -4,6 +4,10 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { SettingsForm } from "./settings-form";
 import { listInvoiceVisualTemplates } from "@/app/invoices/visual-template-actions";
+import {
+  fetchAndSyncStripeConnectState,
+  type StripeConnectDisplayStatus,
+} from "@/lib/stripe/connect-status";
 
 export default async function SettingsPage({
   searchParams,
@@ -12,6 +16,7 @@ export default async function SettingsPage({
     recovery?: string;
     integration?: string;
     integration_error?: string;
+    stripe_connect?: string;
   }>;
 }) {
   const supabase = await createClient();
@@ -39,10 +44,21 @@ export default async function SettingsPage({
 
   const profile = profileResult.data;
 
+  let stripeConnectStatus: StripeConnectDisplayStatus = profile?.stripe_connect_account_id
+    ? "setup_incomplete"
+    : "not_connected";
+
+  if (profile?.stripe_connect_account_id) {
+    stripeConnectStatus =
+      (await fetchAndSyncStripeConnectState(user.id, profile.stripe_connect_account_id)) ??
+      stripeConnectStatus;
+  }
+
   const params = await searchParams;
   const isRecovery = params?.recovery === "1";
   const integrationSuccess = params?.integration;
   const integrationError = params?.integration_error === "calendar";
+  const stripeConnectReturn = params?.stripe_connect ?? null;
 
   return (
     <div className="min-h-screen min-w-0 overflow-x-hidden bg-[#0B0F14]">
@@ -53,6 +69,8 @@ export default async function SettingsPage({
           googleCalendarConnection={googleCalendarConnection.data ?? null}
           integrationSuccess={integrationSuccess ?? null}
           integrationError={integrationError}
+          stripeConnectReturn={stripeConnectReturn}
+          stripeConnectStatus={stripeConnectStatus}
           visualTemplates={visualTemplates}
           profile={{
             business_name: profile?.business_name ?? null,
