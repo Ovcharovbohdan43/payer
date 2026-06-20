@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { TrackedRegisterLink } from "@/components/analytics/tracked-register-link";
 
 export function SiteHeader() {
   return (
@@ -47,15 +48,17 @@ export function SiteHeader() {
           >
             Log in
           </Link>
-          <Link
+          <TrackedRegisterLink
             href="/register"
+            cta="sign_up"
+            location="header"
             className={cn(
               buttonVariants(),
               "h-9 border border-brand/25 bg-brand px-4 font-medium text-primary-foreground shadow-none hover:bg-brand-hover"
             )}
           >
             Sign up
-          </Link>
+          </TrackedRegisterLink>
         </div>
       </div>
     </header>

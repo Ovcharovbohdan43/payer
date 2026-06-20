@@ -1,5 +1,7 @@
 "use server";
 
+import { logPlatformActivityRpc } from "@/lib/admin/platform-activity";
+import { getClientIpFromHeaders } from "@/lib/auth/client-ip";
 import { createClient } from "@/lib/supabase/server";
 import { onboardingSchema } from "@/lib/validations";
 import { redirect } from "next/navigation";
@@ -68,6 +70,14 @@ export async function submitOnboarding(formData: FormData) {
   if (error) {
     return { error: error.message };
   }
+
+  const clientIp = await getClientIpFromHeaders();
+  await logPlatformActivityRpc(supabase, {
+    category: "auth",
+    action: "onboarding.completed",
+    ip: clientIp,
+    meta: { userId: user.id },
+  });
 
   await scanProfileForProhibitedContent(user.id);
 

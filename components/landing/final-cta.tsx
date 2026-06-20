@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { TrackedRegisterLink } from '@/components/analytics/tracked-register-link'
 import { ArrowRight } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -19,15 +19,17 @@ export function FinalCta() {
           <p className="mx-auto mt-4 max-w-md text-pretty text-white/60">
             Create your first invoice in 15 seconds. No credit card required.
           </p>
-          <Link
-            href="/login"
+          <TrackedRegisterLink
+            href="/register"
+            cta="start_free"
+            location="final_cta"
             className={cn(
               buttonVariants(),
               'mt-8 h-12 border border-brand/25 bg-brand px-7 text-base font-medium text-primary-foreground shadow-none hover:bg-brand-hover',
             )}
           >
             Start free <ArrowRight className="ml-1.5 h-4 w-4" />
-          </Link>
+          </TrackedRegisterLink>
         </div>
       </AnimateInView>
     </section>

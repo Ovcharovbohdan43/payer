@@ -163,24 +163,63 @@ async function countStripeConnects(supabase, since) {
   return count ?? 0;
 }
 
+async function countPathViews(supabase, since, path) {
+  const { count, error } = await supabase
+    .from("site_analytics_events")
+    .select("id", { count: "exact", head: true })
+    .eq("path", path)
+    .gte("created_at", since);
+  if (error) throw new Error(`path ${path}: ${error.message}`);
+  return count ?? 0;
+}
+
+async function countOnboardingCompleted(supabase, since) {
+  return countActivity(supabase, since, "onboarding.completed");
+}
+
+async function fetchCtaBreakdown(supabase, since) {
+  const { data, error } = await supabase
+    .from("platform_activity_log")
+    .select("meta")
+    .eq("action", "cta.clicked")
+    .gte("created_at", since)
+    .limit(2000);
+  if (error) return [];
+  const byLocation = new Map();
+  for (const row of data ?? []) {
+    const loc = row.meta?.location ?? "unknown";
+    byLocation.set(loc, (byLocation.get(loc) ?? 0) + 1);
+  }
+  return [...byLocation.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([location, count]) => ({ location, count }));
+}
+
 async function fetchPeriodStats(supabase, hours) {
   const since = sinceIso(hours);
   const [
     signups,
     pageViews,
     landingViews,
+    homePageViews,
+    registerPageViews,
+    ctaClicks,
     demoTries,
     invoicesCreated,
     invoicesPaid,
     payments,
     logins,
     signupEvents,
+    onboardingCompleted,
     checkouts,
     stripeConnects,
   ] = await Promise.all([
     countSince(supabase, "profiles", since),
     countSince(supabase, "site_analytics_events", since),
     countLandingViews(supabase, since),
+    countPathViews(supabase, since, "/"),
+    countPathViews(supabase, since, "/register"),
+    countActivity(supabase, since, "cta.clicked"),
     countSince(supabase, "demo_invoices", since),
     countSince(supabase, "invoices", since),
     countPaidInvoices(supabase, since),
@@ -193,6 +232,7 @@ async function fetchPeriodStats(supabase, hours) {
       return pw + otp + oauth;
     }),
     countActivity(supabase, since, "signup.completed"),
+    countOnboardingCompleted(supabase, since),
     countActivity(supabase, since, "checkout.started"),
     countStripeConnects(supabase, since),
   ]);
@@ -205,6 +245,9 @@ async function fetchPeriodStats(supabase, hours) {
     signups,
     pageViews,
     landingViews,
+    homePageViews,
+    registerPageViews,
+    ctaClicks,
     demoTries,
     invoicesCreated,
     invoicesPaid,
@@ -212,6 +255,7 @@ async function fetchPeriodStats(supabase, hours) {
     paymentTotal,
     logins,
     signupEvents,
+    onboardingCompleted,
     checkouts,
     stripeConnects,
   };
@@ -274,8 +318,68 @@ async function fetchRecentSignups(supabase, limit = 5) {
   return data ?? [];
 }
 
+function pct(part, whole) {
+  if (!whole) return "—";
+  return `${Math.round((part / whole) * 100)}%`;
+}
+
 function printLine(label, value, color = c.cyan) {
-  console.log(`  ${c.dim}${pad(label, 22)}${c.reset} ${color}${value}${c.reset}`);
+  console.log(`  ${c.dim}${pad(label, 28)}${c.reset} ${color}${value}${c.reset}`);
+}
+
+function printFunnelSection(allStats, ctaBreakdown24h) {
+  const idx24 = PERIODS.findIndex((p) => p.key === "24h");
+  const s = allStats[idx24];
+
+  console.log(`\n${c.bold}${c.magenta}═══ Registration funnel (24h) ═══${c.reset}`);
+  console.log(
+    `${c.dim}Home → CTA click → /register → signup → onboarding → invoice${c.reset}\n`
+  );
+
+  printLine("1. Home page views", s.homePageViews, c.cyan);
+  printLine("2. CTA clicks", s.ctaClicks, c.yellow);
+  printLine("   conversion from home", pct(s.ctaClicks, s.homePageViews), c.dim);
+  printLine("3. Register page views", s.registerPageViews, c.cyan);
+  printLine("   conversion from CTA", pct(s.registerPageViews, s.ctaClicks), c.dim);
+  printLine("4. Signups completed", s.signupEvents, c.green);
+  printLine("   conversion from /register", pct(s.signupEvents, s.registerPageViews), c.dim);
+  printLine("5. Onboarding completed", s.onboardingCompleted, c.green);
+  printLine("   conversion from signups", pct(s.onboardingCompleted, s.signupEvents), c.dim);
+  printLine("6. Invoices created", s.invoicesCreated, c.magenta);
+  printLine("   conversion from onboarding", pct(s.invoicesCreated, s.onboardingCompleted), c.dim);
+
+  if (ctaBreakdown24h.length > 0) {
+    console.log(`\n${c.bold}CTA clicks by location (24h)${c.reset}`);
+    for (const { location, count } of ctaBreakdown24h) {
+      console.log(`  ${c.dim}${pad(String(count), 5)}${c.reset} ${location}`);
+    }
+  }
+
+  console.log(`\n${c.bold}Funnel counts by period${c.reset}`);
+  const cols = PERIODS.map((p) => pad(p.label, 10));
+  const header = `${pad("Step", 28)} ${cols.join(" ")}`;
+  console.log(`${c.bold}${header}${c.reset}`);
+  console.log(c.dim + "─".repeat(header.length) + c.reset);
+
+  const funnelRows = [
+    ["Home page views", (x) => x.homePageViews, c.cyan],
+    ["CTA clicks", (x) => x.ctaClicks, c.yellow],
+    ["Register page views", (x) => x.registerPageViews, c.cyan],
+    ["Signups completed", (x) => x.signupEvents, c.green],
+    ["Onboarding completed", (x) => x.onboardingCompleted, c.green],
+    ["Invoices created", (x) => x.invoicesCreated, c.magenta],
+  ];
+
+  for (const [label, getter, color] of funnelRows) {
+    const values = allStats
+      .map((stats) => pad(String(getter(stats)), 10))
+      .join(" ");
+    console.log(`  ${pad(label, 28)} ${color}${values}${c.reset}`);
+  }
+
+  console.log(
+    `\n${c.dim}Note: CTA tracking starts after deploy. Register views include direct /register visits.${c.reset}`
+  );
 }
 
 function printPeriodTable(allStats) {
@@ -357,6 +461,8 @@ function categoryColor(category) {
       return c.red;
     case "page":
       return c.cyan;
+    case "funnel":
+      return c.yellow;
     default:
       return c.reset;
   }
@@ -389,23 +495,25 @@ async function fetchActivitySince(supabase, since, limit = 100) {
 function printCompactStats(stats2h, stats24h) {
   console.log(`\n${c.bold}${c.blue}── Live pulse ──${c.reset}  ${c.dim}${fmtTime(new Date().toISOString())}${c.reset}`);
   console.log(
-    `  ${c.green}2h:${c.reset} ${stats2h.signups} signups · ${stats2h.landingViews} landing · ${stats2h.invoicesCreated} inv · ${stats2h.invoicesPaid} paid · ${stats2h.checkouts} checkout`
+    `  ${c.green}2h funnel:${c.reset} ${stats2h.homePageViews} home · ${stats2h.ctaClicks} cta · ${stats2h.signupEvents} signup · ${stats2h.onboardingCompleted} onboard · ${stats2h.invoicesCreated} inv`
   );
   console.log(
-    `  ${c.cyan}24h:${c.reset} ${stats24h.signups} signups · ${stats24h.landingViews} landing · ${stats24h.pageViews} views · ${stats24h.paymentTotal}`
+    `  ${c.cyan}24h:${c.reset} ${stats24h.homePageViews} home · ${stats24h.ctaClicks} cta · ${stats24h.signupEvents} signup · ${stats24h.invoicesPaid} paid · ${stats24h.paymentTotal}`
   );
 }
 
 async function runSnapshot(supabase) {
   console.log(`${c.dim}Loading stats…${c.reset}`);
   const allStats = await Promise.all(PERIODS.map((p) => fetchPeriodStats(supabase, p.hours)));
-  const [referrers, topPaths, recentSignups] = await Promise.all([
+  const [referrers, topPaths, recentSignups, ctaBreakdown24h] = await Promise.all([
     fetchTopReferrers(supabase, 24),
     fetchTopPaths(supabase, 24),
     fetchRecentSignups(supabase, 8),
+    fetchCtaBreakdown(supabase, sinceIso(24)),
   ]);
 
   printPeriodTable(allStats);
+  printFunnelSection(allStats, ctaBreakdown24h);
   printReferrers(referrers);
   printTopPaths(topPaths);
   printRecentSignups(recentSignups);
@@ -452,6 +560,14 @@ async function runLive(supabase, intervalSec, statsEverySec) {
 
         if (row.action === "signup.completed") {
           console.log(`  ${c.green}★ New signup!${c.reset}`);
+        }
+        if (row.action === "cta.clicked") {
+          const loc = row.meta?.location ?? "?";
+          const cta = row.meta?.cta ?? "cta";
+          console.log(`  ${c.yellow}★ CTA click: ${cta} (${loc})${c.reset}`);
+        }
+        if (row.action === "onboarding.completed") {
+          console.log(`  ${c.green}★ Onboarding completed${c.reset}`);
         }
         if (row.action === "checkout.started") {
           console.log(`  ${c.yellow}★ Checkout started${c.reset}`);

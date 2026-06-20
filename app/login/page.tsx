@@ -1,6 +1,7 @@
 import { LoginQueryToast } from "@/components/auth/login-query-toast";
 import { LoginForm } from "./login-form";
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
+import { LoginRegisterLink } from "@/components/auth/login-register-link";
 import Link from "next/link";
 
 export default async function LoginPage({
@@ -36,10 +37,7 @@ export default async function LoginPage({
         </div>
         <LoginForm />
         <p className="text-center text-sm text-muted-foreground">
-          Don&apos;t have an account?{" "}
-          <Link href="/register" className="underline hover:text-foreground">
-            Create account
-          </Link>
+          Don&apos;t have an account? <LoginRegisterLink />
         </p>
         <p className="text-center text-sm text-muted-foreground">
           <Link href="/" className="underline hover:text-foreground">

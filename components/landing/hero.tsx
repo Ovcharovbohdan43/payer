@@ -4,6 +4,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { DashboardScreen, PaymentScreen } from '@/components/landing/product-screens'
 import { WhyPuyer } from '@/components/landing/why-puyer'
+import { TrackedRegisterLink } from '@/components/analytics/tracked-register-link'
 
 export function Hero() {
   return (
@@ -24,15 +25,17 @@ export function Hero() {
         </p>
 
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link
+          <TrackedRegisterLink
             href="/register"
+            cta="start_free"
+            location="hero"
             className={cn(
               buttonVariants(),
               'h-12 w-full border border-brand/25 bg-brand px-6 text-base font-medium text-primary-foreground shadow-none hover:bg-brand-hover sm:w-auto',
             )}
           >
             Start free <ArrowRight className="ml-1.5 h-4 w-4" />
-          </Link>
+          </TrackedRegisterLink>
           <Link
             href="/demo"
             className={cn(
@@ -62,11 +65,7 @@ export function Hero() {
         <WhyPuyer />
 
         {/* product preview */}
-        <div className="relative mx-auto mt-14 max-w-4xl">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -inset-x-12 -top-12 bottom-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_20%,var(--brand-soft),transparent_75%)] opacity-50"
-          />
+        <div className="relative z-10 mx-auto mt-14 max-w-4xl">
           <div className="relative grid items-end gap-4 sm:grid-cols-[1.5fr_1fr]">
             {/* main dashboard */}
             <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#0e131b] shadow-2xl shadow-black/50">

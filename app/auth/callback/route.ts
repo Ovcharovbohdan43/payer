@@ -45,12 +45,25 @@ export async function GET(request: Request) {
     }
 
     await logUserIp(supabase, clientIp);
-    await logPlatformActivityRpc(supabase, {
-      category: "auth",
-      action: "login.oauth_or_magic",
-      ip: clientIp,
-      meta: { userId: user.id, email: user.email },
-    });
+
+    const userAgeMs = Date.now() - new Date(user.created_at).getTime();
+    const isNewSignup = userAgeMs < 5 * 60 * 1000;
+
+    if (isNewSignup) {
+      await logPlatformActivityRpc(supabase, {
+        category: "auth",
+        action: "signup.completed",
+        ip: clientIp,
+        meta: { userId: user.id, email: user.email, provider: "oauth" },
+      });
+    } else {
+      await logPlatformActivityRpc(supabase, {
+        category: "auth",
+        action: "login.oauth_or_magic",
+        ip: clientIp,
+        meta: { userId: user.id, email: user.email },
+      });
+    }
 
     const redirectPath = await getPostAuthRedirectPath(supabase, user.id, next);
     return NextResponse.redirect(`${origin}${redirectPath}`);

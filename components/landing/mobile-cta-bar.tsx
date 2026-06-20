@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import { TrackedRegisterLink } from '@/components/analytics/tracked-register-link'
 import { useEffect, useState } from 'react'
 import { ArrowRight } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
@@ -23,15 +23,17 @@ export function MobileCtaBar() {
         show ? 'translate-y-0' : 'translate-y-full',
       )}
     >
-      <Link
+      <TrackedRegisterLink
         href="/register"
+        cta="start_free"
+        location="mobile_bar"
         className={cn(
           buttonVariants(),
           'h-12 w-full border border-brand/25 bg-brand text-base font-medium text-primary-foreground shadow-none hover:bg-brand-hover',
         )}
       >
         Start free — invoice in 15s <ArrowRight className="ml-1.5 h-4 w-4" />
-      </Link>
+      </TrackedRegisterLink>
     </div>
   )
 }

@@ -81,7 +81,7 @@ export function WhyPuyer() {
   }, [])
 
   return (
-    <div ref={sectionRef} className="relative mx-auto mt-12 max-w-4xl sm:mt-14">
+    <div ref={sectionRef} className="relative z-10 mx-auto mt-12 max-w-4xl sm:mt-14">
       <div
         className={cn(
           'text-center transition-all duration-1000 ease-out',

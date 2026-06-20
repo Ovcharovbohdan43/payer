@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export type ActivityCategory = "page" | "auth" | "billing" | "admin" | "system";
+export type ActivityCategory = "page" | "auth" | "billing" | "admin" | "system" | "funnel";
 
 export type LogActivityInput = {
   category: ActivityCategory;
