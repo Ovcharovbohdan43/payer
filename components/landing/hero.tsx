@@ -12,11 +12,14 @@ export function Hero() {
     <section className="relative">
       <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-10 sm:px-6 sm:pb-24 sm:pt-14">
         <h1 className="mx-auto max-w-4xl text-center text-4xl font-bold leading-[1.05] tracking-tight text-balance text-white sm:text-5xl lg:text-6xl">
-          Create and send invoices in{' '}
-          <span className="bg-gradient-to-r from-brand to-sky-400 bg-clip-text text-transparent">
-            15 seconds
+          Get paid today.{' '}
+          <span className="block sm:inline">
+            Create and send an invoice in{' '}
+            <span className="bg-gradient-to-r from-brand to-sky-400 bg-clip-text text-transparent">
+              15 seconds
+            </span>
+            .
           </span>
-          . Get paid instantly.
         </h1>
 
         <p className="mx-auto mt-6 max-w-2xl text-center text-base leading-relaxed text-pretty text-white/60 sm:text-lg">
