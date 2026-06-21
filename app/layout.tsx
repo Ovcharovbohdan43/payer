@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
+import { MicrosoftClarityPageViews } from "@/components/analytics/microsoft-clarity-page-views";
+import { MicrosoftClarityScript } from "@/components/analytics/microsoft-clarity-script";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
@@ -109,6 +111,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
+      <head>
+        <MicrosoftClarityScript />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased min-h-screen`}
       >
@@ -120,6 +125,7 @@ export default function RootLayout({
           {children}
           <Toaster />
           <Analytics />
+          <MicrosoftClarityPageViews />
         </ThemeProvider>
       </body>
     </html>

@@ -4,6 +4,11 @@ All notable changes to the Puyer project.
 
 ## [Unreleased]
 
+### [2026-06-21] – Microsoft Clarity (guest behavior analytics)
+
+- **Clarity:** Official Microsoft `<head>` snippet, project ID `xaecq4ktz6`; SPA route tags via `microsoft-clarity-page-views`.
+- **Docs:** `docs/MICROSOFT_CLARITY.md`.
+
 ### [2026-06-17] – Stricter new-account review rules
 
 - **First invoice:** Max 20 GBP/USD/EUR while account is under review.
