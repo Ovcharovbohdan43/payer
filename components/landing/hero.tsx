@@ -12,10 +12,11 @@ export function Hero() {
     <section className="relative">
       <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-10 sm:px-6 sm:pb-24 sm:pt-14">
         <h1 className="mx-auto max-w-4xl text-center text-4xl font-bold leading-[1.05] tracking-tight text-balance text-white sm:text-5xl lg:text-6xl">
-          Stop wasting 10 minutes on every invoice.{' '}
+          Create and send invoices in{' '}
           <span className="bg-gradient-to-r from-brand to-sky-400 bg-clip-text text-transparent">
-            Create one in 15 seconds and get paid instantly.
+            15 seconds
           </span>
+          . Get paid instantly.
         </h1>
 
         <p className="mx-auto mt-6 max-w-2xl text-center text-base leading-relaxed text-pretty text-white/60 sm:text-lg">
@@ -32,16 +33,16 @@ export function Hero() {
             location="hero"
             className={cn(
               buttonVariants(),
-              'h-12 w-full border border-brand/25 bg-brand px-6 text-base font-medium text-primary-foreground shadow-none hover:bg-brand-hover sm:w-auto',
+              'h-14 w-full border border-brand/25 bg-brand px-8 text-lg font-semibold text-primary-foreground shadow-none hover:bg-brand-hover sm:h-16 sm:w-auto sm:px-10 sm:text-xl',
             )}
           >
-            Start free <ArrowRight className="ml-1.5 h-4 w-4" />
+            Create your first invoice <ArrowRight className="ml-2 h-5 w-5" />
           </TrackedRegisterLink>
           <Link
             href="/demo"
             className={cn(
               buttonVariants({ variant: 'outline' }),
-              'h-12 w-full border-white/15 bg-white/[0.02] px-6 text-base text-white hover:bg-white/5 sm:w-auto',
+              'h-12 w-full border-white/15 bg-white/[0.02] px-6 text-base text-white hover:bg-white/5 sm:h-14 sm:w-auto',
             )}
           >
             Try demo
