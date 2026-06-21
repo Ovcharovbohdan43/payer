@@ -4,6 +4,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { DashboardScreen, PaymentScreen } from '@/components/landing/product-screens'
 import { WhyPuyer } from '@/components/landing/why-puyer'
+import { HeroSocialProof } from '@/components/landing/hero-social-proof'
 import { TrackedRegisterLink } from '@/components/analytics/tracked-register-link'
 
 export function Hero() {
@@ -11,18 +12,18 @@ export function Hero() {
     <section className="relative">
       <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-10 sm:px-6 sm:pb-24 sm:pt-14">
         <h1 className="mx-auto max-w-4xl text-center text-4xl font-bold leading-[1.05] tracking-tight text-balance text-white sm:text-5xl lg:text-6xl">
-          Send an invoice and accept card payments in{' '}
+          Stop wasting 10 minutes on every invoice.{' '}
           <span className="bg-gradient-to-r from-brand to-sky-400 bg-clip-text text-transparent">
-            under 15 seconds
-          </span>{' '}
-          for absolutely free.
+            Create one in 15 seconds and get paid instantly.
+          </span>
         </h1>
 
         <p className="mx-auto mt-6 max-w-2xl text-center text-base leading-relaxed text-pretty text-white/60 sm:text-lg">
-          Send your invoice by email, share a payment link, or let clients scan a
-          QR code — your client pays by debit or credit card and you receive
-          instant payments through Stripe.
+          No accounting software. No setup. No Xero or QuickBooks learning curve —
+          just create, send by email, link or QR, and get paid through Stripe.
         </p>
+
+        <HeroSocialProof />
 
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <TrackedRegisterLink
